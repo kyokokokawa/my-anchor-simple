@@ -28,7 +28,7 @@ select{width:100%;border:1px solid var(--line);background:white;border-radius:13
 <body><main>
 <section id="home" class="page active">
  <div class="hero"><h1>My Anchor ⚓</h1><div class="motto">できない日があっても、また戻ればいい。</div><div id="count" class="count"></div><div id="dateMsg" class="sub"></div></div>
- <div class="card"><h2>🌿 今日のひとこと</h2><div id="dailyMessage">今日やることは、自分で決めよう。</div></div>
+ <div class="card"><h2>📅 範囲表リマインド</h2><div id="reminderText"></div><div class="label">次のテスト１日目</div><input type="date" id="testDate" onchange="saveTestDate()"><p class="small">テスト14日前から、アプリを開くと範囲表の確認をお知らせします。通知の自動送信ではありません。</p></div><div class="card"><h2>🌿 今日のひとこと</h2><div id="dailyMessage">今日やることは、自分で決めよう。</div></div>
  <div class="card"><h2>今日のやること</h2><div id="todayProgress" class="small"></div><div id="homeTasks"></div></div><div class="card"><h2>📘 チャレテ準備</h2><div id="homeStudy"></div><button class="ghost" onclick="show('study',document.getElementById('studyNav'))">進捗を見る</button></div>
 </section>
 
@@ -37,12 +37,12 @@ select{width:100%;border:1px solid var(--line);background:white;border-radius:13
 </section>
 
 <section id="study" class="page">
-<div class="card"><h2>📘 チャレテの範囲・進捗</h2><p class="small">テスト範囲は自分で入力できます。算数プログレスは１問ずつ、１〜３周目を記録できます。</p><div class="label">教科</div><select id="studySubject" onchange="subjectChanged()"><option>算数</option><option>国語</option><option>理科</option><option>社会</option></select><div class="label">教材・種類</div><select id="studyType" onchange="typeChanged()"></select><div class="label">範囲・単元名</div><input id="studyUnit" placeholder="例：No. 12／第３回"><div class="label">問題数（プログレスなど）</div><input id="studyTotal" type="number" min="1" max="500" placeholder="例：20"><div class="actions"><button onclick="addStudy()">範囲を追加</button></div><p class="small">問題数を空欄にすると、完了チェック式の範囲になります。</p></div>
-<div class="card"><h2>登録した範囲</h2><div id="studyList"></div></div>
+<div class="card"><h2>📘 チャレテの範囲・進捗</h2><p class="small">テスト範囲は自分で入力できます。算数プログレスは１問ずつ、１〜３周目を記録できます。</p><div class="label">教科</div><select id="studySubject" onchange="subjectChanged()"><option>算数</option><option>国語</option><option>理科</option><option>社会</option><option>英語</option></select><div class="label">教材・種類</div><select id="studyType" onchange="typeChanged()"></select><div class="label">範囲・単元名</div><input id="studyUnit" placeholder="例：No. 12／第３回"><div class="label">問題数（プログレスなど）</div><input id="studyTotal" type="number" min="1" max="500" placeholder="例：20"><div class="actions"><button onclick="addStudy()">範囲を追加</button></div><p class="small">問題数を空欄にすると、完了チェック式の範囲になります。</p></div>
+<div class="card"><h2>📄 範囲表からまとめて登録</h2><p class="small">範囲表の写真をこのチャットに送り、私が作成した「教科｜教材｜範囲｜問題数」の行を下に貼り付けてね。写真をアプリ内で自動認識する機能ではありません。登録前に内容を確認できます。</p><textarea id="bulkText" placeholder="算数｜プログレス｜P.16〜29｜20&#10;国語｜毎日漢字｜第１回｜" style="min-height:110px"></textarea><div class="actions"><button class="ghost" onclick="previewBulk()">内容を確認</button><button onclick="applyBulk()">確認した範囲を登録</button></div><div id="bulkPreview" class="small"></div></div><div class="card"><h2>登録した範囲</h2><div id="studyList"></div></div>
 <div class="card"><h2>今日のリストに追加</h2><p class="small">登録済みの範囲から、今日取り組むものを選べます。プログレスは今日の目標問題数を指定できます。</p><select id="todayStudySelect"></select><div class="label">今日の目標問題数（任意）</div><input id="todayGoal" type="number" min="1" max="500" placeholder="例：10"><div class="actions"><button onclick="addStudyTask()">今日のやることに追加</button></div></div>
 <div class="card"><h2>📦 記録のバックアップ</h2><p class="small">別のURLや端末に移る前に、記録をファイルに保存してください。復元すると、このアプリの記録がバックアップの内容に置き換わります。</p><div class="actions"><button onclick="exportData()">記録を保存</button><button class="ghost" onclick="document.getElementById('importFile').click()">記録を復元</button></div><input id="importFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(this)"></div>
 </section>
-<section id="reflect" class="page">
+<section id="scores" class="page"><div class="card"><h2>🏅 チャレテの点数</h2><p class="small">各回の結果を教科ごとに保存できます。点数は自分の成長を振り返るための記録だよ。</p><div class="label">テスト名・回</div><input id="scoreExam" placeholder="例：2026年10月 第３回チャレテ"><div class="label">教科</div><select id="scoreSubject"><option>算数</option><option>国語</option><option>理科</option><option>社会</option><option>英語</option><option>合計</option></select><div class="label">得点</div><input id="scoreValue" type="number" min="0" max="1000" placeholder="例：85"><div class="label">満点</div><input id="scoreMax" type="number" min="1" max="1000" value="100"><div class="label">メモ（任意）</div><input id="scoreNote" placeholder="できるようになったことなど"><div class="actions"><button onclick="addScore()">点数を保存</button></div></div><div class="card"><h2>これまでの点数</h2><div id="scoreList"></div></div></section><section id="reflect" class="page">
  <div class="card"><h2>⚓ 今日の振り返り</h2><div class="label">今日の自分は？</div><div class="faces"><button onclick="face('◎',this)">◎</button><button onclick="face('○',this)">○</button><button onclick="face('△',this)">△</button></div>
  <div class="label">できたこと</div><textarea id="did"></textarea><div class="label">難しかったこと</div><textarea id="hard"></textarea><div class="label">明日はどうする？</div><textarea id="tomorrow"></textarea><button onclick="saveReflection()">保存</button> <span id="rsaved" class="saved">保存しました ✓</span></div>
 </section>
@@ -72,27 +72,31 @@ select{width:100%;border:1px solid var(--line);background:white;border-radius:13
 <nav>
 <button class="active" onclick="show('home',this)">🏠<br>今日</button>
 <button onclick="show('tasks',this)">📚<br>やること</button>
-<button id="studyNav" onclick="show('study',this)">📘<br>チャレテ</button><button onclick="show('reflect',this)">⚓<br>振り返り</button>
+<button id="studyNav" onclick="show('study',this)">📘<br>チャレテ</button><button onclick="show('scores',this)">🏅<br>点数</button><button onclick="show('reflect',this)">⚓<br>振り返り</button>
 <button onclick="show('parent',this)">🌿<br>お母さん</button>
 <button onclick="show('meeting',this)">📅<br>作戦会議</button>
 </nav>
 <script>
-const TEST1=new Date(2026,9,21), TEST2=new Date(2026,9,22);
+const defaultTestDate='2026-10-21';
+function currentTestDate(){return localStorage.getItem('anchor_simple_test_date')||defaultTestDate}
+function parseLocalDate(v){let a=v.split('-').map(Number);return new Date(a[0],a[1]-1,a[2])}
+function saveTestDate(){if(!testDate.value)return;localStorage.setItem('anchor_simple_test_date',testDate.value);countdown()}
 const key=()=>new Date().toLocaleDateString('sv-SE');
 let tasks=JSON.parse(localStorage.getItem('anchor_tasks_'+key())||'[]'), rating='';
 let studies=JSON.parse(localStorage.getItem('anchor_simple_studies_v1')||'[]');
 const pc=["「勉強した？」を連発しなかった","本人が決める前に予定を決めなかった","間違いをすぐ指摘しなかった","結果より取り組みを見た","困っているときだけ手伝った","他の子と比較しなかった","指示したくなったとき、質問に変えた"];
-function countdown(){let n=new Date();n.setHours(0,0,0,0);let d=Math.ceil((TEST1-n)/86400000), c=document.getElementById('count'),m=document.getElementById('dateMsg');
- if(d>0){c.textContent='あと '+d+'日';m.textContent='10月21・22日　チャレンジテスト';}
- else if(d===0){c.textContent='本番 1日目';m.textContent='ここまでやってきた自分を信じよう。';}
- else if(n<=TEST2){c.textContent='本番 2日目';m.textContent='今日も、自分の力を出してこよう。';}
- else{c.textContent='おつかれさま！';m.textContent='チャレンジテスト、よく頑張りました。';}}
-function show(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(id==='home')renderTasks();if(id==='study')renderStudy();}
+function countdown(){let n=new Date();n.setHours(0,0,0,0);let t=parseLocalDate(currentTestDate()),d=Math.round((t-n)/86400000),c=document.getElementById('count'),m=document.getElementById('dateMsg');
+ testDate.value=currentTestDate();let label=(t.getMonth()+1)+'月'+t.getDate()+'日';
+ if(d>0){c.textContent='あと '+d+'日';m.textContent=label+'　チャレンジテスト';}
+ else if(d===0){c.textContent='本番！';m.textContent='ここまでやってきた自分を信じよう。';}
+ else{c.textContent='おつかれさま！';m.textContent=label+'のチャレテ、おつかれさま。次回の日付を設定してね。';}
+ let r=document.getElementById('reminderText');r.textContent=d>14?'範囲表の配布予定まであと '+(d-14)+'日。テストの14日前になったら確認しよう。':d>0?'📣 テストまであと '+d+'日！ 範囲表が配られたか確認して、受け取ったらチャレテに登録しよう。':'次回のテスト日を設定すると、範囲表の確認時期が表示されるよ。';}
+function show(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(id==='home')renderTasks();if(id==='study')renderStudy();if(id==='scores')renderScores();}
 function addTask(){let i=document.getElementById('taskInput');if(!i.value.trim())return;tasks.push({t:i.value.trim(),done:false});i.value='';saveTasks();}
 function saveTasks(){localStorage.setItem('anchor_tasks_'+key(),JSON.stringify(tasks));renderTasks();}
 function toggle(i){tasks[i].done=!tasks[i].done;saveTasks()} function del(i){tasks.splice(i,1);saveTasks()}
 function renderTasks(){let html=tasks.length?tasks.map((x,i)=>`<div class="task ${x.done?'done':''}"><input style="width:20px;height:20px" type="checkbox" ${x.done?'checked':''} onchange="toggle(${i})"><span>${esc(x.t)}</span><button class="ghost" onclick="del(${i})">×</button></div>`).join(''):'<p class="small">まだありません。「やること」から自分で追加してみよう。</p>';document.getElementById('taskList').innerHTML=html;document.getElementById('homeTasks').innerHTML=html;document.getElementById('todayProgress').textContent=tasks.length?`${tasks.filter(t=>t.done).length} / ${tasks.length} 完了`:'今日の作戦を決めよう';renderHomeStudy();}
-function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function face(v,b){rating=v;document.querySelectorAll('.faces button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel')}
 function flash(id){let x=document.getElementById(id);x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1400)}
 function saveReflection(){localStorage.setItem('anchor_ref_'+key(),JSON.stringify({rating,did:did.value,hard:hard.value,tomorrow:tomorrow.value}));flash('rsaved')}
@@ -103,7 +107,7 @@ function restore(){let r=JSON.parse(localStorage.getItem('anchor_ref_'+key())||'
  let mt=JSON.parse(localStorage.getItem('anchor_meeting_'+key())||'null');if(mt)[m1,m2,m3,m4,m5].forEach((x,i)=>x.value=mt[i]||'');}
 countdown();renderTasks();initParent();restore();
 
-const types={'算数':['プログレス','基礎トレ','デイリーサピックス','その他'],'国語':['毎日漢字','演習','読解','その他'],'理科':['テキスト','確認問題','その他'],'社会':['テキスト','確認問題','その他']};
+const types={'英語':['テキスト','単語','その他'],'算数':['プログレス','基礎トレ','デイリーサピックス','その他'],'国語':['毎日漢字','演習','読解','その他'],'理科':['テキスト','確認問題','その他'],'社会':['テキスト','確認問題','その他']};
 function subjectChanged(){studyType.innerHTML=types[studySubject.value].map(t=>`<option>${t}</option>`).join('');typeChanged()}
 function typeChanged(){studyTotal.placeholder=studyType.value==='プログレス'?'例：20（１周分の問題数）':'問題数がある場合のみ入力'}
 function saveStudies(){localStorage.setItem('anchor_simple_studies_v1',JSON.stringify(studies));renderStudy();renderTasks()}
@@ -122,7 +126,16 @@ function syncTasks(){let changed=false;tasks.forEach(t=>{if(!t.studyId||t.done)r
 const oldRenderTasks=renderTasks;renderTasks=function(){syncTasks();oldRenderTasks()};
 function exportData(){let data={format:'my-anchor-simple-backup-1',savedAt:new Date().toISOString(),items:{}};for(let i=0;i<localStorage.length;i++){let k=localStorage.key(i);if(k.startsWith('anchor_'))data.items[k]=localStorage.getItem(k)}let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='my-anchor-backup-'+key()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),3000)}
 async function importData(input){let file=input.files[0];if(!file)return;try{let data=JSON.parse(await file.text());if(data.format!=='my-anchor-simple-backup-1'||!data.items||typeof data.items!=='object')throw Error('対応していないバックアップです');if(!confirm('このアプリの記録をバックアップの内容に置き換えます。続けますか？'))return;Object.keys(localStorage).filter(k=>k.startsWith('anchor_')).forEach(k=>localStorage.removeItem(k));Object.entries(data.items).forEach(([k,v])=>{if(k.startsWith('anchor_')&&typeof v==='string')localStorage.setItem(k,v)});location.reload()}catch(e){alert('復元できませんでした：'+e.message)}finally{input.value=''}}
-subjectChanged();renderStudy();renderTasks();
+
+let scoreRecords=JSON.parse(localStorage.getItem('anchor_simple_scores_v1')||'[]');
+function addScore(){let exam=scoreExam.value.trim(),v=Number(scoreValue.value),max=Number(scoreMax.value);if(!exam||scoreValue.value.trim()===''||!Number.isFinite(v)||!Number.isFinite(max)||v<0||max<1||v>max||max>1000){alert('テスト名と、満点以下の得点を入力してね');return}scoreRecords.push({id:'r'+Date.now()+Math.random().toString(36).slice(2),exam,subject:scoreSubject.value,value:v,max,note:scoreNote.value.trim(),savedAt:new Date().toISOString()});localStorage.setItem('anchor_simple_scores_v1',JSON.stringify(scoreRecords));scoreValue.value='';scoreNote.value='';renderScores()}
+function removeScore(id){if(!confirm('この点数記録を削除しますか？'))return;scoreRecords=scoreRecords.filter(x=>x.id!==id);localStorage.setItem('anchor_simple_scores_v1',JSON.stringify(scoreRecords));renderScores()}
+function renderScores(){scoreList.innerHTML=scoreRecords.length?scoreRecords.slice().reverse().map(x=>`<div class="item"><b>${esc(x.exam)} ／ ${esc(x.subject)}</b><div>${x.value} / ${x.max} 点</div>${x.note?`<div class="small">${esc(x.note)}</div>`:''}<div class="actions"><button class="danger" onclick="removeScore('${x.id}')">削除</button></div></div>`).join(''):'<p class="small">まだ点数の記録はありません。</p>'}
+let bulkRows=[];
+function previewBulk(){bulkRows=[];let errors=[];bulkText.value.split(/\r?\n/).forEach((line,i)=>{if(!line.trim())return;let p=line.split(/[｜|\t]/).map(x=>x.trim()),n=p[3]?Number(p[3]):0;if(p.length<3||!types[p[0]]||!p[1]||!p[2]||!types[p[0]].includes(p[1])||(p[3]&&(!Number.isInteger(n)||n<1||n>500))){errors.push((i+1)+'行目を確認してね');return}bulkRows.push({subject:p[0],type:p[1],unit:p[2],total:n})});bulkPreview.innerHTML=errors.length?'<b>修正が必要：</b>'+errors.map(esc).join('、'):'登録予定：'+bulkRows.length+'件<br>'+bulkRows.map(x=>esc(x.subject+'／'+x.type+'／'+x.unit+(x.total?'／'+x.total+'問':''))).join('<br>');return errors.length===0&&bulkRows.length>0}
+function applyBulk(){if(!previewBulk())return;if(!confirm('確認した '+bulkRows.length+' 件を登録しますか？'))return;bulkRows.forEach(x=>studies.push({...x,id:'s'+Date.now()+Math.random().toString(36).slice(2),pass:1,answers:{},done:false}));bulkText.value='';bulkPreview.textContent='登録しました ✓';bulkRows=[];saveStudies()}
+
+subjectChanged();renderStudy();renderTasks();renderScores();
 
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script></body></html>
