@@ -1,0 +1,9 @@
+{
+  "name": "My Anchor",
+  "short_name": "My Anchor",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f6f4ec",
+  "theme_color": "#6f8f72",
+  "icons": []
+}

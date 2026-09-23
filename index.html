@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6f8f72">
+<link rel="manifest" href="manifest.webmanifest">
+<title>My Anchor</title>
+<style>
+:root{--bg:#f6f4ec;--card:#fffdf7;--green:#6f8f72;--deep:#3f5d45;--pale:#e5eee3;--text:#29332b;--muted:#738076;--line:#d9e2d7}
+*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:680px;margin:auto;padding:22px 16px 100px}.hero{background:linear-gradient(145deg,#e9f1e5,#fffdf7);border:1px solid var(--line);border-radius:26px;padding:24px;box-shadow:0 8px 28px #41574412}
+h1{margin:0;font-size:30px;color:var(--deep)} h2{font-size:20px;margin:0 0 14px}.motto{margin:10px 0;color:var(--deep);font-weight:700}.count{font-size:42px;font-weight:800;margin:14px 0 4px}.sub{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 5px 18px #4157440d}
+.row{display:flex;gap:9px;align-items:center}.row input{flex:1}
+input,textarea{width:100%;border:1px solid var(--line);background:white;border-radius:13px;padding:12px;font-size:16px;color:var(--text)} textarea{min-height:76px;resize:vertical}
+button{border:0;border-radius:13px;padding:11px 14px;font-weight:700;font-size:15px;background:var(--green);color:white}.ghost{background:var(--pale);color:var(--deep)}
+.task{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid #edf0ea}.task span{flex:1}.task.done span{text-decoration:line-through;color:#929b94}.task button{padding:7px 9px}
+.check{display:flex;gap:10px;align-items:flex-start;padding:9px 0}.check input{width:20px;height:20px;margin-top:1px}
+.faces{display:flex;gap:10px}.faces button{flex:1;background:var(--pale);color:var(--deep);font-size:22px}.faces button.sel{background:var(--green);color:white}
+.tip{background:#eef4eb;border-radius:16px;padding:13px;margin-top:10px}.small{font-size:13px;color:var(--muted)}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fffdf7eF;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+nav button{background:transparent;color:var(--muted);border-radius:0;padding:12px 10px;font-size:12px;min-width:64px}nav button.active{color:var(--deep)}
+.page{display:none}.page.active{display:block}.label{font-weight:700;margin:12px 0 6px}.saved{opacity:0;transition:.2s;color:var(--green);font-size:13px}.saved.show{opacity:1}
+select{width:100%;border:1px solid var(--line);background:white;border-radius:13px;padding:12px;font-size:16px;color:var(--text)}.pill{display:inline-block;background:var(--pale);border-radius:20px;padding:5px 9px;font-size:12px}.muted{color:var(--muted)}.progress{height:9px;background:var(--pale);border-radius:20px;overflow:hidden}.progress i{display:block;height:100%;background:var(--green)}.item{padding:12px 0;border-bottom:1px solid var(--line)}.item:last-child{border:0}.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.actions button{font-size:13px;padding:8px 10px}.actions .selected{background:var(--deep)}.danger{background:#f6e9e5;color:#8d4b3b}nav{overflow-x:auto;justify-content:flex-start}nav button{flex:1;min-width:57px;padding:12px 5px} .task input[type=checkbox]{flex:none;width:20px;height:20px} .task button{flex:none} .task span{overflow-wrap:anywhere}
+</style>
+</head>
+<body><main>
+<section id="home" class="page active">
+ <div class="hero"><h1>My Anchor ⚓</h1><div class="motto">できない日があっても、また戻ればいい。</div><div id="count" class="count"></div><div id="dateMsg" class="sub"></div></div>
+ <div class="card"><h2>🌿 今日のひとこと</h2><div id="dailyMessage">今日やることは、自分で決めよう。</div></div>
+ <div class="card"><h2>今日のやること</h2><div id="todayProgress" class="small"></div><div id="homeTasks"></div></div><div class="card"><h2>📘 チャレテ準備</h2><div id="homeStudy"></div><button class="ghost" onclick="show('study',document.getElementById('studyNav'))">進捗を見る</button></div>
+</section>
+
+<section id="tasks" class="page">
+ <div class="card"><h2>📚 やること</h2><div class="row"><input id="taskInput" placeholder="例：算数のまちがい直し"><button onclick="addTask()">追加</button></div><div id="taskList"></div><p class="small">お母さんが全部決める場所ではなく、自分で今日の作戦を決める場所。</p></div>
+</section>
+
+<section id="study" class="page">
+<div class="card"><h2>📘 チャレテの範囲・進捗</h2><p class="small">テスト範囲は自分で入力できます。算数プログレスは１問ずつ、１〜３周目を記録できます。</p><div class="label">教科</div><select id="studySubject" onchange="subjectChanged()"><option>算数</option><option>国語</option><option>理科</option><option>社会</option></select><div class="label">教材・種類</div><select id="studyType" onchange="typeChanged()"></select><div class="label">範囲・単元名</div><input id="studyUnit" placeholder="例：No. 12／第３回"><div class="label">問題数（プログレスなど）</div><input id="studyTotal" type="number" min="1" max="500" placeholder="例：20"><div class="actions"><button onclick="addStudy()">範囲を追加</button></div><p class="small">問題数を空欄にすると、完了チェック式の範囲になります。</p></div>
+<div class="card"><h2>登録した範囲</h2><div id="studyList"></div></div>
+<div class="card"><h2>今日のリストに追加</h2><p class="small">登録済みの範囲から、今日取り組むものを選べます。プログレスは今日の目標問題数を指定できます。</p><select id="todayStudySelect"></select><div class="label">今日の目標問題数（任意）</div><input id="todayGoal" type="number" min="1" max="500" placeholder="例：10"><div class="actions"><button onclick="addStudyTask()">今日のやることに追加</button></div></div>
+<div class="card"><h2>📦 記録のバックアップ</h2><p class="small">別のURLや端末に移る前に、記録をファイルに保存してください。復元すると、このアプリの記録がバックアップの内容に置き換わります。</p><div class="actions"><button onclick="exportData()">記録を保存</button><button class="ghost" onclick="document.getElementById('importFile').click()">記録を復元</button></div><input id="importFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(this)"></div>
+</section>
+<section id="reflect" class="page">
+ <div class="card"><h2>⚓ 今日の振り返り</h2><div class="label">今日の自分は？</div><div class="faces"><button onclick="face('◎',this)">◎</button><button onclick="face('○',this)">○</button><button onclick="face('△',this)">△</button></div>
+ <div class="label">できたこと</div><textarea id="did"></textarea><div class="label">難しかったこと</div><textarea id="hard"></textarea><div class="label">明日はどうする？</div><textarea id="tomorrow"></textarea><button onclick="saveReflection()">保存</button> <span id="rsaved" class="saved">保存しました ✓</span></div>
+</section>
+
+<section id="parent" class="page">
+ <div class="card"><h2>🌿 お母さん</h2><div id="parentChecks"></div></div>
+ <div class="card"><h2>声かけ変換</h2>
+ <div class="tip"><b>「勉強しなさい」</b><br>→「今日はどうする？」</div>
+ <div class="tip"><b>「まだやってないの？」</b><br>→「今日の予定、どうなってる？」</div>
+ <div class="tip"><b>「もっとやったほうがいいよ」</b><br>→「今の量で目標に届きそう？」</div>
+ <div class="tip"><b>「なんで間違えたの？」</b><br>→「どこで迷った？」</div>
+ <div class="tip"><b>「それじゃ間に合わないよ」</b><br>→「テストまでの日数を考えると、どう思う？」</div>
+ <p class="motto">指示したくなったら、質問に変える。</p></div>
+</section>
+
+<section id="meeting" class="page">
+ <div class="card"><h2>📅 週1 作戦会議</h2>
+ <div class="label">① 今週うまくいったことは？</div><textarea id="m1"></textarea>
+ <div class="label">② 難しかったことは？</div><textarea id="m2"></textarea>
+ <div class="label">③ できるようになったことは？</div><textarea id="m3"></textarea>
+ <div class="label">④ 来週は何を変える？</div><textarea id="m4"></textarea>
+ <div class="label">⑤ お母さんに手伝ってほしいことは？</div><textarea id="m5"></textarea>
+ <button onclick="saveMeeting()">作戦を保存</button> <span id="msaved" class="saved">保存しました ✓</span>
+ </div>
+</section>
+</main>
+<nav>
+<button class="active" onclick="show('home',this)">🏠<br>今日</button>
+<button onclick="show('tasks',this)">📚<br>やること</button>
+<button id="studyNav" onclick="show('study',this)">📘<br>チャレテ</button><button onclick="show('reflect',this)">⚓<br>振り返り</button>
+<button onclick="show('parent',this)">🌿<br>お母さん</button>
+<button onclick="show('meeting',this)">📅<br>作戦会議</button>
+</nav>
+<script>
+const TEST1=new Date(2026,9,21), TEST2=new Date(2026,9,22);
+const key=()=>new Date().toLocaleDateString('sv-SE');
+let tasks=JSON.parse(localStorage.getItem('anchor_tasks_'+key())||'[]'), rating='';
+let studies=JSON.parse(localStorage.getItem('anchor_simple_studies_v1')||'[]');
+const pc=["「勉強した？」を連発しなかった","本人が決める前に予定を決めなかった","間違いをすぐ指摘しなかった","結果より取り組みを見た","困っているときだけ手伝った","他の子と比較しなかった","指示したくなったとき、質問に変えた"];
+function countdown(){let n=new Date();n.setHours(0,0,0,0);let d=Math.ceil((TEST1-n)/86400000), c=document.getElementById('count'),m=document.getElementById('dateMsg');
+ if(d>0){c.textContent='あと '+d+'日';m.textContent='10月21・22日　チャレンジテスト';}
+ else if(d===0){c.textContent='本番 1日目';m.textContent='ここまでやってきた自分を信じよう。';}
+ else if(n<=TEST2){c.textContent='本番 2日目';m.textContent='今日も、自分の力を出してこよう。';}
+ else{c.textContent='おつかれさま！';m.textContent='チャレンジテスト、よく頑張りました。';}}
+function show(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(id==='home')renderTasks();if(id==='study')renderStudy();}
+function addTask(){let i=document.getElementById('taskInput');if(!i.value.trim())return;tasks.push({t:i.value.trim(),done:false});i.value='';saveTasks();}
+function saveTasks(){localStorage.setItem('anchor_tasks_'+key(),JSON.stringify(tasks));renderTasks();}
+function toggle(i){tasks[i].done=!tasks[i].done;saveTasks()} function del(i){tasks.splice(i,1);saveTasks()}
+function renderTasks(){let html=tasks.length?tasks.map((x,i)=>`<div class="task ${x.done?'done':''}"><input style="width:20px;height:20px" type="checkbox" ${x.done?'checked':''} onchange="toggle(${i})"><span>${esc(x.t)}</span><button class="ghost" onclick="del(${i})">×</button></div>`).join(''):'<p class="small">まだありません。「やること」から自分で追加してみよう。</p>';document.getElementById('taskList').innerHTML=html;document.getElementById('homeTasks').innerHTML=html;document.getElementById('todayProgress').textContent=tasks.length?`${tasks.filter(t=>t.done).length} / ${tasks.length} 完了`:'今日の作戦を決めよう';renderHomeStudy();}
+function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function face(v,b){rating=v;document.querySelectorAll('.faces button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel')}
+function flash(id){let x=document.getElementById(id);x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1400)}
+function saveReflection(){localStorage.setItem('anchor_ref_'+key(),JSON.stringify({rating,did:did.value,hard:hard.value,tomorrow:tomorrow.value}));flash('rsaved')}
+function saveMeeting(){localStorage.setItem('anchor_meeting_'+key(),JSON.stringify([m1.value,m2.value,m3.value,m4.value,m5.value]));flash('msaved')}
+function initParent(){let saved=JSON.parse(localStorage.getItem('anchor_parent_'+key())||'[]');parentChecks.innerHTML=pc.map((x,i)=>`<label class="check"><input type="checkbox" ${saved[i]?'checked':''} onchange="saveParent()"><span>${x}</span></label>`).join('')}
+function saveParent(){let a=[...parentChecks.querySelectorAll('input')].map(x=>x.checked);localStorage.setItem('anchor_parent_'+key(),JSON.stringify(a))}
+function restore(){let r=JSON.parse(localStorage.getItem('anchor_ref_'+key())||'null');if(r){rating=r.rating||'';did.value=r.did||'';hard.value=r.hard||'';tomorrow.value=r.tomorrow||'';[...document.querySelectorAll('.faces button')].forEach(x=>{if(x.textContent===rating)x.classList.add('sel')})}
+ let mt=JSON.parse(localStorage.getItem('anchor_meeting_'+key())||'null');if(mt)[m1,m2,m3,m4,m5].forEach((x,i)=>x.value=mt[i]||'');}
+countdown();renderTasks();initParent();restore();
+
+const types={'算数':['プログレス','基礎トレ','デイリーサピックス','その他'],'国語':['毎日漢字','演習','読解','その他'],'理科':['テキスト','確認問題','その他'],'社会':['テキスト','確認問題','その他']};
+function subjectChanged(){studyType.innerHTML=types[studySubject.value].map(t=>`<option>${t}</option>`).join('');typeChanged()}
+function typeChanged(){studyTotal.placeholder=studyType.value==='プログレス'?'例：20（１周分の問題数）':'問題数がある場合のみ入力'}
+function saveStudies(){localStorage.setItem('anchor_simple_studies_v1',JSON.stringify(studies));renderStudy();renderTasks()}
+function addStudy(){let unit=studyUnit.value.trim(),n=studyTotal.value.trim()?Number(studyTotal.value):0;if(!unit){alert('範囲・単元名を入力してね');return}if(studyTotal.value.trim()&&(!Number.isInteger(n)||n<1||n>500)){alert('問題数は1〜500で入力してね');return}studies.push({id:'s'+Date.now()+Math.random().toString(36).slice(2),subject:studySubject.value,type:studyType.value,unit,total:n,pass:1,answers:{},done:false});studyUnit.value='';studyTotal.value='';saveStudies()}
+function findStudy(id){return studies.find(x=>x.id===id)}
+function answer(id,q,v){let s=findStudy(id);if(!s)return;let k=s.pass+'_'+q;s.answers[k]=s.answers[k]===v?'':v;saveStudies()}
+function passChange(id,v){let s=findStudy(id);if(s){s.pass=Number(v);saveStudies()}}
+function studyDone(id){let s=findStudy(id);if(s){s.done=!s.done;saveStudies()}}
+function removeStudy(id){if(!confirm('この範囲と記録を削除しますか？'))return;studies=studies.filter(s=>s.id!==id);saveStudies()}
+function stats(s,pass){let a=Array.from({length:s.total},(_,i)=>s.answers[pass+'_'+(i+1)]||'');return {done:a.filter(Boolean).length,correct:a.filter(v=>v==='ok').length}}
+function studyLabel(s){return s.subject+'／'+s.type+'／'+s.unit}
+function renderStudy(){let el=document.getElementById('studyList');if(!el)return;el.innerHTML=studies.length?studies.map(s=>{let st=s.total?stats(s,s.pass):null;return `<div class="item"><b>${esc(studyLabel(s))}</b> <span class="pill">${s.total?'全'+s.total+'問':'チェック式'}</span>${s.total?`<div class="label">${s.pass}周目：${st.done}/${s.total}問 記録済み・正解 ${st.correct}問</div><div class="progress"><i style="width:${100*st.done/s.total}%"></i></div><div class="actions">${[1,2,3].map(p=>`<button class="${s.pass===p?'selected':'ghost'}" onclick="passChange('${s.id}',${p})">${p}周目</button>`).join('')}</div><div class="small">🏆 正解 ／ 👻 間違い ／ ○ 未記録（もう一度押すと未記録に戻る）</div><div class="actions">${Array.from({length:s.total},(_,i)=>{let a=s.answers[s.pass+'_'+(i+1)];return `<button class="${a==='ok'?'selected':'ghost'}" onclick="answer('${s.id}',${i+1},'ok')">${i+1} ${a==='ok'?'🏆':a==='ng'?'👻':'○'}</button><button class="${a==='ng'?'selected':'ghost'}" onclick="answer('${s.id}',${i+1},'ng')">✕</button>`}).join('')}</div>`:`<div class="actions"><button class="${s.done?'selected':'ghost'}" onclick="studyDone('${s.id}')">${s.done?'✓ 完了':'完了にする'}</button></div>`}<div class="actions"><button class="danger" onclick="removeStudy('${s.id}')">この範囲を削除</button></div></div>`}).join(''):'<p class="small">まだ範囲がありません。上から追加しよう。</p>';todayStudySelect.innerHTML=studies.map(s=>`<option value="${s.id}">${esc(studyLabel(s))}</option>`).join('');renderHomeStudy()}
+function addStudyTask(){let s=findStudy(todayStudySelect.value);if(!s){alert('先に範囲を登録してね');return}let n=todayGoal.value.trim()?Number(todayGoal.value):0;if(n&&(!Number.isInteger(n)||n<1||n>500)){alert('目標問題数は1〜500で入力してね');return}tasks.push({t:studyLabel(s)+(n?'（今日の目標 '+n+'問）':''),done:false,studyId:s.id,goal:n,base:s.total?stats(s,s.pass).done:0,pass:s.pass});todayGoal.value='';saveTasks();show('tasks',document.querySelectorAll('nav button')[1])}
+function renderHomeStudy(){let el=document.getElementById('homeStudy');if(!el)return;el.innerHTML=studies.length?studies.map(s=>{let st=s.total?stats(s,s.pass):null;return `<div class="item">${esc(studyLabel(s))}<div class="small">${s.total?`${s.pass}周目 ${st.done}/${s.total}問 記録済み`:(s.done?'完了':'未完了')}</div></div>`}).join(''):'<p class="small">「チャレテ」からテスト範囲を登録しよう。</p>'}
+function syncTasks(){let changed=false;tasks.forEach(t=>{if(!t.studyId||t.done)return;let s=findStudy(t.studyId);if(!s)return;let completed=s.total?(t.goal?stats(s,t.pass).done-t.base>=t.goal:stats(s,t.pass).done===s.total):s.done;if(completed){t.done=true;changed=true}});if(changed)localStorage.setItem('anchor_tasks_'+key(),JSON.stringify(tasks))}
+const oldRenderTasks=renderTasks;renderTasks=function(){syncTasks();oldRenderTasks()};
+function exportData(){let data={format:'my-anchor-simple-backup-1',savedAt:new Date().toISOString(),items:{}};for(let i=0;i<localStorage.length;i++){let k=localStorage.key(i);if(k.startsWith('anchor_'))data.items[k]=localStorage.getItem(k)}let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='my-anchor-backup-'+key()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),3000)}
+async function importData(input){let file=input.files[0];if(!file)return;try{let data=JSON.parse(await file.text());if(data.format!=='my-anchor-simple-backup-1'||!data.items||typeof data.items!=='object')throw Error('対応していないバックアップです');if(!confirm('このアプリの記録をバックアップの内容に置き換えます。続けますか？'))return;Object.keys(localStorage).filter(k=>k.startsWith('anchor_')).forEach(k=>localStorage.removeItem(k));Object.entries(data.items).forEach(([k,v])=>{if(k.startsWith('anchor_')&&typeof v==='string')localStorage.setItem(k,v)});location.reload()}catch(e){alert('復元できませんでした：'+e.message)}finally{input.value=''}}
+subjectChanged();renderStudy();renderTasks();
+
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script></body></html>
