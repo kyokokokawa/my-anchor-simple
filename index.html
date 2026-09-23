@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#6f8f72">
 <link rel="manifest" href="manifest.webmanifest">
-<title>My Anchor</title>
+<title>My Anchor 第2章 Prototype</title>
 <style>
 :root{--bg:#f6f4ec;--card:#fffdf7;--green:#6f8f72;--deep:#3f5d45;--pale:#e5eee3;--text:#29332b;--muted:#738076;--line:#d9e2d7}
 *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:var(--bg);color:var(--text)}
@@ -25,17 +25,29 @@ nav button{background:transparent;color:var(--muted);border-radius:0;padding:12p
 select{width:100%;border:1px solid var(--line);background:white;border-radius:13px;padding:12px;font-size:16px;color:var(--text)}.pill{display:inline-block;background:var(--pale);border-radius:20px;padding:5px 9px;font-size:12px}.muted{color:var(--muted)}.progress{height:9px;background:var(--pale);border-radius:20px;overflow:hidden}.progress i{display:block;height:100%;background:var(--green)}.item{padding:12px 0;border-bottom:1px solid var(--line)}.item:last-child{border:0}.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.actions button{font-size:13px;padding:8px 10px}.actions .selected{background:var(--deep)}.danger{background:#f6e9e5;color:#8d4b3b}nav{overflow-x:auto;justify-content:flex-start}nav button{flex:1;min-width:57px;padding:12px 5px} .task input[type=checkbox]{flex:none;width:20px;height:20px} .task button{flex:none} .task span{overflow-wrap:anywhere}
 
 .score-meta{display:grid;grid-template-columns:1fr 1fr;gap:9px}.score-scroll{width:100%;overflow-x:auto}.score-table{width:100%;min-width:0;border-collapse:collapse;table-layout:fixed}.score-table th,.score-table td{padding:6px 2px;border-bottom:1px solid var(--line);text-align:center}.score-table th{font-size:10px;overflow-wrap:anywhere;color:var(--deep)}.score-table th:first-child{width:40px}.score-table input{padding:7px 1px;border-radius:7px;text-align:center;min-width:0;width:100%;font-size:16px}.score-table tr.total{background:#fff9d3;font-weight:700}.score-table input[readonly]{background:#f0f3ed;color:var(--deep)}.score-table td:first-child{font-weight:700;font-size:12px}.score-record{border-bottom:1px solid var(--line);padding:12px 0}.score-record .actions{margin-top:8px}@media(max-width:390px){.score-meta{grid-template-columns:1fr}.score-table input{font-size:16px}.score-table th{font-size:10px}#scores .card{padding:10px}}.question-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:7px;margin-top:10px}.question-grid button{padding:8px 2px;background:#e7efe6;color:#3f5d45;font-size:13px}.question-grid button.qok{background:#fce8f0;color:#843f5a}.question-grid button.qng{background:#f5e7d6;color:#865c37}.celebrate{padding:18px;border-radius:20px;text-align:center;background:linear-gradient(#fce9f1,#fff9e4);margin:14px 0}.celebrate .flowers{font-size:27px;line-height:1.6;overflow-wrap:anywhere}.parent-lock{padding:12px;background:#eef4eb;border-radius:14px}.parent-lock input{margin:8px 0}
+
+/* ===== My Anchor 第2章 prototype ===== */
+:root{--sea:#4f9fb8;--sea-deep:#2e718a;--foam:#f5fbfc;--sand:#fff9e9;--coral:#efb9a8;--star:#f4cf67}
+body{background:linear-gradient(#eef9fb 0,#f7fbf6 42%,#f6f4ec 100%)}
+main{padding-top:14px}.hero.seaHero{position:relative;overflow:hidden;background:linear-gradient(180deg,#dff6fb,#f8fdff);border-color:#cde8ed;padding:20px 20px 18px}.seaHero:after{content:'〰 〰 〰';position:absolute;right:16px;bottom:8px;color:#9ed4df;letter-spacing:4px}.seaHero h1{color:var(--sea-deep)}
+.dateStrip{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}.dateChip{background:#ffffffc9;border:1px solid #d4eaee;border-radius:15px;padding:10px;text-align:center}.dateChip b{display:block;color:var(--sea-deep);font-size:15px}.dateChip span{font-size:12px;color:var(--muted)}
+.todayCard{padding:14px}.subjectRow{border:1px solid #dcebec;background:#fff;border-radius:17px;padding:11px 10px;margin:9px 0}.subjectTop{display:flex;gap:8px;align-items:center}.subjectName{font-weight:800;width:42px;color:var(--sea-deep)}.subjectTask{flex:1;font-size:14px;overflow-wrap:anywhere}.statusSet{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.statusSet button{background:#f1f7f7;color:#58757d;padding:7px 2px;font-size:11px;border:1px solid #e0eded}.statusSet button.selected{background:#d9f0f4;color:#225d70;border-color:#91ccd7;transform:translateY(-1px)}
+.voyageButton{width:100%;background:linear-gradient(135deg,#4f9fb8,#397f99);font-size:17px;padding:14px;border-radius:18px}.stampBox{text-align:center;background:linear-gradient(180deg,#f4fbfd,#fff);border:1px solid #d6ebef;border-radius:18px;padding:14px;margin-top:12px}.stampBig{font-size:36px}.routeMini{font-size:20px;letter-spacing:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:8px}.restart{font-weight:800;color:#397f99;margin-top:6px}
+.menuSheet{position:fixed;inset:0;background:#17333d55;z-index:20;display:none;align-items:flex-end}.menuSheet.open{display:flex}.menuPanel{width:100%;background:#fffdf7;border-radius:24px 24px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px #17333d22}.menuGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.menuGrid button{background:#edf6f6;color:#315f6d;padding:15px 8px}.menuClose{width:100%;margin-top:10px;background:#e8ece8;color:#52645a}
+nav.mainNav button{min-width:25%;font-size:12px}nav.mainNav{overflow:hidden}.homeOldExtra{display:none}
 </style>
 </head>
 <body><main>
 <section id="home" class="page active">
- <div class="hero"><h1>My Anchor ⚓</h1><div class="motto">できない日があっても、また戻ればいい。</div><div id="count" class="count"></div><div id="dateMsg" class="sub"></div></div>
- <div class="card"><h2>📅 範囲表リマインド</h2><div id="reminderText"></div><div class="label">次のテスト１日目</div><input type="date" id="testDate" onchange="saveTestDate()"><p class="small">テスト14日前から、アプリを開くと範囲表の確認をお知らせします。通知の自動送信ではありません。</p></div><div class="card"><h2>🌿 今日のひとこと</h2><div id="dailyMessage">今日やることは、自分で決めよう。</div></div>
- <div class="card"><h2>今日のやること</h2><div id="todayProgress" class="small"></div><div id="homeTasks"></div></div><div class="card"><h2>📘 チャレテ準備</h2><div id="homeStudy"></div><button class="ghost" onclick="show('study',document.getElementById('studyNav'))">進捗を見る</button></div>
+ <div class="hero seaHero"><h1>My Anchor ⚓</h1><div class="motto">できない日があっても、また始めればいい。</div><div class="dateStrip"><div class="dateChip"><b id="rangeDateLabel">範囲発表</b><span id="rangeRemain">確認しよう</span></div><div class="dateChip"><b id="testDateLabel">チャレテ</b><span id="homeCount">あと何日</span></div></div></div>
+ <div class="card todayCard"><h2>今日のやること</h2><div id="todayProgress" class="small"></div><div id="homeSubjects"></div></div>
+ <button class="voyageButton" onclick="openVoyage()">⛵ チャレテへの航海をみる</button>
+ <div class="stampBox"><div class="small">今日の航海</div><div id="autoStamp" class="stampBig">🐚</div><div id="autoStampText"><b>今日はここから</b></div><div id="restartMessage" class="restart"></div><div id="miniRoute" class="routeMini">🐋 ─ ○ ─ ○ ─ ○ ─ 🏝️</div></div>
+ <div class="card homeOldExtra"><div id="homeTasks"></div><div id="homeStudy"></div></div>
 </section>
 
 <section id="tasks" class="page">
- <div class="card"><h2>📚 やること</h2><div class="row"><input id="taskInput" placeholder="例：算数のまちがい直し"><button onclick="addTask()">追加</button></div><div id="taskList"></div><p class="small">お母さんが全部決める場所ではなく、自分で今日の作戦を決める場所。</p></div>
+ <div class="card"><h2>📚 やること</h2><div class="label">教科</div><select id="taskSubject"><option>国語</option><option>算数</option><option>理科</option><option>社会</option><option>英語</option></select><div class="row"><input id="taskInput" placeholder="例：算数のまちがい直し"><button onclick="addTask()">追加</button></div><div id="taskList"></div><p class="small">お母さんが全部決める場所ではなく、自分で今日の作戦を決める場所。</p></div>
 </section>
 
 <section id="study" class="page">
@@ -71,13 +83,13 @@ select{width:100%;border:1px solid var(--line);background:white;border-radius:13
  </div>
 </section>
 </main>
-<nav>
+<nav class="mainNav">
 <button class="active" onclick="show('home',this)">🏠<br>今日</button>
-<button onclick="show('tasks',this)">📚<br>やること</button>
-<button id="studyNav" onclick="show('study',this)">📘<br>チャレテ</button><button onclick="show('scores',this)">🏅<br>点数</button><button onclick="show('reflect',this)">⚓<br>振り返り</button>
-<button onclick="show('parent',this)">🌿<br>お母さん</button>
-<button onclick="show('meeting',this)">📅<br>作戦会議</button>
+<button onclick="show('tasks',this)">📝<br>やること</button>
+<button id="studyNav" onclick="show('study',this)">🌊<br>チャレテ</button>
+<button onclick="openMenu()">☰<br>メニュー</button>
 </nav>
+<div id="menuSheet" class="menuSheet" onclick="if(event.target===this)closeMenu()"><div class="menuPanel"><h2>メニュー</h2><div class="menuGrid"><button onclick="menuGo('scores')">📊 点数</button><button onclick="menuGo('reflect')">💭 振り返り</button><button onclick="menuGo('parent')">👩 お母さん</button><button onclick="menuGo('meeting')">🧭 作戦会議</button></div><button class="menuClose" onclick="closeMenu()">閉じる</button></div></div>
 <script>
 const defaultTestDate='2026-10-21';
 function currentTestDate(){return localStorage.getItem('anchor_simple_test_date')||defaultTestDate}
@@ -88,16 +100,29 @@ let tasks=JSON.parse(localStorage.getItem('anchor_tasks_'+key())||'[]'), rating=
 let studies=JSON.parse(localStorage.getItem('anchor_simple_studies_v1')||'[]');
 const pc=["「勉強した？」を連発しなかった","本人が決める前に予定を決めなかった","間違いをすぐ指摘しなかった","結果より取り組みを見た","困っているときだけ手伝った","他の子と比較しなかった","指示したくなったとき、質問に変えた"];
 function countdown(){let n=new Date();n.setHours(0,0,0,0);let t=parseLocalDate(currentTestDate()),d=Math.round((t-n)/86400000),c=document.getElementById('count'),m=document.getElementById('dateMsg');
- testDate.value=currentTestDate();let label=(t.getMonth()+1)+'月'+t.getDate()+'日';
+ testDate.value=currentTestDate();let label=(t.getMonth()+1)+'月'+t.getDate()+'日'; if(document.getElementById('testDateLabel'))testDateLabel.textContent='チャレテ '+label;if(document.getElementById('homeCount'))homeCount.textContent=d>0?'あと '+d+'日':d===0?'本番！':'おつかれさま';let rd=new Date(t);rd.setDate(rd.getDate()-14);if(document.getElementById('rangeDateLabel'))rangeDateLabel.textContent='範囲発表 '+(rd.getMonth()+1)+'月'+rd.getDate()+'日';if(document.getElementById('rangeRemain')){let rr=Math.round((rd-n)/86400000);rangeRemain.textContent=rr>0?'あと '+rr+'日':rr===0?'今日':'発表済み';}
  if(d>0){c.textContent='あと '+d+'日';m.textContent=label+'　チャレンジテスト';}
  else if(d===0){c.textContent='本番！';m.textContent='ここまでやってきた自分を信じよう。';}
  else{c.textContent='おつかれさま！';m.textContent=label+'のチャレテ、おつかれさま。次回の日付を設定してね。';}
  let r=document.getElementById('reminderText');r.textContent=d>14?'範囲表の配布予定まであと '+(d-14)+'日。テストの14日前になったら確認しよう。':d>0?'📣 テストまであと '+d+'日！ 範囲表が配られたか確認して、受け取ったらチャレテに登録しよう。':'次回のテスト日を設定すると、範囲表の確認時期が表示されるよ。';}
-function show(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(id==='home')renderTasks();if(id==='study')renderStudy();if(id==='scores')renderScores();if(id==='parent')renderParentGate();}
-function addTask(){let i=document.getElementById('taskInput');if(!i.value.trim())return;tasks.push({t:i.value.trim(),done:false});i.value='';saveTasks();}
+function show(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');if(id==='home')renderTasks();if(id==='study')renderStudy();if(id==='scores')renderScores();if(id==='parent')renderParentGate();}
+function addTask(){let i=document.getElementById('taskInput');if(!i.value.trim())return;tasks.push({t:i.value.trim(),subject:taskSubject.value,status:'notyet',done:false});i.value='';saveTasks();}
 function saveTasks(){localStorage.setItem('anchor_tasks_'+key(),JSON.stringify(tasks));renderTasks();}
 function toggle(i){tasks[i].done=!tasks[i].done;saveTasks()} function del(i){tasks.splice(i,1);saveTasks()}
-function renderTasks(){let html=tasks.length?tasks.map((x,i)=>`<div class="task ${x.done?'done':''}"><input style="width:20px;height:20px" type="checkbox" ${x.done?'checked':''} onchange="toggle(${i})"><span>${esc(x.t)}</span><button class="ghost" onclick="del(${i})">×</button></div>`).join(''):'<p class="small">まだありません。「やること」から自分で追加してみよう。</p>';document.getElementById('taskList').innerHTML=html;document.getElementById('homeTasks').innerHTML=html;document.getElementById('todayProgress').textContent=tasks.length?`${tasks.filter(t=>t.done).length} / ${tasks.length} 完了`:'今日の作戦を決めよう';renderHomeStudy();}
+function renderTasks(){
+ tasks.forEach(x=>{if(!x.subject)x.subject=guessSubject(x.t);if(!x.status)x.status=x.done?'done':'notyet'});
+ let html=tasks.length?tasks.map((x,i)=>`<div class="task ${x.status==='done'?'done':''}"><span><b>${esc(x.subject||'その他')}</b>　${esc(x.t)}</span><button class="ghost" onclick="del(${i})">×</button></div>`).join(''):'<p class="small">まだありません。上から今日の作戦を追加しよう。</p>';
+ document.getElementById('taskList').innerHTML=html;let old=document.getElementById('homeTasks');if(old)old.innerHTML='';renderHomeSubjects();renderHomeStudy();}
+const SUBJECTS=['国語','算数','理科','社会','英語'];
+const STATUS=[['notyet','🐚','まだ'],['doing','🪸','やってる'],['done','⭐','できた！'],['again','⚓','もう一度']];
+function guessSubject(t){return SUBJECTS.find(x=>String(t).includes(x))||'国語'}
+function setTaskStatus(i,status){if(!tasks[i])return;tasks[i].status=status;tasks[i].done=status==='done';saveTasks();}
+function renderHomeSubjects(){let box=document.getElementById('homeSubjects');if(!box)return;box.innerHTML=SUBJECTS.map(sub=>{let inds=tasks.map((t,i)=>[t,i]).filter(([t])=>t.subject===sub);let text=inds.length?inds.map(([t])=>esc(t.t)).join(' ／ '):'—';let idx=inds.length?inds[0][1]:-1;let current=idx>=0?(tasks[idx].status||'notyet'):'notyet';let buttons=STATUS.map(([v,e,l])=>`<button ${idx<0?'disabled':''} class="${current===v?'selected':''}" onclick="setTaskStatus(${idx},'${v}')">${e}<br>${l}</button>`).join('');return `<div class="subjectRow"><div class="subjectTop"><div class="subjectName">${sub}</div><div class="subjectTask">${text}</div></div><div class="statusSet">${buttons}</div></div>`}).join('');renderAutoStamp();}
+function autoStampValue(){if(!tasks.length)return ['🐚','今日はここから'];let st=tasks.map(t=>t.status||'notyet'),done=st.filter(x=>x==='done').length,doing=st.filter(x=>x==='doing').length,again=st.filter(x=>x==='again').length;if(done>=Math.ceil(tasks.length*.6)||done>=4)return ['⭐','よく進んだ一日！'];if(done+doing>=Math.ceil(tasks.length*.5))return ['🪸','航海は進んでる'];if(again>0)return ['⚓','ここが次の出発点'];return ['🐚','今日はここから'];}
+function renderAutoStamp(){let [e,t]=autoStampValue();if(autoStamp)autoStamp.textContent=e;if(autoStampText)autoStampText.innerHTML='<b>'+t+'</b>';let hist=JSON.parse(localStorage.getItem('anchor_voyage_history_v1')||'{}');let yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);let yk=yesterday.toLocaleDateString('sv-SE');let restarted=hist[yk]==='🐚'&&e!=='🐚';if(restartMessage)restartMessage.textContent=restarted?'✨ また出発できたね！ ⛵️':'';hist[key()]=e;localStorage.setItem('anchor_voyage_history_v1',JSON.stringify(hist));if(miniRoute){let vals=Object.keys(hist).sort().slice(-5).map(k=>hist[k]);miniRoute.textContent='🐋 ─ '+vals.join(' ─ ')+' ─ 🏝️';}if(todayProgress)todayProgress.textContent=tasks.length?`${tasks.filter(t=>(t.status||'notyet')==='done').length} / ${tasks.length} できた！`:'今日の作戦を決めよう';}
+function openMenu(){menuSheet.classList.add('open')}function closeMenu(){menuSheet.classList.remove('open')}
+function menuGo(id){closeMenu();let b=document.querySelector('nav button:first-child');show(id,b);document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));}
+function openVoyage(){show('study',document.getElementById('studyNav'));setTimeout(()=>document.getElementById('study').scrollIntoView({behavior:'smooth'}),30)}
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function face(v,b){rating=v;document.querySelectorAll('.faces button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel')}
 function flash(id){let x=document.getElementById(id);x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1400)}
