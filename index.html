@@ -85,6 +85,12 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 .no-task-state{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 12px;padding:10px 12px;border-radius:14px;background:#fff8df;color:#6d725f;font-weight:800}
 .no-task-undo{border:0;background:#fff;color:#6d725f;border-radius:12px;padding:6px 10px;font-weight:800}
 
+/* v5.2 チャレテ範囲 */
+.challenge-setup-card h3,.challenge-list-card h3{margin:0 0 8px;color:#3f7f4d;font-size:21px}
+.challenge-note{width:100%;min-height:92px;resize:vertical;padding:13px 14px;border:1.5px solid #e8d9b8;border-radius:16px;background:#fff;font:inherit;font-size:16px;color:#365b40}
+.challenge-subject-block{padding:14px 0;border-bottom:1px solid #eee3c9}.challenge-subject-block:last-child{border-bottom:0}
+.challenge-range-item{padding:10px 0}.challenge-range-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.challenge-range-name{font-weight:850;color:#4b6750;line-height:1.5}.challenge-range-date{font-size:12px;color:#8a9389;white-space:nowrap}.challenge-range-note{margin:5px 0 8px;color:#6d756e;line-height:1.55;font-size:14px;white-space:pre-wrap}.challenge-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.challenge-today-btn{border:0;border-radius:13px;padding:8px 12px;background:#ffdf73;color:#42664a;font-weight:900}.challenge-today-btn.added{background:#eef4e9;color:#758176}.challenge-delete-btn{border:0;background:transparent;color:#a48f7a;padding:8px;font-weight:700}.challenge-empty{padding:18px 4px;color:#899289;text-align:center}
+
 </style>
 </head>
 <body>
@@ -147,7 +153,26 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
 <section id="challenge" class="page">
   <div class="screen-title">📘 チャレテ</div>
-  <div class="card placeholder">チャレテ画面<br>— ベース完成 —</div>
+  <div class="card challenge-setup-card">
+    <h3>今回のテスト範囲</h3>
+    <p class="task-help">学校から届いた範囲を登録しよう 🌱</p>
+    <label class="task-label" for="challengeDate">テスト日</label>
+    <input id="challengeDate" class="task-input" type="date">
+    <label class="task-label" for="challengeSubject">教科</label>
+    <select id="challengeSubject" class="task-select"><option>国語</option><option>算数</option><option>理科</option><option>社会</option><option>英語</option></select>
+    <label class="task-label" for="challengeMaterial">教材・内容</label>
+    <input id="challengeMaterial" class="task-input" type="text" placeholder="例：サイエンスβ／漢字ぐんぐんスキル">
+    <label class="task-label">ページ（任意）</label>
+    <div class="page-range"><input id="challengePageFrom" class="task-input" inputmode="numeric" type="number" min="1" placeholder="55"><span>ページから</span><input id="challengePageTo" class="task-input" inputmode="numeric" type="number" min="1" placeholder="60"><span>ページまで</span></div>
+    <label class="task-label" for="challengeNote">範囲メモ（任意）</label>
+    <textarea id="challengeNote" class="challenge-note" placeholder="例：季節と植物・春、季節と動物・春"></textarea>
+    <button id="addChallengeRange" class="task-add-btn" type="button">テスト範囲に追加</button>
+    <span id="challengeAddMessage" class="task-add-message"></span>
+  </div>
+  <div class="card challenge-list-card">
+    <h3>登録したテスト範囲</h3>
+    <div id="challengeRangeList"></div>
+  </div>
 </section>
 
 <section id="basic" class="page">
@@ -288,6 +313,31 @@ function initStudyItems(){
   items.push(item);writeStudyItems(items);renderStudyItems();renderTodayStudyTasks();msg.textContent="今日やることに追加しました ✓";
   pf.value="";pt.value="";if(other)other.value="";setTimeout(()=>msg.textContent="",1600)
  })
+}
+
+const CHALLENGE_RANGE_KEY="myAnchorV2.challengeRanges";
+function readChallengeRanges(){try{const x=JSON.parse(localStorage.getItem(CHALLENGE_RANGE_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
+function writeChallengeRanges(x){localStorage.setItem(CHALLENGE_RANGE_KEY,JSON.stringify(x))}
+function challengeRangeName(x){let n=x.material||"範囲";if(x.pageFrom||x.pageTo){if(x.pageFrom&&x.pageTo)n+=` p.${x.pageFrom}〜${x.pageTo}`;else if(x.pageFrom)n+=` p.${x.pageFrom}〜`;else n+=` 〜p.${x.pageTo}`}return n}
+function formatChallengeDate(v){if(!v)return "";const a=v.split("-").map(Number);return a.length===3?`${a[1]}月${a[2]}日`:v}
+function challengeAlreadyInToday(rangeId){return readStudyItems().some(x=>x.challengeRangeId===rangeId&&x.date===localDateKey())}
+function addChallengeToToday(range){
+ if(challengeAlreadyInToday(range.id))return;
+ const items=readStudyItems();items.push({id:"task_"+Date.now(),date:localDateKey(),subject:range.subject,material:range.material,pageFrom:range.pageFrom,pageTo:range.pageTo,challengeRangeId:range.id});writeStudyItems(items);renderStudyItems();renderTodayStudyTasks();renderChallengeRanges();
+}
+function renderChallengeRanges(){
+ const h=document.getElementById("challengeRangeList");if(!h)return;const ranges=readChallengeRanges();h.innerHTML="";
+ if(!ranges.length){h.innerHTML='<div class="challenge-empty">まだテスト範囲は登録されていません 🌱</div>';return}
+ ["国語","算数","理科","社会","英語"].forEach(subject=>{
+  const a=ranges.filter(x=>x.subject===subject);if(!a.length)return;
+  const block=document.createElement("div");block.className="challenge-subject-block";const title=document.createElement("div");title.className="subject-title";title.textContent=subject;block.appendChild(title);
+  a.forEach(x=>{const item=document.createElement("div");item.className="challenge-range-item";const head=document.createElement("div");head.className="challenge-range-head";const name=document.createElement("div");name.className="challenge-range-name";name.textContent=challengeRangeName(x);const date=document.createElement("div");date.className="challenge-range-date";date.textContent=formatChallengeDate(x.testDate);head.append(name,date);item.appendChild(head);if(x.note){const note=document.createElement("div");note.className="challenge-range-note";note.textContent=x.note;item.appendChild(note)}const actions=document.createElement("div");actions.className="challenge-actions";const today=document.createElement("button");today.type="button";const added=challengeAlreadyInToday(x.id);today.className="challenge-today-btn"+(added?" added":"");today.textContent=added?"今日やるに追加済み ✓":"今日やる";today.disabled=added;today.addEventListener("click",()=>addChallengeToToday(x));const del=document.createElement("button");del.type="button";del.className="challenge-delete-btn";del.textContent="削除";del.addEventListener("click",()=>{writeChallengeRanges(readChallengeRanges().filter(r=>r.id!==x.id));renderChallengeRanges()});actions.append(today,del);item.appendChild(actions);block.appendChild(item)});h.appendChild(block)
+ })
+}
+function initChallengeRanges(){
+ const add=document.getElementById("addChallengeRange");if(!add)return;renderChallengeRanges();
+ const goal=(()=>{try{return JSON.parse(localStorage.getItem("myAnchorV2.challengeDates")||"{}").goal||""}catch(e){return""}})();if(goal)document.getElementById("challengeDate").value=goal;
+ add.addEventListener("click",()=>{const date=document.getElementById("challengeDate"),subject=document.getElementById("challengeSubject"),material=document.getElementById("challengeMaterial"),pf=document.getElementById("challengePageFrom"),pt=document.getElementById("challengePageTo"),note=document.getElementById("challengeNote"),msg=document.getElementById("challengeAddMessage");const m=material.value.trim(),from=pf.value.trim(),to=pt.value.trim();if(!date.value){msg.textContent="テスト日を入れてね";return}if(!m){msg.textContent="教材・内容を入れてね";return}if(from&&to&&Number(from)>Number(to)){msg.textContent="ページの順番を確認してね";return}const ranges=readChallengeRanges();ranges.push({id:"range_"+Date.now(),testDate:date.value,subject:subject.value,material:m,pageFrom:from,pageTo:to,note:note.value.trim()});writeChallengeRanges(ranges);renderChallengeRanges();material.value="";pf.value="";pt.value="";note.value="";msg.textContent="テスト範囲に追加しました ✓";setTimeout(()=>msg.textContent="",1600)})
 }
 
 (function(){
@@ -541,7 +591,7 @@ if("serviceWorker" in navigator){
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 }
 
-document.addEventListener("DOMContentLoaded",initStudyItems);
+document.addEventListener("DOMContentLoaded",()=>{initStudyItems();initChallengeRanges()});
 </script>
 </body>
 </html>
