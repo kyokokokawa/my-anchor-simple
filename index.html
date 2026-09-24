@@ -38,6 +38,20 @@ nav button.active{background:#FFE16A;color:#386d43;font-weight:800}
 input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px solid #ddd3b8;border-radius:14px;background:#fff}
 .save-btn{width:100%;border:0;border-radius:15px;padding:13px;background:#FFD84D;color:#426446;font-size:16px;font-weight:900}
 .saved{min-height:22px;text-align:center;margin-top:9px;color:#4e8b58;font-size:13px}
+.basic-today{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.score-input{width:76px;font:inherit;font-size:18px;font-weight:800;text-align:center;padding:10px;border:1px solid #ddd3b8;border-radius:13px;background:#fff}
+.mini-save{border:0;border-radius:13px;padding:11px 13px;background:#FFD84D;color:#426446;font-weight:900}
+.month-nav{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;gap:8px;margin-bottom:12px}
+.month-nav button{border:0;border-radius:13px;background:#FFF0B8;padding:10px;font-size:18px}
+.month-title{text-align:center;font-size:19px;font-weight:900;color:#367c47}
+.basic-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px}
+.basic-table th,.basic-table td{border-bottom:1px solid #eee5ce;padding:8px 4px;text-align:center;vertical-align:middle}
+.basic-table th{color:#607460;font-size:12px}
+.basic-table .date-col{width:22%}.basic-table .score-col{width:18%}.basic-table .entry-col{width:46%}.basic-table .mark-col{width:14%}
+.inline-entry{display:flex;justify-content:center;align-items:center;gap:4px}
+.inline-entry input{width:48px;min-width:0;font:inherit;text-align:center;padding:7px 3px;border:1px solid #ddd3b8;border-radius:9px}
+.inline-entry button{border:0;border-radius:9px;padding:7px 6px;background:#FFF0B8;color:#596b52;font-weight:800;font-size:11px}
+.done-score{font-weight:900;color:#3f7f4d}
 .screen-title{display:flex;align-items:center;gap:9px;margin:20px 2px 8px;font-size:24px;font-weight:900;color:#357b48}
 </style>
 </head>
@@ -60,6 +74,15 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
       <span id="goalDisplay">GOAL ✨ —</span>
     </div>
   </div>
+  <div class="card">
+    <h2>⚓ 今日の基礎トレ</h2>
+    <div class="basic-today">
+      <input id="todayBasicScore" class="score-input" type="number" min="0" max="10" inputmode="numeric" placeholder="0〜10">
+      <span>点</span>
+      <button id="saveTodayBasic" class="mini-save" type="button">保存</button>
+    </div>
+    <div id="todayBasicMessage" class="saved"></div>
+  </div>
 </section>
 
 <section id="tasks" class="page">
@@ -74,7 +97,24 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
 <section id="basic" class="page">
   <div class="screen-title">⚓ 基礎トレ</div>
-  <div class="card placeholder">基礎トレ画面<br>— ベース完成 —</div>
+  <div class="card">
+    <div class="month-nav">
+      <button id="basicPrevMonth" type="button" aria-label="前の月">‹</button>
+      <div id="basicMonthTitle" class="month-title"></div>
+      <button id="basicNextMonth" type="button" aria-label="次の月">›</button>
+    </div>
+    <table class="basic-table">
+      <thead>
+        <tr>
+          <th class="date-col">日付</th>
+          <th class="score-col">点数</th>
+          <th class="entry-col">入力・保存</th>
+          <th class="mark-col"></th>
+        </tr>
+      </thead>
+      <tbody id="basicRows"></tbody>
+    </table>
+  </div>
 </section>
 
 <section id="sapix" class="page">
@@ -203,7 +243,144 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
     renderDates();
   });
 
+
+  // ---- 基礎トレ：この機能専用の保存領域 ----
+  const BASIC_STORAGE_KEY = "myAnchorV2.basicScores";
+  let basicViewDate = new Date();
+  basicViewDate = new Date(basicViewDate.getFullYear(), basicViewDate.getMonth(), 1);
+
+  function dateKey(year, monthIndex, day){
+    return `${year}-${String(monthIndex+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+  }
+
+  function todayKey(){
+    const now = new Date();
+    return dateKey(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+
+  function readBasicScores(){
+    try{
+      const data = JSON.parse(localStorage.getItem(BASIC_STORAGE_KEY) || "{}");
+      return data && typeof data === "object" ? data : {};
+    }catch(e){
+      return {};
+    }
+  }
+
+  function writeBasicScores(scores){
+    localStorage.setItem(BASIC_STORAGE_KEY, JSON.stringify(scores));
+  }
+
+  function validBasicScore(value){
+    if(value === "") return null;
+    const score = Number(value);
+    if(!Number.isInteger(score) || score < 0 || score > 10) return null;
+    return score;
+  }
+
+  function saveBasicScore(key, rawValue, messageElement){
+    const score = validBasicScore(rawValue);
+    if(score === null){
+      if(messageElement) messageElement.textContent = "0〜10の整数で入れてね。";
+      return false;
+    }
+    const scores = readBasicScores();
+    scores[key] = score;
+    writeBasicScores(scores);
+    if(messageElement) messageElement.textContent = `${score}点で保存しました ✓`;
+    renderTodayBasic();
+    renderBasicMonth();
+    return true;
+  }
+
+  function renderTodayBasic(){
+    const scores = readBasicScores();
+    const key = todayKey();
+    const input = document.getElementById("todayBasicScore");
+    if(Object.prototype.hasOwnProperty.call(scores,key)){
+      input.value = scores[key];
+    }
+  }
+
+  document.getElementById("saveTodayBasic").addEventListener("click",()=>{
+    saveBasicScore(
+      todayKey(),
+      document.getElementById("todayBasicScore").value,
+      document.getElementById("todayBasicMessage")
+    );
+  });
+
+  function renderBasicMonth(){
+    const year = basicViewDate.getFullYear();
+    const month = basicViewDate.getMonth();
+    const days = new Date(year, month+1, 0).getDate();
+    const scores = readBasicScores();
+    const today = todayAtMidnight();
+
+    document.getElementById("basicMonthTitle").textContent = `${year}年${month+1}月`;
+    const tbody = document.getElementById("basicRows");
+    tbody.innerHTML = "";
+
+    for(let day=1; day<=days; day++){
+      const key = dateKey(year,month,day);
+      const hasScore = Object.prototype.hasOwnProperty.call(scores,key);
+      const rowDate = new Date(year,month,day);
+      const isPastOrToday = rowDate <= today;
+
+      const tr = document.createElement("tr");
+
+      const tdDate = document.createElement("td");
+      tdDate.textContent = `${month+1}/${day}`;
+
+      const tdScore = document.createElement("td");
+      tdScore.className = hasScore ? "done-score" : "";
+      tdScore.textContent = hasScore ? `${scores[key]}` : "—";
+
+      const tdEntry = document.createElement("td");
+      if(hasScore){
+        tdEntry.textContent = "";
+      }else if(isPastOrToday){
+        const wrap = document.createElement("div");
+        wrap.className = "inline-entry";
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.max = "10";
+        input.inputMode = "numeric";
+        input.setAttribute("aria-label", `${month+1}月${day}日の点数`);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = "保存";
+        button.addEventListener("click",()=>{
+          if(saveBasicScore(key,input.value,null)) renderBasicMonth();
+        });
+        wrap.append(input,button);
+        tdEntry.appendChild(wrap);
+      }else{
+        tdEntry.textContent = "";
+      }
+
+      const tdMark = document.createElement("td");
+      tdMark.textContent = (!hasScore && isPastOrToday) ? "❌" : "";
+
+      tr.append(tdDate,tdScore,tdEntry,tdMark);
+      tbody.appendChild(tr);
+    }
+  }
+
+  document.getElementById("basicPrevMonth").addEventListener("click",()=>{
+    basicViewDate = new Date(basicViewDate.getFullYear(), basicViewDate.getMonth()-1, 1);
+    renderBasicMonth();
+  });
+
+  document.getElementById("basicNextMonth").addEventListener("click",()=>{
+    basicViewDate = new Date(basicViewDate.getFullYear(), basicViewDate.getMonth()+1, 1);
+    renderBasicMonth();
+  });
+
   renderDates();
+  renderTodayBasic();
+  renderBasicMonth();
 })();
 
 if("serviceWorker" in navigator){
