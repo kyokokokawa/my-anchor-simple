@@ -28,20 +28,28 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;overflow-x:au
 .scoreTableWrap{width:100%;overflow:hidden;margin-top:14px}.scoreTable{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:12px}.scoreTable th,.scoreTable td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px 3px;text-align:center}.scoreTable th{background:#f0f6f2;font-weight:900}.scoreTable th:first-child,.scoreTable td:first-child{border-left:1px solid var(--line);width:17%;font-weight:900}.scoreTable tr:first-child th{border-top:1px solid var(--line)}.scoreTable input{width:100%;min-width:0;padding:8px 2px;border-radius:9px;text-align:center;font-size:13px}.scoreTable .en td{background:#fafcf9}.scoreTable .dash{color:var(--muted)}
 
 .baseTable{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}.baseTable th,.baseTable td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 4px;text-align:center}.baseTable th{background:#f0f6f2}.baseTable th:first-child,.baseTable td:first-child{border-left:1px solid var(--line)}.baseTable tr:first-child th{border-top:1px solid var(--line)}.baseScoreGood{font-weight:1000;font-size:18px}
-.taskLegend{font-size:12px;color:var(--muted);font-weight:700;white-space:normal}.scoreTable .scoreSpacer td{height:18px;border:0!important;background:transparent!important;padding:0}.motherMessageCard{background:linear-gradient(135deg,#fffdf8,#fff7f3);border-color:#eadfd7}.motherMessageHead{font-size:15px;font-weight:1000;color:#8b7167;margin-bottom:9px}.motherMessageText{font-size:19px;font-weight:900;line-height:1.65;color:var(--ink);white-space:pre-wrap;word-break:break-word}</style></head><body><main>
-<section id="home" class="page active">
+.taskLegend{font-size:12px;color:var(--muted);font-weight:700;white-space:normal}.scoreTable .scoreSpacer td{height:18px;border:0!important;background:transparent!important;padding:0}.motherMessageCard{background:linear-gradient(135deg,#fffdf8,#fff7f3);border-color:#eadfd7}.motherMessageHead{font-size:15px;font-weight:1000;color:#8b7167;margin-bottom:9px}.motherMessageText{font-size:19px;font-weight:900;line-height:1.65;color:var(--ink);white-space:pre-wrap;word-break:break-word}.countdownLabel{font-size:14px;font-weight:900;color:var(--muted);margin-bottom:2px}
+.collectionCard{border:1px solid var(--line);border-radius:22px;padding:16px;margin-top:14px;background:linear-gradient(145deg,#fffefa,#f4faf7)}
+.collectionHead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.collectionTitle{font-size:18px;font-weight:1000}.collectionDate{font-size:12px;color:var(--muted);margin-top:3px}
+.collectionStamps{display:grid;grid-template-columns:repeat(7,1fr);gap:8px 5px;margin-top:14px}
+.collectionStamp{text-align:center}.collectionStamp span{width:34px;height:34px;margin:auto;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:#fff;font-size:20px}
+.collectionStamp small{display:block;font-size:9px;color:var(--muted);margin-top:3px}
+.collectionEmpty{text-align:center;color:var(--muted);padding:28px 8px;line-height:1.8}
+</style></head><body><main>
+<section id="home" class="page active"><div class="card motherMessageCard">
+  <div class="motherMessageHead">💌 お母さんからのメッセージ</div>
+  <div id="motherMessageDisplay" class="motherMessageText">今日も自分のペースでいこう🌱</div>
+</div>
 <div class="hero">
 <div class="eyebrow">⚓ MY ANCHOR ✨</div><h1 id="roomTitle">わたしの勉強部屋</h1><div class="motto">できない日があっても、また始めればいい。</div>
-<div class="today"><div id="bigStamp" class="bigstamp">🌱</div><div><div id="todayDate" class="todayDate"></div><div id="todayTitle" class="todayTitle">あと何日！</div></div></div>
+<div class="today"><div id="bigStamp" class="bigstamp">🌱</div><div><div id="todayDate" class="todayDate"></div><div class="countdownLabel">次のチャレテまで</div><div id="todayTitle" class="todayTitle">あと何日！</div></div></div>
 <div class="progressbox"><div class="progresshead"><span id="voyageStart">出発 —</span><span style="text-align:right"><small style="display:block;color:var(--muted)">GOAL ✨</small><span id="voyageGoal">—</span></span></div><div class="bar" style="position:relative;height:14px"><i id="progressBar" style="width:0%"></i><span style="position:absolute;right:-2px;top:50%;transform:translate(50%,-50%);width:25px;height:25px;border-radius:50%;background:#fff;border:3px solid var(--gold);display:grid;place-items:center;font-size:13px">🏝️</span></div><div id="progressCount" style="text-align:right;margin-top:8px;font-weight:1000;font-size:18px">今日も進んだ！</div></div>
 <div id="cheer" class="cheer">⚓ 今日の一歩を、ここに残そう。</div>
 <div class="stats"><div class="stat"><span>🌸</span><b id="statDone">0日</b><small>できた！</small></div><div class="stat"><span>🍀</span><b id="statGo">0日</b><small>あと少し</small></div><div class="stat"><span>🍂</span><b id="statRetry">0日</b><small>もう一度</small></div></div>
 </div>
 <div class="card"><h2>🗺️ 航海の軌跡</h2><div class="note">マスを進むのではなく、毎日のスタンプがつながって航海図になる。</div><div id="road" class="road"></div><div class="legend"><span>🌸 できた！</span><span>🍀 あと少し</span><span>🍂× もう一度</span></div></div>
-<div class="card motherMessageCard">
-  <div class="motherMessageHead">💌 お母さんからのメッセージ</div>
-  <div id="motherMessageDisplay" class="motherMessageText">今日も自分のペースでいこう🌱</div>
-</div>
+
 <div class="card"><h2>⚓ 今日の基礎トレ</h2><div id="baseDate" class="note"></div><div class="base-row"><input id="baseScore" class="base-score" type="number" inputmode="numeric" min="0" max="10" placeholder="0"><b>点</b><button class="primary" onclick="saveBaseScore()">保存</button></div><div id="baseSaved" class="saved"></div></div>
 <div class="card"><h2>今日のやること <span class="taskLegend">（🌸できた！・🌱まだ・🍂もう一度）</span></h2><div id="homeTasks"></div></div>
 </section>
@@ -61,6 +69,12 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;overflow-x:au
 <div id="baseMonthTable"></div>
 <p class="note">点数を記録していない日は ❌ で表示します。</p>
 </div></section>
+<section id="collection" class="page">
+<div class="card">
+<h2>🎴 集めたスタンプカード</h2>
+<div id="stampCollection"></div>
+</div>
+</section>
 <section id="parent" class="page"><div id="parentLock" class="card" style="text-align:center"><h2>🔒 お母さん</h2><p class="note">暗証番号を入力してください。</p><input id="parentPinEntry" type="password" inputmode="numeric" maxlength="8" placeholder="••••" style="max-width:220px;text-align:center;font-size:22px;letter-spacing:5px"><br><button class="primary" onclick="unlockParent()">開く</button><div id="pinMessage" class="saved"></div></div><div id="parentContent" class="hidden"><div class="card"><h2>🔒 お母さん</h2><label>ユーザーの名前</label><input id="userNameInput" placeholder="例：たろう"><button class="primary" onclick="saveUserName()">名前を保存</button><div id="parentTasks"></div></div><div class="card"><h2>🔑 暗証番号設定</h2><p class="note">初期暗証番号は 1234。4〜8桁の数字に変更できます。</p><input id="newParentPin" type="password" inputmode="numeric" maxlength="8" placeholder="新しい暗証番号"><button class="primary" onclick="changeParentPin()">変更する</button><div id="pinChanged" class="saved"></div></div><div class="card">
   <h2>💌 お母さんからのメッセージ</h2>
   <p class="note">勉強部屋のトップに表示する短いメッセージです。</p>
@@ -68,11 +82,16 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;overflow-x:au
   <button class="primary" onclick="saveMotherMessage()">メッセージを届ける</button>
   <div id="motherMessageSaved" class="saved"></div>
 </div>
-<div class="card"><h2>📅 日程設定</h2><label>チャレンジテスト</label><input id="testDate" type="date" value="2026-10-21"><p class="note">スタンプ開始日はチャレテの14日前。14日前が日曜日なら、前日の土曜日から始まります。</p><button class="primary" onclick="saveDates()">日程を保存</button></div></div></section>
+<div class="card"><h2>🧭 作戦会議</h2><button class="widebtn" onclick="show('meeting',null)">作戦会議を開く</button></div><div class="card"><h2>📅 チャレテ日程</h2>
+<label>範囲発表日</label><input id="rangeDate" type="date">
+<label>チャレンジテスト最終日</label><input id="testDate" type="date">
+<p class="note">航海の軌跡は、範囲発表日からチャレテ最終日まで自動で作り直します。</p>
+<button class="primary" onclick="saveDates()">日程を保存</button>
+<div id="dateSaved" class="saved"></div></div></div></section>
 
 <section id="meeting" class="page"><div class="card"><h2>🧭 作戦会議</h2><p>今週はどう進める？</p><div class="quick"><button>算数を多めに</button><button>国語を丁寧に</button><button>理社を少しずつ</button><button>復習を優先</button></div><label>今週の作戦</label><textarea></textarea></div></section>
 </main>
-<nav><button class="active" onclick="show('home',this)">🏠<br>今日</button><button onclick="show('tasks',this)">📚<br>やること</button><button onclick="show('study',this)">📘<br>チャレテ</button><button onclick="show('base',this)">⚓<br>基礎トレ</button><button onclick="show('parent',this)">🌿<br>お母さん</button><button onclick="show('meeting',this)">🧭<br>作戦会議</button></nav>
+<nav><button class="active" onclick="show('home',this)">🏠<br>今日</button><button onclick="show('tasks',this)">📚<br>やること</button><button onclick="show('study',this)">📘<br>チャレテ</button><button onclick="show('base',this)">⚓<br>基礎トレ</button><button onclick="show('parent',this)">🌿<br>お母さん</button><button onclick="show('collection',this)">🎴<br>スタンプ</button></nav>
 <script>
 const order=['国語','算数','理科','社会','英語'],states=[['🌱','まだ'],['🌸','できた！'],['🍂✕','もう一度']];
 let tasks=JSON.parse(localStorage.getItem('ma_tasks_v2')||'null')||[{s:'国語',t:'漢字 10問',st:1},{s:'算数',t:'演習問題 大問3',st:1},{s:'理科',t:'テキスト p.42〜45',st:0},{s:'社会',t:'歴史プリント',st:1},{s:'英語',t:'単語20個',st:2}];
@@ -92,7 +111,7 @@ const studyTexts={
 };
 const dateKey=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const fmt=d=>{let x=new Date(d+'T00:00:00');return (x.getMonth()+1)+'月'+x.getDate()+'日'};
-function show(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');scrollTo(0,0)}
+function show(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));let target=document.getElementById(id);if(target)target.classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');window.scrollTo({top:0,behavior:'instant'});if(id==='base'&&typeof renderBaseMonth==='function')renderBaseMonth();if(id==='collection'&&typeof renderStampCollection==='function')renderStampCollection();if(id==='parent'&&typeof renderParentTasks==='function')renderParentTasks()}
 function updateMaterials(){let a=materials[taskSubject.value]||[];taskMaterial.innerHTML='<option value="">指定なし</option>'+a.map(x=>`<option>${x}</option>`).join('')}
 function updateStudyTexts(){let a=studyTexts[studySubject.value]||[];studyText.innerHTML=a.map(x=>`<option>${x}</option>`).join('')}
 function sortTasks(){tasks.sort((a,b)=>{let d=order.indexOf(a.s)-order.indexOf(b.s);if(d)return d;if(a.s==='国語'){return (a.t.startsWith('毎日漢字')?0:1)-(b.t.startsWith('毎日漢字')?0:1)}return 0})}
@@ -104,9 +123,35 @@ function delTask(i){tasks.splice(i,1);saveTasks();render();saveTodayStamp()}
 function render(){let h='';order.forEach(s=>{let a=tasks.filter(x=>x.s===s);h+=`<div class="subject"><div class="subject-head"><span class="subject-name">${s}</span><span class="tag">${a.length?a.length+'件':'なし'}</span></div>`+(a.length?a.map(x=>{let i=tasks.indexOf(x);return `<div class="tasktxt">${x.t}</div><div class="states">${states.map((q,j)=>`<button aria-label="${q[1]}" title="${q[1]}" class="${x.st===j?'sel':''}" onclick="setState(${i},${j})"><span style="font-size:26px">${q[0].replace('✕','')}</span></button>`).join('')}</div>`}).join(''):'<div class="tasktxt">—</div>')+'</div>'});homeTasks.innerHTML=h;taskList.innerHTML=tasks.map(x=>`<div class="taskrow ${x.st===1?'finished':''}"><span class="tag">${x.s}</span><div class="grow">${x.t}</div></div>`).join('');parentTasks.innerHTML=tasks.map((x,i)=>`<div class="parent-task"><span class="tag">${x.s}</span><div class="grow">${x.t}</div><button class="x" onclick="delTask(${i})">×</button></div>`).join('')}
 function calcStamp(){if(!tasks.length)return '🍂';let done=tasks.filter(x=>x.st===1).length;if(done===tasks.length)return '🌸';if(done>tasks.length/2)return '🍀';return '🍂'}
 function saveTodayStamp(){let hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}'),k=dateKey(),touched=tasks.some(x=>x.st!==0);if(touched)hist[k]=calcStamp();else delete hist[k];localStorage.setItem('ma_voyage_v2',JSON.stringify(hist));renderVoyage()}
-function calcVoyageStart(test){let e=new Date(test+'T00:00:00'),s=new Date(e);s.setDate(e.getDate()-14);if(s.getDay()===0)s.setDate(s.getDate()-1);return s.getFullYear()+'-'+String(s.getMonth()+1).padStart(2,'0')+'-'+String(s.getDate()).padStart(2,'0')}
-function getDates(){let old=JSON.parse(localStorage.getItem('ma_dates_v2')||'null')||{},test=old.test||'2026-10-21';return {start:calcVoyageStart(test),test}}
-function saveDates(){let d={test:testDate.value};localStorage.setItem('ma_dates_v2',JSON.stringify(d));renderVoyage()};localStorage.setItem('ma_dates_v2',JSON.stringify(d));renderVoyage()}
+function defaultRangeFromTest(test){let e=new Date(test+'T00:00:00'),d=new Date(e);d.setDate(e.getDate()-14);if(d.getDay()===0)d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+
+const voyageArchiveKey='ma_stamp_collection_v1';
+function archiveVoyage(oldDates){
+  if(!oldDates||!oldDates.range||!oldDates.test)return;
+  let hist={};try{hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}')||{}}catch(e){}
+  let stamps={},d=new Date(oldDates.range+'T00:00:00'),e=new Date(oldDates.test+'T00:00:00');
+  while(d<=e){let k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');stamps[k]=hist[k]||'🌱';d.setDate(d.getDate()+1)}
+  let list=[];try{list=JSON.parse(localStorage.getItem(voyageArchiveKey)||'[]')||[]}catch(e){}
+  let id=oldDates.range+'_'+oldDates.test;
+  if(!list.some(x=>x.id===id)){
+    list.unshift({id,range:oldDates.range,test:oldDates.test,stamps:stamps});
+    localStorage.setItem(voyageArchiveKey,JSON.stringify(list));
+  }
+}
+function renderStampCollection(){
+  let box=document.getElementById('stampCollection');if(!box)return;
+  let list=[];try{list=JSON.parse(localStorage.getItem(voyageArchiveKey)||'[]')||[]}catch(e){}
+  if(!list.length){box.innerHTML='<div class="collectionEmpty">まだ集めたスタンプカードはありません 🌱<br>最初のチャレテが終わったら、ここにカードが残るよ。</div>';return}
+  const md=k=>{let d=new Date(k+'T00:00:00');return `${d.getMonth()+1}/${d.getDate()}`};
+  box.innerHTML=list.map((a,i)=>{
+    let items=[],d=new Date(a.range+'T00:00:00'),e=new Date(a.test+'T00:00:00');
+    while(d<=e){let k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');items.push(`<div class="collectionStamp"><span>${a.stamps[k]||'🌱'}</span><small>${md(k)}</small></div>`);d.setDate(d.getDate()+1)}
+    return `<div class="collectionCard"><div class="collectionHead"><div><div class="collectionTitle">⚓ スタンプカード ${list.length-i}</div><div class="collectionDate">${md(a.range)} → ${md(a.test)}</div></div><b>GOAL ✨</b></div><div class="collectionStamps">${items.join('')}</div></div>`
+  }).join('');
+}
+
+function getDates(){let old={};try{old=JSON.parse(localStorage.getItem('ma_dates_v2')||'{}')||{}}catch(e){}let test=old.test||'2026-10-21',range=old.range||old.start||defaultRangeFromTest(test);return {start:range,range,test}}
+function saveDates(){let range=rangeDate.value,test=testDate.value;if(!range||!test){dateSaved.textContent='日付を両方設定してください';return}if(new Date(range)>new Date(test)){dateSaved.textContent='範囲発表日はチャレテ最終日より前にしてください';return}let old=getDates();if(old.range!==range||old.test!==test)archiveVoyage(old);localStorage.setItem('ma_dates_v2',JSON.stringify({range,test,start:range}));dateSaved.textContent='✓ 日程を保存しました';renderVoyage();renderStampCollection()};localStorage.setItem('ma_dates_v2',JSON.stringify(d));renderVoyage()};localStorage.setItem('ma_dates_v2',JSON.stringify(d));renderVoyage()}
 function renderVoyage(){let hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}'),ds=getDates(),now=new Date(),today=dateKey(),stamp=hist[today]||'🌱';bigStamp.textContent=stamp;todayDate.textContent=`${now.getMonth()+1}月${now.getDate()}日`;let daysLeft=Math.max(0,Math.ceil((new Date(ds.test+'T00:00:00')-new Date(today+'T00:00:00'))/86400000));todayTitle.textContent=`あと${daysLeft}日！`;
 let vals=Object.values(hist),dn=vals.filter(x=>x==='🌸').length,gn=vals.filter(x=>x==='🍀').length,rn=vals.filter(x=>x==='🍂').length;statDone.textContent=dn+'日';statGo.textContent=gn+'日';statRetry.textContent=rn+'日';
 let s=new Date(ds.start+'T00:00:00'),e=new Date(ds.test+'T00:00:00'),total=Math.max(1,Math.round((e-s)/86400000)+1),elapsed=Math.max(0,Math.min(total,Math.round((new Date(today+'T00:00:00')-s)/86400000)+1));voyageStart.textContent='出発 '+fmt(ds.start);voyageGoal.textContent=fmt(ds.test);progressCount.textContent='今日も進んだ！';progressBar.style.width=(elapsed/total*100)+'%';
@@ -124,14 +169,8 @@ function renderBaseMonth(){let y=baseViewDate.getFullYear(),m=baseViewDate.getMo
 
 
 const motherMessageKey='ma_mother_message_v1';
-function renderMotherMessage(){
-  let m=localStorage.getItem(motherMessageKey)||'今日も自分のペースでいこう🌱';
-  if(typeof motherMessageDisplay!=='undefined' && motherMessageDisplay) motherMessageDisplay.textContent=m;
-  if(typeof motherMessageInput!=='undefined' && motherMessageInput) motherMessageInput.value=m;
-}
-function saveMotherMessage(){
-  let m=motherMessageInput.value.trim();
-  if(!m){motherMessageSaved.textContent='メッセージを入力してください';return}
+function renderMotherMessage(){let m=localStorage.getItem(motherMessageKey)||'今日も自分のペースでいこう🌱',d=document.getElementById('motherMessageDisplay'),i=document.getElementById('motherMessageInput');if(d)d.textContent=m;if(i)i.value=m}
+function saveMotherMessage(){let i=document.getElementById('motherMessageInput'),o=document.getElementById('motherMessageSaved'),m=i?i.value.trim():'';if(!m){if(o)o.textContent='メッセージを入力してください';return}localStorage.setItem(motherMessageKey,m);renderMotherMessage();if(o)o.textContent='💌 届けました！'}
   localStorage.setItem(motherMessageKey,m);
   renderMotherMessage();
   motherMessageSaved.textContent='💌 届けました！';
@@ -142,5 +181,5 @@ function currentParentPin(){return localStorage.getItem(parentPinKey)||'1234'}
 function unlockParent(){let entered=parentPinEntry.value;if(entered===currentParentPin()||entered==='1234'){if(entered==='1234')localStorage.setItem(parentPinKey,'1234');parentLock.classList.add('hidden');parentContent.classList.remove('hidden');pinMessage.textContent='';parentPinEntry.value=''}else pinMessage.textContent='暗証番号が違います'}
 function changeParentPin(){let p=newParentPin.value.trim();if(!/^\d{4,8}$/.test(p)){pinChanged.textContent='4〜8桁の数字で設定してください';return}localStorage.setItem(parentPinKey,p);newParentPin.value='';pinChanged.textContent='✓ 暗証番号を変更しました'}
 function saveUserName(){let n=userNameInput.value.trim();if(n){localStorage.setItem('ma_name_v2',n);renderRoomTitle()}} function renderRoomTitle(){let n=localStorage.getItem('ma_name_v2')||'';roomTitle.textContent=n?n+'の勉強部屋':'わたしの勉強部屋'}
-let ds=getDates();testDate.value=ds.test;userNameInput.value=localStorage.getItem('ma_name_v2')||'';renderRoomTitle();renderMotherMessage();updateMaterials();updateStudyTexts();sortTasks();render();saveTodayStamp();renderBase();renderBaseMonth();renderScoreInputs();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+let ds=getDates();if(typeof rangeDate!=='undefined'&&rangeDate)rangeDate.value=ds.range;if(typeof testDate!=='undefined'&&testDate)testDate.value=ds.test;userNameInput.value=localStorage.getItem('ma_name_v2')||'';renderRoomTitle();renderMotherMessage();updateMaterials();updateStudyTexts();sortTasks();render();saveTodayStamp();renderBase();renderBaseMonth();renderScoreInputs();renderStampCollection();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script></body></html>
