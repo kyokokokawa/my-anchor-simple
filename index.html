@@ -36,6 +36,19 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;overflow-x:au
 .collectionStamp{text-align:center}.collectionStamp span{width:34px;height:34px;margin:auto;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:#fff;font-size:20px}
 .collectionStamp small{display:block;font-size:9px;color:var(--muted);margin-top:3px}
 .collectionEmpty{text-align:center;color:var(--muted);padding:28px 8px;line-height:1.8}
+
+:root{--pop-yellow:#FFD84D;--pop-orange:#FF962E;--pop-lime:#91CF48}
+body{background:#fffdf6}
+#home{background:linear-gradient(180deg,#fff5a9 0%,#fffdf0 48%,#f4fad8 100%);border-radius:30px;padding-top:16px}
+#home .hero{background:linear-gradient(150deg,#fff4a9,#fffdf0 55%,#eff8cb);border:2px solid #ffe071;box-shadow:0 12px 28px rgba(219,164,31,.14)}
+#home .eyebrow{background:#fffdf7;border:2px dashed #f3c647;color:#398745}
+#home h1{color:#328347} #home h1::after{content:' 🌱';font-size:.55em;vertical-align:top}
+#home .motherMessageCard{background:linear-gradient(135deg,#fffaf5,#fff2e5);border-color:#ffd2aa}
+#home .motherMessageHead{color:#d67d39} #home .countdownLabel{color:#f08a25}
+#home .progress>i{background:linear-gradient(90deg,#91CF48,#60BD4A)!important}
+#home .card{border-color:#f1dfaa;box-shadow:0 8px 20px rgba(164,132,54,.07)}
+#home h2{color:#367d45}.primary{background:linear-gradient(135deg,#ff962e,#ffb43d)!important}
+nav button.active{background:#ffe16a;color:#376a43;border-radius:18px}
 </style></head><body><main>
 <section id="home" class="page active">
 <div class="hero">
@@ -48,7 +61,7 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;overflow-x:au
 <div id="cheer" class="cheer">⚓ 今日の一歩を、ここに残そう。</div>
 <div class="stats"><div class="stat"><span>🌸</span><b id="statDone">0日</b><small>できた！</small></div><div class="stat"><span>🍀</span><b id="statGo">0日</b><small>あと少し</small></div><div class="stat"><span>🍂</span><b id="statRetry">0日</b><small>もう一度</small></div></div>
 </div>
-<div class="card"><h2>🗺️ 航海の軌跡</h2><div class="note">マスを進むのではなく、毎日のスタンプがつながって航海図になる。</div><div id="road" class="road"></div><div class="legend"><span>🌸 できた！</span><span>🍀 あと少し</span><span>🍂× もう一度</span></div></div>
+<div class="card"><h2>🌱 今月のスタンプカード</h2><div class="note">マスを進むのではなく、毎日のスタンプがつながって航海図になる。</div><div id="road" class="road"></div><div class="legend"><span>🌸 できた！</span><span>🍀 あと少し</span><span>🍂× もう一度</span></div></div>
 
 <div class="card"><h2>⚓ 今日の基礎トレ</h2><div id="baseDate" class="note"></div><div class="base-row"><input id="baseScore" class="base-score" type="number" inputmode="numeric" min="0" max="10" placeholder="0"><b>点</b><button class="primary" onclick="saveBaseScore()">保存</button></div><div id="baseSaved" class="saved"></div></div>
 <div class="card"><h2>今日のやること <span class="taskLegend">（🌸できた！・🌱まだ・🍂もう一度）</span></h2><div id="homeTasks"></div></div>
@@ -125,39 +138,28 @@ function calcStamp(){if(!tasks.length)return '🍂';let done=tasks.filter(x=>x.s
 function saveTodayStamp(){let hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}'),k=dateKey(),touched=tasks.some(x=>x.st!==0);if(touched)hist[k]=calcStamp();else delete hist[k];localStorage.setItem('ma_voyage_v2',JSON.stringify(hist));renderVoyage()}
 function defaultRangeFromTest(test){let e=new Date(test+'T00:00:00'),d=new Date(e);d.setDate(e.getDate()-14);if(d.getDay()===0)d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 
-const voyageArchiveKey='ma_stamp_collection_v1';
-function archiveVoyage(oldDates){
-  if(!oldDates||!oldDates.range||!oldDates.test)return;
-  let hist={};try{hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}')||{}}catch(e){}
-  let stamps={},d=new Date(oldDates.range+'T00:00:00'),e=new Date(oldDates.test+'T00:00:00');
-  while(d<=e){let k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');stamps[k]=hist[k]||'🌱';d.setDate(d.getDate()+1)}
-  let list=[];try{list=JSON.parse(localStorage.getItem(voyageArchiveKey)||'[]')||[]}catch(e){}
-  let id=oldDates.range+'_'+oldDates.test;
-  if(!list.some(x=>x.id===id)){
-    list.unshift({id,range:oldDates.range,test:oldDates.test,stamps:stamps});
-    localStorage.setItem(voyageArchiveKey,JSON.stringify(list));
-  }
-}
-function renderStampCollection(){
-  let box=document.getElementById('stampCollection');if(!box)return;
-  let list=[];try{list=JSON.parse(localStorage.getItem(voyageArchiveKey)||'[]')||[]}catch(e){}
-  if(!list.length){box.innerHTML='<div class="collectionEmpty">まだ集めたスタンプカードはありません 🌱<br>最初のチャレテが終わったら、ここにカードが残るよ。</div>';return}
-  const md=k=>{let d=new Date(k+'T00:00:00');return `${d.getMonth()+1}/${d.getDate()}`};
-  box.innerHTML=list.map((a,i)=>{
-    let items=[],d=new Date(a.range+'T00:00:00'),e=new Date(a.test+'T00:00:00');
-    while(d<=e){let k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');items.push(`<div class="collectionStamp"><span>${a.stamps[k]||'🌱'}</span><small>${md(k)}</small></div>`);d.setDate(d.getDate()+1)}
-    return `<div class="collectionCard"><div class="collectionHead"><div><div class="collectionTitle">⚓ スタンプカード ${list.length-i}</div><div class="collectionDate">${md(a.range)} → ${md(a.test)}</div></div><b>GOAL ✨</b></div><div class="collectionStamps">${items.join('')}</div></div>`
-  }).join('');
-}
-
+const voyageArchiveKey='ma_monthly_stamp_collection_v1';
+function archiveMonth(y,m){let hist={};try{hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}')||{}}catch(e){}let last=new Date(y,m+1,0).getDate(),stamps={};for(let d=1;d<=last;d++){let k=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');stamps[k]=hist[k]||'🌱'}let list=[];try{list=JSON.parse(localStorage.getItem(voyageArchiveKey)||'[]')||[]}catch(e){}let id=y+'-'+String(m+1).padStart(2,'0'),card={id,year:y,month:m+1,stamps};let p=list.findIndex(x=>x.id===id);if(p>=0)list[p]=card;else list.unshift(card);localStorage.setItem(voyageArchiveKey,JSON.stringify(list))}
+function ensurePastMonthArchived(){let n=new Date(),p=new Date(n.getFullYear(),n.getMonth()-1,1);archiveMonth(p.getFullYear(),p.getMonth())}
+function renderStampCollection(){let box=document.getElementById('stampCollection');if(!box)return;ensurePastMonthArchived();let list=[];try{list=JSON.parse(localStorage.getItem(voyageArchiveKey)||'[]')||[]}catch(e){}if(!list.length){box.innerHTML='<div class="collectionEmpty">まだ集めたスタンプカードはありません 🌱</div>';return}box.innerHTML=list.map(a=>{let last=new Date(a.year,a.month,0).getDate(),items=[];for(let d=1;d<=last;d++){let k=a.year+'-'+String(a.month).padStart(2,'0')+'-'+String(d).padStart(2,'0');items.push(`<div class="collectionStamp"><span>${a.stamps[k]||'🌱'}</span><small>${a.month}/${d}</small></div>`)}return `<div class="collectionCard"><div class="collectionHead"><div><div class="collectionTitle">🌱 ${a.year}年${a.month}月</div><div class="collectionDate">1か月のがんばり</div></div><b>MY ANCHOR ✨</b></div><div class="collectionStamps">${items.join('')}</div></div>`}).join('')}
 function getDates(){let old={};try{old=JSON.parse(localStorage.getItem('ma_dates_v2')||'{}')||{}}catch(e){}let test=old.test||'2026-10-21',range=old.range||old.start||defaultRangeFromTest(test);return {start:range,range,test}}
-function saveDates(){let range=rangeDate.value,test=testDate.value;if(!range||!test){dateSaved.textContent='日付を両方設定してください';return}if(new Date(range)>new Date(test)){dateSaved.textContent='範囲発表日はチャレテ最終日より前にしてください';return}let old=getDates();if(old.range!==range||old.test!==test)archiveVoyage(old);localStorage.setItem('ma_dates_v2',JSON.stringify({range,test,start:range}));dateSaved.textContent='✓ 日程を保存しました';renderVoyage();renderStampCollection()}
-function renderVoyage(){let hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}'),ds=getDates(),now=new Date(),today=dateKey(),stamp=hist[today]||'🌱';bigStamp.textContent=stamp;todayDate.textContent=`${now.getMonth()+1}月${now.getDate()}日`;let daysLeft=Math.max(0,Math.ceil((new Date(ds.test+'T00:00:00')-new Date(today+'T00:00:00'))/86400000));todayTitle.textContent=`あと${daysLeft}日！`;
-let vals=Object.values(hist),dn=vals.filter(x=>x==='🌸').length,gn=vals.filter(x=>x==='🍀').length,rn=vals.filter(x=>x==='🍂').length;statDone.textContent=dn+'日';statGo.textContent=gn+'日';statRetry.textContent=rn+'日';
-let s=new Date(ds.start+'T00:00:00'),e=new Date(ds.test+'T00:00:00'),total=Math.max(1,Math.round((e-s)/86400000)+1),elapsed=Math.max(0,Math.min(total,Math.round((new Date(today+'T00:00:00')-s)/86400000)+1));voyageStart.textContent='出発 '+fmt(ds.start);voyageGoal.textContent=fmt(ds.test);progressCount.textContent='今日も進んだ！';progressBar.style.width=(elapsed/total*100)+'%';
-let prev=new Date(now);prev.setDate(prev.getDate()-1);let pk=prev.getFullYear()+'-'+String(prev.getMonth()+1).padStart(2,'0')+'-'+String(prev.getDate()).padStart(2,'0');cheer.textContent=(hist[pk]===undefined&&Object.keys(hist).length>1)?'🐬 また始めたね！ 止まった日があっても、再出発した今日も航海の一部。':'⚓ 今日のがんばりが、未来の自分を助けてくれるよ。この調子でいこう！';
-let cells=[],d=new Date(s);while(d<=e){let k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),future=d>new Date(today+'T23:59:59'),v=hist[k]||(future||k===today?'🌱':'🍂');cells.push(`<div class="day"><div class="stamp">${v}</div><small>${new Date(k+'T00:00:00').getMonth()+1}/${new Date(k+'T00:00:00').getDate()}</small></div>`);d.setDate(d.getDate()+1)}road.innerHTML=cells.join('')}
-const baseKey='ma_base_v2';function renderBase(){let d=new Date(),h=JSON.parse(localStorage.getItem(baseKey)||'{}'),v=h[dateKey()];baseDate.textContent=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;baseScore.value=v??'';baseSaved.textContent=v!==undefined?'✓ 今日の基礎トレを記録しました':''}function saveBaseScore(){if(baseScore.value==='')return;let v=Math.max(0,Math.min(10,Number(baseScore.value))),h=JSON.parse(localStorage.getItem(baseKey)||'{}');h[dateKey()]=v;localStorage.setItem(baseKey,JSON.stringify(h));baseScore.value=v;renderBase()}
+function saveDates(){let range=rangeDate.value,test=testDate.value;if(!range||!test){dateSaved.textContent='日付を両方設定してください';return}if(new Date(range)>new Date(test)){dateSaved.textContent='範囲発表日はチャレテ最終日より前にしてください';return}localStorage.setItem('ma_dates_v2',JSON.stringify({range,test,start:range}));dateSaved.textContent='✓ 日程を保存しました';renderVoyage()}
+function renderVoyage(){
+let ds=getDates(),hist={};try{hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}')||{}}catch(e){}
+let now=new Date(),today=localDateKey(now),fmt=d=>{let x=new Date(d+'T00:00:00');return (x.getMonth()+1)+'月'+x.getDate()+'日'};
+let test=new Date(ds.test+'T00:00:00'),range=new Date(ds.range+'T00:00:00'),td=new Date(today+'T00:00:00');
+let daysLeft=Math.max(0,Math.ceil((test-td)/86400000));
+todayDate.textContent=(now.getMonth()+1)+'月'+now.getDate()+'日';todayTitle.textContent=`あと${daysLeft}日！`;
+voyageStart.textContent='範囲発表 '+fmt(ds.range);voyageGoal.textContent=fmt(ds.test);
+let total=Math.max(1,Math.round((test-range)/86400000)),elapsed=Math.max(0,Math.min(total,Math.round((td-range)/86400000)));
+progressFill.style.width=(elapsed/total*100)+'%';progressCount.textContent='今日も進んだ！';
+let y=now.getFullYear(),mo=now.getMonth(),last=new Date(y,mo+1,0).getDate(),cells=[];
+for(let day=1;day<=last;day++){let k=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(day).padStart(2,'0'),v=hist[k]||'🌱';cells.push(`<div class="day"><div class="stamp">${v}</div><small>${mo+1}/${day}</small></div>`)}
+voyageGrid.innerHTML=cells.join('');
+let vals=[];for(let day=1;day<=last;day++){let k=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');if(hist[k])vals.push(hist[k])}
+statDone.textContent=vals.filter(x=>x==='🌸').length+'日';statGo.textContent=vals.filter(x=>x==='🍀').length+'日';statRetry.textContent=vals.filter(x=>x==='🍂').length+'日';
+}
+function renderBase(){let d=new Date(),h=JSON.parse(localStorage.getItem(baseKey)||'{}'),v=h[dateKey()];baseDate.textContent=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;baseScore.value=v??'';baseSaved.textContent=v!==undefined?'✓ 今日の基礎トレを記録しました':''}function saveBaseScore(){if(baseScore.value==='')return;let v=Math.max(0,Math.min(10,Number(baseScore.value))),h=JSON.parse(localStorage.getItem(baseKey)||'{}');h[dateKey()]=v;localStorage.setItem(baseKey,JSON.stringify(h));baseScore.value=v;renderBase()}
 const core=['国語','算数','理科','社会'];let scoreData=JSON.parse(localStorage.getItem('ma_scores_v2')||'null')||Object.fromEntries(core.map(s=>[s,{target:'',actual:'',dev:'',avg:''}]));
 function renderScoreInputs(){let en=JSON.parse(localStorage.getItem('ma_english_v2')||'{}');scoreRows.innerHTML=core.map(s=>{let d=scoreData[s];return `<tr><td>${s}</td><td><input id="sc_${s}_target" type="number" inputmode="decimal" value="${d.target}"></td><td><input id="sc_${s}_actual" type="number" inputmode="decimal" value="${d.actual}"></td><td><input id="sc_${s}_dev" type="number" inputmode="decimal" step=".1" value="${d.dev}"></td><td><input id="sc_${s}_avg" type="number" inputmode="decimal" step=".1" value="${d.avg}"></td></tr>`}).join('')+`<tr class="scoreSpacer"><td colspan="5"></td></tr><tr class="en"><td>英語</td><td><input id="enTarget" type="number" inputmode="decimal" value="${en.target||''}"></td><td><input id="enActual" type="number" inputmode="decimal" value="${en.actual||''}"></td><td class="dash">—</td><td class="dash">—</td></tr>`;renderTotals()}
 function renderTotals(){let sum=k=>core.reduce((a,s)=>a+(Number(scoreData[s][k])||0),0),filled=k=>core.some(s=>scoreData[s][k]!==''&&scoreData[s][k]!=null);totalTarget.textContent=filled('target')?sum('target')+'点':'—';totalActual.textContent=filled('actual')?sum('actual')+'点':'—'}
