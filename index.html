@@ -214,7 +214,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 <script>
 
 const STUDY_MATERIALS={
-"国語":["毎日漢字","漢字","読解","その他"],
+"国語":["漢字","読解","その他"],
 "算数":["プログレス","演習","その他"],
 "理科":["サイエンスβ","サイエンスγ","その他"],
 "社会":["アカデミーⅡ","アカデミーⅢ","予習シリーズ","その他"],
@@ -249,13 +249,15 @@ function setTaskStamp(id,status){
 function renderTodayStudyTasks(){
  const h=document.getElementById("todayStudyTasks");if(!h)return;
  const date=localDateKey(),items=readStudyItems(),stamps=(readTaskStamps()[date]||{}),noTasks=(readNoTaskDays()[date]||{});h.innerHTML="";
- if(!items.length){h.innerHTML='<div class="today-empty">「やること」から毎日の課題を追加しよう 🌱</div>';return}
+ const dailyKanji={id:"default_daily_kanji",subject:"国語",material:"毎日漢字",pageFrom:"",pageTo:""};
+ const visibleItems=[dailyKanji,...items.filter(x=>!(x.subject==="国語"&&x.material==="毎日漢字"))];
  ["国語","算数","理科","社会","英語"].forEach(s=>{
-  const a=items.filter(x=>x.subject===s);if(!a.length)return;
+  const a=visibleItems.filter(x=>x.subject===s);if(!a.length)return;
   const title=document.createElement("div");title.className="today-task-subject";title.textContent=s;h.appendChild(title);
   a.forEach(x=>{
    const name=document.createElement("div");name.className="today-task-name";name.textContent=taskDisplayName(x);h.appendChild(name);
-   if(noTasks[x.id]){
+   const isDailyKanji=x.id==="default_daily_kanji";
+   if(isDailyKanji&&noTasks[x.id]){
     const state=document.createElement("div");state.className="no-task-state";
     const label=document.createElement("span");label.textContent="今日は課題なし";
     const undo=document.createElement("button");undo.type="button";undo.className="no-task-undo";undo.textContent="戻す";undo.addEventListener("click",()=>setNoTask(x.id,false));
@@ -266,7 +268,7 @@ function renderTodayStudyTasks(){
     const b=document.createElement("button");b.type="button";b.className="stamp-btn"+(stamps[x.id]===label?" active":"");
     b.innerHTML=`<span class="emoji">${emoji}</span>${label}`;b.addEventListener("click",()=>setTaskStamp(x.id,label));row.appendChild(b)
    });h.appendChild(row);
-   const none=document.createElement("button");none.type="button";none.className="no-task-btn";none.textContent="課題なし";none.addEventListener("click",()=>setNoTask(x.id,true));h.appendChild(none)
+   if(isDailyKanji){const none=document.createElement("button");none.type="button";none.className="no-task-btn";none.textContent="課題なし";none.addEventListener("click",()=>setNoTask(x.id,true));h.appendChild(none)}
   })
  })
 }
