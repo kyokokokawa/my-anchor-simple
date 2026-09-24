@@ -66,7 +66,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
   #basic .inline-entry button{font-size:17px}
   #basic tbody td:last-child{font-size:27px}
 
-.task-setup-card,.task-list-card{margin-bottom:16px}.task-setup-card h3,.task-list-card h3{margin:0 0 8px;color:#3f7f4d;font-size:21px}.task-help{margin:0 0 18px;color:#6f806f;font-size:14px}.task-label{display:block;margin:13px 0 6px;color:#4e6f52;font-weight:800}.task-select{width:100%;padding:13px 14px;border:1.5px solid #e8d9b8;border-radius:16px;background:#fff;font-size:17px;color:#365b40}.task-add-btn{margin-top:16px;border:0;border-radius:16px;background:#ffdb65;color:#42664a;font-size:17px;font-weight:900;padding:12px 24px}.task-add-message{margin-left:10px;color:#4e8b58;font-weight:800}.subject-block{padding:13px 0;border-bottom:1px solid #eee3c9}.subject-block:last-child{border-bottom:0}.subject-title{font-weight:900;color:#3f7f4d;font-size:18px;margin-bottom:7px}.material-chip{display:inline-block;margin:4px 6px 4px 0;padding:7px 11px;border-radius:999px;background:#fff8d9;color:#526d52;font-weight:700}.empty-study-items{padding:18px 4px;color:#899289;text-align:center}
+.task-setup-card,.task-list-card{margin-bottom:16px}.task-setup-card h3,.task-list-card h3{margin:0 0 8px;color:#3f7f4d;font-size:21px}.task-help{margin:0 0 18px;color:#6f806f;font-size:14px}.task-label{display:block;margin:13px 0 6px;color:#4e6f52;font-weight:800}.task-select{width:100%;padding:13px 14px;border:1.5px solid #e8d9b8;border-radius:16px;background:#fff;font-size:17px;color:#365b40}.task-add-btn{margin-top:16px;border:0;border-radius:16px;background:#ffdb65;color:#42664a;font-size:17px;font-weight:900;padding:12px 24px}.task-add-message{margin-left:10px;color:#4e8b58;font-weight:800}.subject-block{padding:13px 0;border-bottom:1px solid #eee3c9}.subject-block:last-child{border-bottom:0}.subject-title{font-weight:900;color:#3f7f4d;font-size:18px;margin-bottom:7px}.material-chip{display:inline-block;margin:4px 6px 4px 0;padding:7px 11px;border-radius:999px;background:#fff8d9;color:#526d52;font-weight:700}.material-chip.completed{opacity:.38;text-decoration:line-through;text-decoration-thickness:2px}.empty-study-items{padding:18px 4px;color:#899289;text-align:center}
 
 /* v5.1 今日のやること */
 .task-input{width:100%;padding:13px 14px;border:1.5px solid #e8d9b8;border-radius:16px;background:#fff;font-size:17px;color:#365b40}
@@ -239,12 +239,12 @@ function renderMaterialChoices(){
 function toggleOtherMaterial(){const m=document.getElementById("taskMaterial"),w=document.getElementById("otherMaterialWrap");if(w&&m)w.hidden=m.value!=="その他"}
 function taskDisplayName(x){let n=x.material;if(x.pageFrom||x.pageTo){if(x.pageFrom&&x.pageTo)n+=` p.${x.pageFrom}〜${x.pageTo}`;else if(x.pageFrom)n+=` p.${x.pageFrom}〜`;else n+=` 〜p.${x.pageTo}`}return n}
 function renderStudyItems(){
- const h=document.getElementById("studyItemList");if(!h)return;const items=readStudyItems();h.innerHTML="";
+ const h=document.getElementById("studyItemList");if(!h)return;const items=readStudyItems(),todayStamps=(readTaskStamps()[localDateKey()]||{});h.innerHTML="";
  if(!items.length){h.innerHTML='<div class="empty-study-items">まだ登録されていません 🌱</div>';return}
- ["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");c.className="material-chip";c.textContent=taskDisplayName(x);b.appendChild(c)});h.appendChild(b)})
+ ["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");c.className="material-chip"+(todayStamps[x.id]==="できた！"?" completed":"");c.textContent=taskDisplayName(x);b.appendChild(c)});h.appendChild(b)})
 }
 function setTaskStamp(id,status){
- const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};all[date][id]=status;writeTaskStamps(all);renderTodayStudyTasks()
+ const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};all[date][id]=status;writeTaskStamps(all);renderTodayStudyTasks();renderStudyItems()
 }
 function renderTodayStudyTasks(){
  const h=document.getElementById("todayStudyTasks");if(!h)return;
