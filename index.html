@@ -53,6 +53,15 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 .inline-entry button{border:0;border-radius:9px;padding:7px 6px;background:#FFF0B8;color:#596b52;font-weight:800;font-size:11px}
 .done-score{font-weight:900;color:#3f7f4d}
 .screen-title{display:flex;align-items:center;gap:9px;margin:20px 2px 8px;font-size:24px;font-weight:900;color:#357b48}
+
+
+  /* v4.1.4 基礎トレ一覧の視認性 */
+  #basic table{font-size:19px}
+  #basic th{font-size:18px}
+  #basic td{font-size:19px}
+  #basic .inline-entry input{font-size:19px}
+  #basic .inline-entry button{font-size:17px}
+  #basic tbody td:last-child{font-size:27px}
 </style>
 </head>
 <body>
@@ -314,7 +323,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
     entry.hidden = hasScore;
     result.hidden = !hasScore;
-    result.textContent = hasScore ? `${scores[key]}点 ${basicPlant(scores[key])} ✓` : "";
+    result.textContent = hasScore ? `${scores[key]}点 ${basicPlant(scores[key])}` : "";
   }
 
   document.getElementById("saveTodayBasic").addEventListener("click",()=>{
