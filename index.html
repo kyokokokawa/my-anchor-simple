@@ -81,13 +81,10 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 .stamp-btn .emoji{display:block;font-size:22px;margin-bottom:2px}.stamp-btn.active{outline:5px solid #dce8d8;font-weight:900}
 .today-empty{padding:20px 4px;text-align:center;color:#879087}
 .task-delete{float:right;border:0;background:transparent;color:#a48f7a;font-size:14px}
+.no-task-btn{border:1.5px solid #eadfbd;background:#fffdf5;color:#7b745f;border-radius:14px;padding:8px 12px;font-weight:800;margin:2px 0 10px}
+.no-task-state{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 12px;padding:10px 12px;border-radius:14px;background:#fff8df;color:#6d725f;font-weight:800}
+.no-task-undo{border:0;background:#fff;color:#6d725f;border-radius:12px;padding:6px 10px;font-weight:800}
 
-.weekday-wrap{margin-top:8px}.weekday-buttons{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
-.weekday-buttons label{display:flex;align-items:center;justify-content:center;gap:2px;padding:9px 2px;border:1px solid #e8d9b8;border-radius:12px;background:#fff;font-weight:800;color:#536b56;font-size:13px}
-.weekday-buttons input{width:15px;height:15px}
-.no-task-btn{grid-column:1/-1;border:1.5px dashed #d6d7cd;border-radius:14px;background:#fafaf5;padding:8px;color:#7a8179;font-weight:800}
-.no-task-note{padding:9px 12px;border-radius:14px;background:#f6f6ef;color:#7c837b;margin:5px 0 12px;text-align:center}
-.schedule-note{font-size:13px;color:#829083;margin-left:6px}
 </style>
 </head>
 <body>
@@ -142,11 +139,10 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 </div>
 <label class="task-label">ページ</label>
 <div class="page-range"><input id="pageFrom" class="task-input" inputmode="numeric" type="number" min="1" placeholder="42"><span>ページから</span><input id="pageTo" class="task-input" inputmode="numeric" type="number" min="1" placeholder="45"><span>ページまで</span></div>
-</div>
-<button id="addStudyItem" class="task-add-btn" type="button">やることに登録</button>
+<button id="addStudyItem" class="task-add-btn" type="button">毎日のやることに追加</button>
 <span id="taskAddMessage" class="task-add-message"></span>
 </div>
-<div class="card task-list-card"><h3>今日のやること</h3><div id="studyItemList"></div></div>
+<div class="card task-list-card"><h3>登録したやること</h3><div id="studyItemList"></div></div>
 </section>
 
 <section id="challenge" class="page">
@@ -226,14 +222,15 @@ const STUDY_MATERIALS={
 };
 const STUDY_ITEM_KEY="myAnchorV2.studyItems";
 const STUDY_STAMP_KEY="myAnchorV2.studyTaskStamps";
-function appliesToday(x){
- return true;
-}
+const STUDY_NO_TASK_KEY="myAnchorV2.studyNoTaskDays";
 function localDateKey(d=new Date()){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`}
 function readStudyItems(){try{const x=JSON.parse(localStorage.getItem(STUDY_ITEM_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
 function writeStudyItems(x){localStorage.setItem(STUDY_ITEM_KEY,JSON.stringify(x))}
 function readTaskStamps(){try{return JSON.parse(localStorage.getItem(STUDY_STAMP_KEY)||"{}")||{}}catch(e){return{}}}
 function writeTaskStamps(x){localStorage.setItem(STUDY_STAMP_KEY,JSON.stringify(x))}
+function readNoTaskDays(){try{return JSON.parse(localStorage.getItem(STUDY_NO_TASK_KEY)||"{}")||{}}catch(e){return{}}}
+function writeNoTaskDays(x){localStorage.setItem(STUDY_NO_TASK_KEY,JSON.stringify(x))}
+function setNoTask(id,isNoTask){const all=readNoTaskDays(),date=localDateKey();all[date]=all[date]||{};if(isNoTask)all[date][id]=true;else delete all[date][id];writeNoTaskDays(all);renderTodayStudyTasks()}
 function renderMaterialChoices(){
  const s=document.getElementById("taskSubject"),m=document.getElementById("taskMaterial");if(!s||!m)return;m.innerHTML="";
  (STUDY_MATERIALS[s.value]||[]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;m.appendChild(o)});
@@ -242,52 +239,48 @@ function renderMaterialChoices(){
 function toggleOtherMaterial(){const m=document.getElementById("taskMaterial"),w=document.getElementById("otherMaterialWrap");if(w&&m)w.hidden=m.value!=="その他"}
 function taskDisplayName(x){let n=x.material;if(x.pageFrom||x.pageTo){if(x.pageFrom&&x.pageTo)n+=` p.${x.pageFrom}〜${x.pageTo}`;else if(x.pageFrom)n+=` p.${x.pageFrom}〜`;else n+=` 〜p.${x.pageTo}`}return n}
 function renderStudyItems(){
- const h=document.getElementById("studyItemList");if(!h)return;const items=readStudyItems().filter(appliesToday);h.innerHTML="";
+ const h=document.getElementById("studyItemList");if(!h)return;const items=readStudyItems();h.innerHTML="";
  if(!items.length){h.innerHTML='<div class="empty-study-items">まだ登録されていません 🌱</div>';return}
  ["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");c.className="material-chip";c.textContent=taskDisplayName(x);b.appendChild(c)});h.appendChild(b)})
 }
 function setTaskStamp(id,status){
  const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};all[date][id]=status;writeTaskStamps(all);renderTodayStudyTasks()
 }
-function setNoTask(id){
- const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};
- all[date][id]=all[date][id]==="課題なし" ? "まだ" : "課題なし";
- writeTaskStamps(all);renderTodayStudyTasks()
-}
 function renderTodayStudyTasks(){
- const h=document.getElementById("todayStudyTasks");if(!h)return;const date=localDateKey(),items=readStudyItems().filter(appliesToday),stamps=(readTaskStamps()[date]||{});h.innerHTML="";
- if(!items.length){h.innerHTML='<div class="today-empty">「やること」から今日の課題を追加しよう 🌱</div>';return}
+ const h=document.getElementById("todayStudyTasks");if(!h)return;
+ const date=localDateKey(),items=readStudyItems(),stamps=(readTaskStamps()[date]||{}),noTasks=(readNoTaskDays()[date]||{});h.innerHTML="";
+ if(!items.length){h.innerHTML='<div class="today-empty">「やること」から毎日の課題を追加しよう 🌱</div>';return}
  ["国語","算数","理科","社会","英語"].forEach(s=>{
   const a=items.filter(x=>x.subject===s);if(!a.length)return;
   const title=document.createElement("div");title.className="today-task-subject";title.textContent=s;h.appendChild(title);
   a.forEach(x=>{
    const name=document.createElement("div");name.className="today-task-name";name.textContent=taskDisplayName(x);h.appendChild(name);
-   if(stamps[x.id]==="課題なし"){
-    const note=document.createElement("div");note.className="no-task-note";note.textContent="− 課題なし";h.appendChild(note);
-    const back=document.createElement("button");back.type="button";back.className="no-task-btn";back.textContent="課題ありに戻す";back.addEventListener("click",()=>setNoTask(x.id));h.appendChild(back)
-   }else{
-    const row=document.createElement("div");row.className="stamp-row";
-    [["まだ","🌱"],["やってる","🌿"],["できた！","🌸"],["もう一度","🍂"]].forEach(([label,emoji])=>{
-     const b=document.createElement("button");b.type="button";b.className="stamp-btn"+(stamps[x.id]===label?" active":"");
-     b.innerHTML=`<span class="emoji">${emoji}</span>${label}`;b.addEventListener("click",()=>setTaskStamp(x.id,label));row.appendChild(b)
-    });
-    const none=document.createElement("button");none.type="button";none.className="no-task-btn";none.textContent="− 今日は課題なし";none.addEventListener("click",()=>setNoTask(x.id));row.appendChild(none);h.appendChild(row)
+   if(noTasks[x.id]){
+    const state=document.createElement("div");state.className="no-task-state";
+    const label=document.createElement("span");label.textContent="今日は課題なし";
+    const undo=document.createElement("button");undo.type="button";undo.className="no-task-undo";undo.textContent="戻す";undo.addEventListener("click",()=>setNoTask(x.id,false));
+    state.append(label,undo);h.appendChild(state);return;
    }
+   const row=document.createElement("div");row.className="stamp-row";
+   [["まだ","🌱"],["やってる","🌿"],["できた！","🌸"],["もう一度","🍂"]].forEach(([label,emoji])=>{
+    const b=document.createElement("button");b.type="button";b.className="stamp-btn"+(stamps[x.id]===label?" active":"");
+    b.innerHTML=`<span class="emoji">${emoji}</span>${label}`;b.addEventListener("click",()=>setTaskStamp(x.id,label));row.appendChild(b)
+   });h.appendChild(row);
+   const none=document.createElement("button");none.type="button";none.className="no-task-btn";none.textContent="課題なし";none.addEventListener("click",()=>setNoTask(x.id,true));h.appendChild(none)
   })
  })
 }
 function initStudyItems(){
  const s=document.getElementById("taskSubject"),m=document.getElementById("taskMaterial"),a=document.getElementById("addStudyItem");if(!s||!a)return;
  renderMaterialChoices();renderStudyItems();renderTodayStudyTasks();s.addEventListener("change",renderMaterialChoices);m.addEventListener("change",toggleOtherMaterial);
-
  a.addEventListener("click",()=>{
   const msg=document.getElementById("taskAddMessage"),other=document.getElementById("otherMaterial"),pf=document.getElementById("pageFrom"),pt=document.getElementById("pageTo");
   let material=m.value;if(material==="その他")material=(other.value||"").trim();
   if(!material){msg.textContent="内容を入力してね";return}
   const from=(pf.value||"").trim(),to=(pt.value||"").trim();
   if(from&&to&&Number(from)>Number(to)){msg.textContent="ページの順番を確認してね";return}
-  const items=readStudyItems(),item={id:"task_"+Date.now(),date:localDateKey(),schedule:"daily",subject:s.value,material,pageFrom:from,pageTo:to};
-  items.push(item);writeStudyItems(items);renderStudyItems();renderTodayStudyTasks();msg.textContent="登録しました ✓";
+  const items=readStudyItems(),item={id:"task_"+Date.now(),date:localDateKey(),subject:s.value,material,pageFrom:from,pageTo:to};
+  items.push(item);writeStudyItems(items);renderStudyItems();renderTodayStudyTasks();msg.textContent="毎日のやることに追加しました ✓";
   pf.value="";pt.value="";if(other)other.value="";setTimeout(()=>msg.textContent="",1600)
  })
 }
