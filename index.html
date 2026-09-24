@@ -142,20 +142,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 </div>
 <label class="task-label">ページ</label>
 <div class="page-range"><input id="pageFrom" class="task-input" inputmode="numeric" type="number" min="1" placeholder="42"><span>ページから</span><input id="pageTo" class="task-input" inputmode="numeric" type="number" min="1" placeholder="45"><span>ページまで</span></div>
-<label class="task-label" for="taskSchedule">出し方</label>
-<select id="taskSchedule" class="task-select">
-<option value="once">その日だけ</option>
-<option value="daily">毎日</option>
-<option value="weekly">曜日指定</option>
-</select>
-<div id="weekdayWrap" class="weekday-wrap" hidden>
-<label class="task-label">曜日</label>
-<div class="weekday-buttons">
-<label><input type="checkbox" value="1">月</label><label><input type="checkbox" value="2">火</label>
-<label><input type="checkbox" value="3">水</label><label><input type="checkbox" value="4">木</label>
-<label><input type="checkbox" value="5">金</label><label><input type="checkbox" value="6">土</label>
-<label><input type="checkbox" value="0">日</label>
-</div></div>
+</div>
 <button id="addStudyItem" class="task-add-btn" type="button">やることに登録</button>
 <span id="taskAddMessage" class="task-add-message"></span>
 </div>
@@ -240,11 +227,7 @@ const STUDY_MATERIALS={
 const STUDY_ITEM_KEY="myAnchorV2.studyItems";
 const STUDY_STAMP_KEY="myAnchorV2.studyTaskStamps";
 function appliesToday(x){
- const d=new Date(),key=localDateKey(d),w=String(d.getDay());
- if(!x.schedule)return !x.date||x.date===key;
- if(x.schedule==="daily")return true;
- if(x.schedule==="weekly")return Array.isArray(x.weekdays)&&x.weekdays.includes(w);
- return x.date===key
+ return true;
 }
 function localDateKey(d=new Date()){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`}
 function readStudyItems(){try{const x=JSON.parse(localStorage.getItem(STUDY_ITEM_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
@@ -261,7 +244,7 @@ function taskDisplayName(x){let n=x.material;if(x.pageFrom||x.pageTo){if(x.pageF
 function renderStudyItems(){
  const h=document.getElementById("studyItemList");if(!h)return;const items=readStudyItems().filter(appliesToday);h.innerHTML="";
  if(!items.length){h.innerHTML='<div class="empty-study-items">まだ登録されていません 🌱</div>';return}
- ["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");c.className="material-chip";let sch=x.schedule==="daily"?"毎日":x.schedule==="weekly"?"曜日指定":"その日だけ";c.textContent=taskDisplayName(x)+" ・ "+sch;b.appendChild(c)});h.appendChild(b)})
+ ["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");c.className="material-chip";c.textContent=taskDisplayName(x);b.appendChild(c)});h.appendChild(b)})
 }
 function setTaskStamp(id,status){
  const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};all[date][id]=status;writeTaskStamps(all);renderTodayStudyTasks()
@@ -294,18 +277,16 @@ function renderTodayStudyTasks(){
  })
 }
 function initStudyItems(){
- const s=document.getElementById("taskSubject"),m=document.getElementById("taskMaterial"),a=document.getElementById("addStudyItem"),sched=document.getElementById("taskSchedule"),ww=document.getElementById("weekdayWrap");if(!s||!a)return;
+ const s=document.getElementById("taskSubject"),m=document.getElementById("taskMaterial"),a=document.getElementById("addStudyItem");if(!s||!a)return;
  renderMaterialChoices();renderStudyItems();renderTodayStudyTasks();s.addEventListener("change",renderMaterialChoices);m.addEventListener("change",toggleOtherMaterial);
- sched.addEventListener("change",()=>{ww.hidden=sched.value!=="weekly"});
+
  a.addEventListener("click",()=>{
   const msg=document.getElementById("taskAddMessage"),other=document.getElementById("otherMaterial"),pf=document.getElementById("pageFrom"),pt=document.getElementById("pageTo");
   let material=m.value;if(material==="その他")material=(other.value||"").trim();
   if(!material){msg.textContent="内容を入力してね";return}
   const from=(pf.value||"").trim(),to=(pt.value||"").trim();
   if(from&&to&&Number(from)>Number(to)){msg.textContent="ページの順番を確認してね";return}
-  const weekdays=[...document.querySelectorAll("#weekdayWrap input:checked")].map(x=>x.value);
-  if(sched.value==="weekly"&&!weekdays.length){msg.textContent="曜日を選んでね";return}
-  const items=readStudyItems(),item={id:"task_"+Date.now(),date:localDateKey(),schedule:sched.value,weekdays,subject:s.value,material,pageFrom:from,pageTo:to};
+  const items=readStudyItems(),item={id:"task_"+Date.now(),date:localDateKey(),schedule:"daily",subject:s.value,material,pageFrom:from,pageTo:to};
   items.push(item);writeStudyItems(items);renderStudyItems();renderTodayStudyTasks();msg.textContent="登録しました ✓";
   pf.value="";pt.value="";if(other)other.value="";setTimeout(()=>msg.textContent="",1600)
  })
