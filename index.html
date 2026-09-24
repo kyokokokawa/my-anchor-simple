@@ -1,297 +1,104 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8">
+<html lang="ja">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f7f5ec"><link rel="manifest" href="manifest.webmanifest">
-<title>My Anchor C Voyage v2</title>
+<meta name="theme-color" content="#FFD84D">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>My Anchor</title>
 <style>
-:root{--bg:#f7f5ec;--card:#fffefa;--ink:#123c3e;--muted:#7c918d;--line:#d6e4df;--mint:#dff5ef;--sea:#82cfc8;--gold:#f4ca49;--green:#55745e}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(#fbfaf5,#f7f5ec);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;padding-bottom:86px}
-main{max-width:760px;margin:auto;padding:16px}.page{display:none}.page.active{display:block}.card,.hero{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:20px;margin:12px 0;box-shadow:0 5px 18px #25453d10}
-.hero{overflow:hidden;position:relative;background:linear-gradient(150deg,#effbf6 0%,#dcf5f2 70%,#f8fffd 100%)}
-.hero:after{content:"";position:absolute;width:210px;height:210px;border-radius:50%;right:-90px;bottom:-115px;border:24px solid #ffffff55}
-.eyebrow{display:inline-block;font-weight:1000;letter-spacing:1.2px;color:#5f9f96;background:#ffffffb8;border:1px solid #d7ebe6;border-radius:999px;padding:7px 12px;box-shadow:0 4px 12px #376a6014}.hero h1{font-size:34px;line-height:1.1;margin:8px 0}.motto{font-weight:800;color:#294f4c}.today{display:grid;grid-template-columns:130px 1fr;gap:18px;align-items:center;margin:26px 0 18px;position:relative;z-index:1}
-.bigstamp{width:118px;height:118px;border-radius:50%;background:#fff;border:8px solid var(--gold);display:grid;place-items:center;font-size:58px;box-shadow:0 8px 18px #4d7c7020}
-.todayDate{font-weight:900;color:#789d98;font-size:18px}.todayTitle{font-size:32px;font-weight:1000;line-height:1.1;margin:4px 0}.todaySub{font-weight:800;color:#7aa7a1}
-.progressbox{position:relative;z-index:1;background:#ffffffbb;border-radius:22px;padding:15px 16px}.progresshead{display:flex;justify-content:space-between;font-weight:1000}.bar{height:11px;background:#e6ece9;border-radius:999px;overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:var(--sea);border-radius:999px}
-.cheer{position:relative;z-index:1;background:#ffffffd9;border:1px solid #d9ebe6;border-radius:20px;padding:15px;margin-top:14px;font-weight:750;line-height:1.55}
-.stats{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.stat{background:#ffffffd9;border:1px solid #dbe8e4;border-radius:18px;padding:11px 5px;text-align:center}.stat span{display:block;font-size:27px}.stat b{font-size:18px}.stat small{display:block;color:var(--muted)}
-h2{font-size:22px;margin:0 0 8px}.note{font-size:13px;color:var(--muted);line-height:1.5}.road{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));column-gap:7px;row-gap:18px;margin-top:22px}.day{text-align:center;position:relative;min-width:0}.stamp{width:47px;height:47px;margin:auto;border-radius:50%;border:2px solid var(--line);background:#fff;display:grid;place-items:center;font-size:25px;position:relative}.todayflag{position:absolute;left:50%;top:-25px;transform:translateX(-50%);background:#ffd954;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:900}.day small{display:block;margin-top:5px;font-weight:800;color:#4e6662}.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;font-weight:800}
-.base-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.base-score{width:105px!important;text-align:center;font-size:28px!important;font-weight:900}.saved{color:#607c74;font-size:13px;margin-top:8px}
-.subject{border-top:1px solid #edf1ef;padding:13px 0}.subject:first-child{border:0}.subject-head{display:flex;justify-content:space-between}.subject-name{font-weight:1000}.tag{font-size:12px;background:#edf5f0;border-radius:999px;padding:4px 8px}.tasktxt{font-size:14px;color:#566963;margin:5px 0 8px}.states{display:flex;gap:6px}.states button{flex:1;border:1px solid var(--line);background:white;border-radius:13px;padding:8px 3px;color:var(--ink)}.states button.sel{outline:3px solid #d7e8df;font-weight:900}
-label{display:block;font-weight:900;margin:12px 0 6px}input,select,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:13px;background:white;font-size:16px;color:var(--ink)}button.primary,.widebtn{border:0;border-radius:15px;background:var(--green);color:white;padding:13px 15px;font-weight:900;font-size:15px}.widebtn{width:100%;margin-top:14px;background:linear-gradient(90deg,#d9efeb,#e7f3df);color:#28544e}
-.taskrow,.parent-task{display:flex;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #edf0ea}.taskrow.finished{opacity:.48}.taskrow.finished .grow{text-decoration:line-through;text-decoration-thickness:2px}.grow{flex:1}.x{border:0;background:#f7e9e5;color:#944b3d;border-radius:10px;padding:7px 10px}
-.score-edit{display:grid;gap:7px;margin-top:14px}.score-subject{border:1px solid var(--line);border-radius:15px;padding:10px;background:#fff}.score-subject h3{margin:0 0 7px}.score-fields{display:grid;grid-template-columns:1fr 1fr;gap:7px}.score-fields label{font-size:12px;margin:0;color:#657b75}.score-fields input{margin-top:4px;padding:10px}.english{margin-top:20px;padding-top:18px;border-top:3px solid #edf0ea}.resultGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.metric{background:#f5f7f4;border-radius:14px;padding:11px}.metric small{display:block;color:var(--muted)}.metric b{font-size:21px}
-.quick{display:flex;flex-wrap:wrap;gap:7px}.quick button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px}.hidden{display:none}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;overflow-x:auto;background:#fffdf8ee;backdrop-filter:blur(12px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}nav button{min-width:68px;flex:1;border:0;background:transparent;padding:10px 4px;color:#69746d;font-size:11px}nav button.active{color:#26574f;font-weight:1000}
-@media(max-width:440px){main{padding:12px}.hero,.card{padding:17px;border-radius:24px}.hero h1{font-size:31px}.today{grid-template-columns:105px 1fr;gap:12px}.bigstamp{width:98px;height:98px;font-size:48px}.todayTitle{font-size:27px}.stats{gap:5px}.stat{padding:9px 2px}.road{column-gap:4px;row-gap:18px}.stamp{width:43px;height:43px}.score-fields{gap:6px}}
+:root{
+  --yellow:#FFD84D; --orange:#FF9C36; --lime:#9AD650;
+  --cream:#FFFDF4; --green:#34764A; --ink:#395548; --line:#E9E1C8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
+.app{max-width:680px;margin:auto;min-height:100vh;padding:18px 16px 100px}
+header{background:linear-gradient(145deg,#FFF3A5,#FFFCEB 60%,#EFF8D1);border:2px solid #FFE27A;border-radius:28px;padding:22px;box-shadow:0 10px 28px #c99d2d18}
+.logo{display:inline-block;padding:7px 12px;border:2px dashed #EFC44B;border-radius:999px;background:#fffdf6;color:#3b8747;font-weight:800;font-size:13px;letter-spacing:1px}
+h1{margin:14px 0 4px;font-size:28px;color:#338047}
+.subtitle{font-size:14px;color:#6f806f}
+.card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:16px;box-shadow:0 7px 18px #745d2510}
+.card h2{margin:0 0 10px;font-size:20px;color:#367c47}
+.soft{font-weight:400;line-height:1.7;color:#647268}
+.page{display:none}.page.active{display:block}
+.placeholder{padding:32px 10px;text-align:center;color:#819080;line-height:1.8}
+.badge{display:inline-block;background:#FFF0B8;color:#9B671C;border-radius:999px;padding:5px 10px;font-size:12px;margin-bottom:8px}
+nav{position:fixed;z-index:10;left:50%;bottom:0;transform:translateX(-50%);width:min(680px,100%);display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:#fffdf8eF;border-top:1px solid #e9dfc5;padding:8px 5px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(12px)}
+nav button{border:0;background:transparent;border-radius:15px;padding:8px 2px 6px;color:#657367;font-size:10px;line-height:1.25}
+nav button span{display:block;font-size:21px;margin-bottom:3px}
+nav button.active{background:#FFE16A;color:#386d43;font-weight:800}
+.screen-title{display:flex;align-items:center;gap:9px;margin:20px 2px 8px;font-size:24px;font-weight:900;color:#357b48}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="logo">⚓ MY ANCHOR ✨</div>
+  <h1 id="roomTitle">勉強部屋 🌱</h1>
+  <div class="subtitle">できない日があっても、また始めればいい。</div>
+</header>
 
-.scoreTableWrap{width:100%;overflow:hidden;margin-top:14px}.scoreTable{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:12px}.scoreTable th,.scoreTable td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px 3px;text-align:center}.scoreTable th{background:#f0f6f2;font-weight:900}.scoreTable th:first-child,.scoreTable td:first-child{border-left:1px solid var(--line);width:17%;font-weight:900}.scoreTable tr:first-child th{border-top:1px solid var(--line)}.scoreTable input{width:100%;min-width:0;padding:8px 2px;border-radius:9px;text-align:center;font-size:13px}.scoreTable .en td{background:#fafcf9}.scoreTable .dash{color:var(--muted)}
-
-.baseTable{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}.baseTable th,.baseTable td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 4px;text-align:center}.baseTable th{background:#f0f6f2}.baseTable th:first-child,.baseTable td:first-child{border-left:1px solid var(--line)}.baseTable tr:first-child th{border-top:1px solid var(--line)}.baseScoreGood{font-weight:1000;font-size:18px}
-.taskLegend{font-size:12px;color:var(--muted);font-weight:700;white-space:normal}.scoreTable .scoreSpacer td{height:18px;border:0!important;background:transparent!important;padding:0}.motherMessageCard{background:linear-gradient(135deg,#fffdf9,#fff8f5);border-color:#eee3dc;box-shadow:none;margin-top:12px;margin-bottom:16px;padding:14px 16px;border-radius:18px}.motherMessageHead{font-size:14px;font-weight:500;color:#8b7167;margin-bottom:8px}.motherMessageText{font-size:18px;font-weight:400;line-height:1.75;color:#5f6764;white-space:pre-wrap;word-break:break-word}.countdownLabel{font-size:14px;font-weight:900;color:var(--muted);margin-bottom:2px}
-.collectionCard{border:1px solid var(--line);border-radius:22px;padding:16px;margin-top:14px;background:linear-gradient(145deg,#fffefa,#f4faf7)}
-.collectionHead{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.collectionTitle{font-size:18px;font-weight:1000}.collectionDate{font-size:12px;color:var(--muted);margin-top:3px}
-.collectionStamps{display:grid;grid-template-columns:repeat(7,1fr);gap:8px 5px;margin-top:14px}
-.collectionStamp{text-align:center}.collectionStamp span{width:34px;height:34px;margin:auto;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:#fff;font-size:20px}
-.collectionStamp small{display:block;font-size:9px;color:var(--muted);margin-top:3px}
-.collectionEmpty{text-align:center;color:var(--muted);padding:28px 8px;line-height:1.8}
-
-:root{--pop-yellow:#FFD84D;--pop-orange:#FF962E;--pop-lime:#91CF48}
-body{background:#fffdf6}
-#home{background:linear-gradient(180deg,#fff5a9 0%,#fffdf0 48%,#f4fad8 100%);border-radius:30px;padding-top:16px}
-#home .hero{background:linear-gradient(150deg,#fff4a9,#fffdf0 55%,#eff8cb);border:2px solid #ffe071;box-shadow:0 12px 28px rgba(219,164,31,.14)}
-#home .eyebrow{background:#fffdf7;border:2px dashed #f3c647;color:#398745}
-#home h1{color:#328347} #home h1::after{content:' 🌱';font-size:.55em;vertical-align:top}
-#home .motherMessageCard{background:linear-gradient(135deg,#fffaf5,#fff2e5);border-color:#ffd2aa}
-#home .motherMessageHead{color:#d67d39} #home .countdownLabel{color:#f08a25}
-#home .progress>i{background:linear-gradient(90deg,#91CF48,#60BD4A)!important}
-#home .card{border-color:#f1dfaa;box-shadow:0 8px 20px rgba(164,132,54,.07)}
-#home h2{color:#367d45}.primary{background:linear-gradient(135deg,#ff962e,#ffb43d)!important}
-nav button.active{background:#ffe16a;color:#376a43;border-radius:18px}
-
-.baseEdit{width:68px!important;min-width:0!important;padding:8px 5px!important;text-align:center;border-radius:10px!important}
-.baseMissing{font-size:18px;font-weight:900;margin-right:7px;color:#d85b3d}
-.baseSaved{font-weight:900;color:#37794c}
-.baseTable td{vertical-align:middle}
-
-.baseInline{display:flex;align-items:center;justify-content:center;gap:5px}
-.baseInline .baseEdit{width:58px!important;padding:7px 4px!important}
-.baseInline .mini{padding:7px 8px!important;white-space:nowrap}
-.baseTable th,.baseTable td{padding:9px 5px!important;text-align:center}
-.baseTable th:nth-child(1){width:16%}.baseTable th:nth-child(2){width:18%}.baseTable th:nth-child(3){width:48%}.baseTable th:nth-child(4){width:18%}
-.monthTitle{font-size:20px;font-weight:900;color:#4b8448;margin:4px 0 14px}
-.scoreSpacer td{height:18px!important;border:0!important;background:transparent!important}
-.scoreTable input{width:100%;min-width:0;padding:8px 4px;text-align:center}
-.scoreTable th,.scoreTable td{padding:7px 3px}
-</style></head><body><main>
-<section id="home" class="page active">
-<div class="hero">
-<div class="eyebrow">⚓ MY ANCHOR ✨</div><h1 id="roomTitle">わたしの勉強部屋</h1><div class="card motherMessageCard">
-  <div class="motherMessageHead">💌 お母さんからのメッセージ</div>
-  <div id="motherMessageDisplay" class="motherMessageText">今日も自分のペースでいこう🌱</div>
-</div><div class="motto">できない日があっても、また始めればいい。</div>
-<div class="today"><div id="bigStamp" class="bigstamp">🌱</div><div><div id="todayDate" class="todayDate"></div><div class="countdownLabel">次のチャレテまで</div><div id="todayTitle" class="todayTitle">あと何日！</div></div></div>
-<div class="progressbox"><div class="progresshead"><span id="voyageStart">出発 —</span><span style="text-align:right"><small style="display:block;color:var(--muted)">GOAL ✨</small><span id="voyageGoal">—</span></span></div><div class="bar" style="position:relative;height:14px"><i id="progressBar" style="width:0%"></i><span style="position:absolute;right:-2px;top:50%;transform:translate(50%,-50%);width:25px;height:25px;border-radius:50%;background:#fff;border:3px solid var(--gold);display:grid;place-items:center;font-size:13px">🏝️</span></div><div id="progressCount" style="text-align:right;margin-top:8px;font-weight:1000;font-size:18px">今日も進んだ！</div></div>
-<div id="cheer" class="cheer">⚓ 今日の一歩を、ここに残そう。</div>
-<div class="stats"><div class="stat"><span>🌸</span><b id="statDone">0日</b><small>できた！</small></div><div class="stat"><span>🍀</span><b id="statGo">0日</b><small>あと少し</small></div><div class="stat"><span>🍂</span><b id="statRetry">0日</b><small>もう一度</small></div></div>
-</div>
-<div class="card"><h2>🌱 今月のスタンプカード</h2><div id="homeStampMonth" class="monthTitle"></div><div id="road" class="road"></div><div class="legend"><span>🌸 できた！</span><span>🍀 あと少し</span><span>🍂× もう一度</span></div></div>
-
-<div class="card"><h2>⚓ 今日の基礎トレ</h2><div id="baseDate" class="note"></div><div class="base-row"><input id="baseScore" class="base-score" type="number" inputmode="numeric" min="0" max="10" placeholder="0"><b>点</b><button class="primary" onclick="saveBaseScore()">保存</button></div><div id="baseSaved" class="saved"></div></div>
-<div class="card"><h2>今日のやること <span class="taskLegend">（🌸できた！・🌱まだ・🍂もう一度）</span></h2><div id="homeTasks"></div></div>
+<section id="today" class="page active">
+  <div class="screen-title">🏠 今日</div>
+  <div class="card"><div class="badge">NEW MY ANCHOR</div><h2>今日のページ</h2><div class="soft">ここから、必要な機能をひとつずつ作っていきます。</div></div>
 </section>
 
-<section id="tasks" class="page"><div class="card"><h2>📚 やることを決める</h2><label>科目</label><select id="taskSubject" onchange="updateMaterials()"><option>国語</option><option>算数</option><option>理科</option><option>社会</option><option>英語</option></select><label>教材（必要なとき）</label><select id="taskMaterial"></select><label>今日やること</label><input id="taskText" placeholder="例：演習問題 大問3"><button class="primary" onclick="addTask()">設定する</button></div><div class="card"><h2>今日のやること <span class="taskLegend">（🌸できた！・🌱まだ・🍂もう一度）</span></h2><div id="taskList"></div></div></section>
-
-<section id="study" class="page"><div class="card"><h2>📘 チャレテ</h2><p>チャレテの範囲と今日取り組む内容を管理。</p><label>科目</label><select id="studySubject" onchange="updateStudyTexts()"><option>国語</option><option>算数</option><option>理科</option><option>社会</option><option>英語</option></select><label>テキスト</label><select id="studyText"></select><div class="score-fields"><div><label>ページから</label><input id="pageFrom" type="number" inputmode="numeric" min="1" placeholder="例 12"></div><div><label>ページまで</label><input id="pageTo" type="number" inputmode="numeric" min="1" placeholder="例 18"></div></div><label>自由入力</label><input id="studyFree" placeholder="例：間違えた問題をもう一度"><button class="primary" onclick="addStudyTask()">今日のやることに追加</button></div><div class="card"><h2>🏅 チャレテの記録</h2><label>テスト</label><input id="scoreTestName" value="10月 チャレンジテスト">
-<div class="resultGrid" style="margin-top:14px"><div class="metric"><small>4教科 目標合計</small><b id="totalTarget">—</b></div><div class="metric"><small>4教科 実際合計</small><b id="totalActual">—</b></div></div>
-<div class="scoreTableWrap"><table class="scoreTable"><thead><tr><th>科目</th><th>目標</th><th>実際</th><th>偏差値</th><th>平均</th></tr></thead><tbody id="scoreRows"></tbody></table></div>
-<button class="primary" onclick="saveScores()">保存</button><div id="scoreSaved" class="saved"></div></div></section>
-
-
-
-<section id="base" class="page">
-<div class="card"><h2>⚓ 基礎トレの記録</h2>
-<div style="display:flex;gap:8px;align-items:center;margin:10px 0 14px"><button class="primary" onclick="changeBaseMonth(-1)">‹</button><div id="baseMonthTitle" style="flex:1;text-align:center;font-size:22px;font-weight:1000"></div><button class="primary" onclick="changeBaseMonth(1)">›</button></div>
-<div id="baseMonthTable"></div>
-<p class="note">点数を記録していない日は ❌ で表示します。</p>
-</div></section>
-<section id="collection" class="page">
-<div class="card">
-<h2>🎴 集めたスタンプカード</h2>
-<div id="stampCollection"></div>
-</div>
+<section id="tasks" class="page">
+  <div class="screen-title">📚 やること</div>
+  <div class="card placeholder">やること画面<br>— ベース完成 —</div>
 </section>
-<section id="parent" class="page"><div id="parentLock" class="card" style="text-align:center"><h2>🔒 お母さん</h2><p class="note">暗証番号を入力してください。</p><input id="parentPinEntry" type="password" inputmode="numeric" maxlength="8" placeholder="••••" style="max-width:220px;text-align:center;font-size:22px;letter-spacing:5px"><br><button class="primary" onclick="unlockParent()">開く</button><div id="pinMessage" class="saved"></div></div><div id="parentContent" class="hidden"><div class="card"><h2>🔒 お母さん</h2><label>ユーザーの名前</label><input id="userNameInput" placeholder="例：たろう"><button class="primary" onclick="saveUserName()">名前を保存</button><div id="parentTasks"></div></div><div class="card"><h2>🔑 暗証番号設定</h2><p class="note">初期暗証番号は 1234。4〜8桁の数字に変更できます。</p><input id="newParentPin" type="password" inputmode="numeric" maxlength="8" placeholder="新しい暗証番号"><button class="primary" onclick="changeParentPin()">変更する</button><div id="pinChanged" class="saved"></div></div><div class="card">
-  <h2>💌 お母さんからのメッセージ</h2>
-  <p class="note">勉強部屋のトップに表示する短いメッセージです。</p>
-  <input id="motherMessageInput" maxlength="80" placeholder="例：今日も自分のペースでいこう🌱">
-  <button class="primary" onclick="saveMotherMessage()">メッセージを届ける</button>
-  <div id="motherMessageSaved" class="saved"></div>
-</div>
-<div class="card"><h2>🧭 作戦会議</h2><button class="widebtn" onclick="show('meeting',null)">作戦会議を開く</button></div><div class="card"><h2>📅 チャレテ日程</h2>
-<label>範囲発表日</label><input id="rangeDate" type="date">
-<label>チャレンジテスト最終日</label><input id="testDate" type="date">
-<p class="note">航海の軌跡は、範囲発表日からチャレテ最終日まで自動で作り直します。</p>
-<button class="primary" onclick="saveDates()">日程を保存</button>
-<div id="dateSaved" class="saved"></div></div></div></section>
 
-<section id="meeting" class="page"><div class="card"><h2>🧭 作戦会議</h2><p>今週はどう進める？</p><div class="quick"><button>算数を多めに</button><button>国語を丁寧に</button><button>理社を少しずつ</button><button>復習を優先</button></div><label>今週の作戦</label><textarea></textarea></div></section>
-</main>
-<nav><button class="active" onclick="show('home',this)">🏠<br>今日</button><button onclick="show('tasks',this)">📚<br>やること</button><button onclick="show('study',this)">📘<br>チャレテ</button><button onclick="show('base',this)">⚓<br>基礎トレ</button><button onclick="show('parent',this)">🌿<br>お母さん</button><button onclick="show('collection',this)">🎴<br>スタンプ</button></nav>
+<section id="challenge" class="page">
+  <div class="screen-title">📘 チャレテ</div>
+  <div class="card placeholder">チャレテ画面<br>— ベース完成 —</div>
+</section>
+
+<section id="basic" class="page">
+  <div class="screen-title">⚓ 基礎トレ</div>
+  <div class="card placeholder">基礎トレ画面<br>— ベース完成 —</div>
+</section>
+
+<section id="sapix" class="page">
+  <div class="screen-title">🎒 サピックス</div>
+  <div class="card placeholder">サピックス画面<br>— ベース完成 —</div>
+</section>
+
+<section id="mother" class="page">
+  <div class="screen-title">🌿 お母さん</div>
+  <div class="card placeholder">お母さん画面<br>— ベース完成 —</div>
+</section>
+
+<section id="ticket" class="page">
+  <div class="screen-title">🎟️ チケット</div>
+  <div class="card placeholder">チケット画面<br>— ベース完成 —</div>
+</section>
+</div>
+
+<nav id="nav">
+<button class="active" data-page="today"><span>🏠</span>今日</button>
+<button data-page="tasks"><span>📚</span>やること</button>
+<button data-page="challenge"><span>📘</span>チャレテ</button>
+<button data-page="basic"><span>⚓</span>基礎トレ</button>
+<button data-page="sapix"><span>🎒</span>サピックス</button>
+<button data-page="mother"><span>🌿</span>お母さん</button>
+<button data-page="ticket"><span>🎟️</span>チケット</button>
+</nav>
+
 <script>
-const order=['国語','算数','理科','社会','英語'],states=[['🌱','まだ'],['🌸','できた！'],['🍂✕','もう一度']];
-let tasks=JSON.parse(localStorage.getItem('ma_tasks_v2')||'null')||[{s:'国語',t:'漢字 10問',st:1},{s:'算数',t:'演習問題 大問3',st:1},{s:'理科',t:'テキスト p.42〜45',st:0},{s:'社会',t:'歴史プリント',st:1},{s:'英語',t:'単語20個',st:2}];
-const materials={
-国語:['毎日漢字','漢字','読解'],
-算数:['プログレス','演習'],
-理科:['サイエンスβ','サイエンスγ'],
-社会:['アカデミーⅡ','アカデミーⅢ','予習シリーズ'],
-英語:['筆記','音読','スピーキング']
-};
-const studyTexts={
-国語:['漢字','語彙・慣用句','教科書','参考書'],
-算数:['プログレス','予習シリーズ','サピテキスト'],
-理科:['サイエンスβ','サイエンスγ','サピテキスト'],
-社会:['アカデミーⅡ','アカデミーⅢ','サピテキスト'],
-英語:['英単語','教科書','音読','スピーキング']
-};
-const dateKey=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const fmt=d=>{let x=new Date(d+'T00:00:00');return (x.getMonth()+1)+'月'+x.getDate()+'日'};
-function show(id,btn){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});var target=document.getElementById(id);if(!target)return;target.classList.add('active');document.querySelectorAll('nav button').forEach(function(b){b.classList.remove('active')});if(btn)btn.classList.add('active');window.scrollTo(0,0);if(id==='base')renderBaseMonth();if(id==='collection')renderStampCollection()}
-function updateMaterials(){let a=materials[taskSubject.value]||[];taskMaterial.innerHTML='<option value="">指定なし</option>'+a.map(x=>`<option>${x}</option>`).join('')}
-function updateStudyTexts(){let a=studyTexts[studySubject.value]||[];studyText.innerHTML=a.map(x=>`<option>${x}</option>`).join('')}
-function sortTasks(){tasks.sort((a,b)=>{let d=order.indexOf(a.s)-order.indexOf(b.s);if(d)return d;if(a.s==='国語'){return (a.t.startsWith('毎日漢字')?0:1)-(b.t.startsWith('毎日漢字')?0:1)}return 0})}
-function addStudyTask(){let parts=[studyText.value],f=pageFrom.value,t=pageTo.value,n=studyFree.value.trim();if(f||t)parts.push(`p.${f||'—'}〜${t||'—'}`);if(n)parts.push(n);tasks.push({s:studySubject.value,t:parts.join('　'),st:0});sortTasks();saveTasks();render();saveTodayStamp();pageFrom.value='';pageTo.value='';studyFree.value=''}
-function saveTasks(){localStorage.setItem('ma_tasks_v2',JSON.stringify(tasks))}
-function setState(i,j){tasks[i].st=j;saveTasks();render();saveTodayStamp()}
-function addTask(){let t=taskText.value.trim();if(!t)return;let m=taskMaterial.value;tasks.push({s:taskSubject.value,t:(m?m+'　':'')+t,st:0});sortTasks();taskText.value='';saveTasks();render();saveTodayStamp()}
-function delTask(i){tasks.splice(i,1);saveTasks();render();saveTodayStamp()}
-function render(){let h='';order.forEach(s=>{let a=tasks.filter(x=>x.s===s);h+=`<div class="subject"><div class="subject-head"><span class="subject-name">${s}</span><span class="tag">${a.length?a.length+'件':'なし'}</span></div>`+(a.length?a.map(x=>{let i=tasks.indexOf(x);return `<div class="tasktxt">${x.t}</div><div class="states">${states.map((q,j)=>`<button aria-label="${q[1]}" title="${q[1]}" class="${x.st===j?'sel':''}" onclick="setState(${i},${j})"><span style="font-size:26px">${q[0].replace('✕','')}</span></button>`).join('')}</div>`}).join(''):'<div class="tasktxt">—</div>')+'</div>'});homeTasks.innerHTML=h;taskList.innerHTML=tasks.map(x=>`<div class="taskrow ${x.st===1?'finished':''}"><span class="tag">${x.s}</span><div class="grow">${x.t}</div></div>`).join('');parentTasks.innerHTML=tasks.map((x,i)=>`<div class="parent-task"><span class="tag">${x.s}</span><div class="grow">${x.t}</div><button class="x" onclick="delTask(${i})">×</button></div>`).join('')}
-function calcStamp(){if(!tasks.length)return '🍂';let done=tasks.filter(x=>x.st===1).length;if(done===tasks.length)return '🌸';if(done>tasks.length/2)return '🍀';return '🍂'}
-function saveTodayStamp(){let hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}'),k=dateKey(),touched=tasks.some(x=>x.st!==0);if(touched)hist[k]=calcStamp();else delete hist[k];localStorage.setItem('ma_voyage_v2',JSON.stringify(hist));renderVoyage()}
-function defaultRangeFromTest(test){let e=new Date(test+'T00:00:00'),d=new Date(e);d.setDate(e.getDate()-14);if(d.getDay()===0)d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-
-const voyageArchiveKey='ma_monthly_stamp_collection_v1';
-function archiveMonth(y,m){let hist={};try{hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}')||{}}catch(e){}let last=new Date(y,m+1,0).getDate(),stamps={};for(let d=1;d<=last;d++){let k=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');stamps[k]=hist[k]||'🌱'}let list=[];try{list=JSON.parse(localStorage.getItem(voyageArchiveKey)||'[]')||[]}catch(e){}let id=y+'-'+String(m+1).padStart(2,'0'),card={id,year:y,month:m+1,stamps};let p=list.findIndex(x=>x.id===id);if(p>=0)list[p]=card;else list.unshift(card);localStorage.setItem(voyageArchiveKey,JSON.stringify(list))}
-function ensurePastMonthArchived(){
-  let now=new Date(),p=new Date(now.getFullYear(),now.getMonth()-1,1),hist={};
-  try{hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}')||{}}catch(e){}
-  let prefix=p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-';
-  if(Object.keys(hist).some(k=>k.startsWith(prefix)))archiveMonth(p.getFullYear(),p.getMonth());
-}
-function renderStampCollection(){
-  let box=document.getElementById('stampCollection');if(!box)return;
-  let now=new Date(),currentId=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  let list=[];try{list=JSON.parse(localStorage.getItem(voyageArchiveKey)||'[]')||[]}catch(e){}
-  list=list.filter(x=>x.id!=='2026-08' && x.id!==currentId);
-  localStorage.setItem(voyageArchiveKey,JSON.stringify(list));
-  if(!list.length){box.innerHTML='<div class="collectionEmpty">過去のスタンプカードは、月が変わるとここに残るよ 🌱</div>';return}
-  box.innerHTML=list.map(a=>{
-    let days=new Date(a.year,a.month,0).getDate(),items=[];
-    for(let d=1;d<=days;d++){let k=a.year+'-'+String(a.month).padStart(2,'0')+'-'+String(d).padStart(2,'0'),v=a.stamps[k]||'🌱';items.push('<div class="collectionStamp"><span>'+v+'</span><small>'+a.month+'/'+d+'</small></div>')}
-    return '<div class="collectionCard"><div class="collectionHead"><div><div class="collectionTitle">🌱 '+a.year+'年'+a.month+'月</div><div class="collectionDate">1か月のがんばり</div></div><b>MY ANCHOR ✨</b></div><div class="collectionStamps">'+items.join('')+'</div></div>';
-  }).join('');
-}
-function getDates(){
-  let old={};
-  try{old=JSON.parse(localStorage.getItem('ma_dates_v2')||'{}')||{}}catch(e){}
-  let test=old.test||'2026-10-21';
-  let range=old.range||old.start||'2026-10-07';
-  return {start:range,range:range,test:test};
-}
-function saveDates(){
-  let r=document.getElementById('rangeDate'),t=document.getElementById('testDate'),o=document.getElementById('dateSaved');
-  let range=r?r.value:'',test=t?t.value:'';
-  if(!range||!test){if(o)o.textContent='日付を両方設定してください';return}
-  if(new Date(range+'T00:00:00')>new Date(test+'T00:00:00')){if(o)o.textContent='範囲発表日はチャレテ最終日より前にしてください';return}
-  localStorage.setItem('ma_dates_v2',JSON.stringify({range:range,start:range,test:test}));
-  if(o)o.textContent='✓ 日程を保存しました';
-  renderVoyage();
-}
-function renderVoyage(){
-  let ds=getDates(),hist={};try{hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}')||{}}catch(e){}
-  let now=new Date(),today=localDateKey(now);
-  let dateEl=document.getElementById('todayDate'),titleEl=document.getElementById('todayTitle'),
-      startEl=document.getElementById('voyageStart'),goalEl=document.getElementById('voyageGoal'),
-      fillEl=document.getElementById('progressBar'),countEl=document.getElementById('progressCount'),
-      grid=document.getElementById('road');
-  if(dateEl)dateEl.textContent=(now.getMonth()+1)+'月'+now.getDate()+'日';
-  if(ds.test){
-    let test=new Date(ds.test+'T00:00:00'),td=new Date(today+'T00:00:00'),daysLeft=Math.max(0,Math.ceil((test-td)/86400000));
-    if(titleEl)titleEl.textContent='あと'+daysLeft+'日！';
-    if(goalEl)goalEl.textContent=(test.getMonth()+1)+'月'+test.getDate()+'日';
-  }else{
-    if(titleEl)titleEl.textContent='あと何日！'; if(goalEl)goalEl.textContent='—';
+(function(){
+  const buttons=[...document.querySelectorAll('#nav button')];
+  const pages=[...document.querySelectorAll('.page')];
+  function openPage(id,button){
+    pages.forEach(p=>p.classList.toggle('active',p.id===id));
+    buttons.forEach(b=>b.classList.toggle('active',b===button));
+    window.scrollTo(0,0);
   }
-  if(ds.range){
-    let range=new Date(ds.range+'T00:00:00');
-    if(startEl)startEl.textContent='出発 '+(range.getMonth()+1)+'月'+range.getDate()+'日';
-  }else if(startEl)startEl.textContent='出発 —';
-  if(ds.range&&ds.test){
-    let a=new Date(ds.range+'T00:00:00'),b=new Date(ds.test+'T00:00:00'),td=new Date(today+'T00:00:00'),
-        total=Math.max(1,Math.round((b-a)/86400000)),elapsed=Math.max(0,Math.min(total,Math.round((td-a)/86400000)));
-    if(fillEl)fillEl.style.width=(elapsed/total*100)+'%';
-  }else if(fillEl)fillEl.style.width='0%';
-  if(countEl)countEl.textContent='今日も進んだ！';
-
-  let y=now.getFullYear(),mo=now.getMonth(),last=new Date(y,mo+1,0).getDate(),cells=[];let mh=document.getElementById('homeStampMonth');if(mh)mh.textContent=y+'年 '+(mo+1)+'月';
-  for(let day=1;day<=last;day++){
-    let k=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(day).padStart(2,'0'),v=hist[k]||'🌱';
-    cells.push('<div class="day"><div class="stamp">'+v+'</div><small>'+(mo+1)+'/'+day+'</small></div>');
-  }
-  if(grid)grid.innerHTML=cells.join('');
-  let vals=[];for(let day=1;day<=last;day++){let k=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');if(hist[k])vals.push(hist[k])}
-  let a=document.getElementById('statDone'),b=document.getElementById('statGo'),c=document.getElementById('statRetry');
-  if(a)a.textContent=vals.filter(x=>x==='🌸').length+'日';if(b)b.textContent=vals.filter(x=>x==='🍀').length+'日';if(c)c.textContent=vals.filter(x=>x==='🍂').length+'日';
-}
-function renderBase(){let d=new Date(),h=JSON.parse(localStorage.getItem(baseKey)||'{}'),v=h[dateKey()];baseDate.textContent=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;baseScore.value=v??'';baseSaved.textContent=v!==undefined?'✓ 今日の基礎トレを記録しました':''}function saveBaseScore(){if(baseScore.value==='')return;let v=Math.max(0,Math.min(10,Number(baseScore.value))),h=JSON.parse(localStorage.getItem(baseKey)||'{}');h[dateKey()]=v;localStorage.setItem(baseKey,JSON.stringify(h));baseScore.value=v;renderBase()}
-const core=['国語','算数','理科','社会'];let scoreData=JSON.parse(localStorage.getItem('ma_scores_v2')||'null')||Object.fromEntries(core.map(s=>[s,{target:'',actual:'',dev:'',avg:''}]));
-function renderScoreInputs(){
-  let body=document.querySelector('#study #scoreRows');if(!body)return;
-  let sc={};try{sc=JSON.parse(localStorage.getItem('ma_scores_v2')||'{}')||{}}catch(e){}
-  let en={};try{en=JSON.parse(localStorage.getItem('ma_english_v2')||'{}')||{}}catch(e){}
-  let subs=['国語','算数','理科','社会'],rows='';
-  subs.forEach(q=>{
-    let v=sc[q]||{};
-    rows+='<tr><td>'+q+'</td>'+
-      '<td><input id="t_'+q+'" type="number" inputmode="decimal" value="'+(v.target??'')+'"></td>'+
-      '<td><input id="a_'+q+'" type="number" inputmode="decimal" value="'+(v.actual??'')+'"></td>'+
-      '<td><input id="d_'+q+'" type="number" inputmode="decimal" step="0.1" value="'+(v.dev??'')+'"></td>'+
-      '<td><input id="m_'+q+'" type="number" inputmode="decimal" step="0.1" value="'+(v.avg??'')+'"></td></tr>';
+  buttons.forEach(button=>{
+    button.addEventListener('click',()=>openPage(button.dataset.page,button));
   });
-  rows+='<tr class="scoreSpacer"><td colspan="5"></td></tr>'+
-    '<tr class="en"><td>英語</td>'+
-    '<td><input id="enTarget" type="number" inputmode="decimal" value="'+(en.target??'')+'"></td>'+
-    '<td><input id="enActual" type="number" inputmode="decimal" value="'+(en.actual??'')+'"></td>'+
-    '<td>—</td><td>—</td></tr>';
-  body.innerHTML=rows;
-  updateTotals();
-}
-function renderTotals(){let sum=k=>core.reduce((a,s)=>a+(Number(scoreData[s][k])||0),0),filled=k=>core.some(s=>scoreData[s][k]!==''&&scoreData[s][k]!=null);totalTarget.textContent=filled('target')?sum('target')+'点':'—';totalActual.textContent=filled('actual')?sum('actual')+'点':'—'}
-function saveScores(){
-  let sc={},subs=['国語','算数','理科','社会'];
-  subs.forEach(q=>{
-    let g=id=>{let e=document.getElementById(id);return e?e.value:''};
-    sc[q]={target:g('t_'+q),actual:g('a_'+q),dev:g('d_'+q),avg:g('m_'+q)};
-  });
-  localStorage.setItem('ma_scores_v2',JSON.stringify(sc));
-  let et=document.getElementById('enTarget'),ea=document.getElementById('enActual');
-  localStorage.setItem('ma_english_v2',JSON.stringify({target:et?et.value:'',actual:ea?ea.value:''}));
-  updateTotals();
-  let o=document.getElementById('scoreSaved');if(o)o.textContent='保存しました ✓';
-}
-
-let baseViewDate=new Date();
-function changeBaseMonth(delta){baseViewDate=new Date(baseViewDate.getFullYear(),baseViewDate.getMonth()+delta,1);renderBaseMonth()}
-function saveBaseForDate(k){let el=document.getElementById('base_'+k);if(!el||el.value==='')return;let v=Math.max(0,Math.min(10,Number(el.value))),hist={};try{hist=JSON.parse(localStorage.getItem(baseKey)||'{}')||{}}catch(e){}hist[k]=v;localStorage.setItem(baseKey,JSON.stringify(hist));if(k===localDateKey(new Date())){let t=document.getElementById('baseScore');if(t)t.value=v}renderBase();renderBaseMonth()}
-function renderBaseMonth(){
-  let title=document.getElementById('baseMonthTitle'),box=document.getElementById('baseMonthTable');if(!title||!box)return;
-  let y=baseViewDate.getFullYear(),m=baseViewDate.getMonth(),hist={};try{hist=JSON.parse(localStorage.getItem(baseKey)||'{}')||{}}catch(e){}
-  let days=new Date(y,m+1,0).getDate();title.textContent=y+'年 '+(m+1)+'月';let rows='';
-  for(let d=1;d<=days;d++){
-    let k=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'),has=hist[k]!==undefined,v=has?hist[k]:'';
-    rows+='<tr><td>'+(m+1)+'/'+d+'</td>'+
-      '<td>'+(has?'<span class="baseSaved">'+v+'点</span>':'—')+'</td>'+
-      '<td><div class="baseInline">'+
-        '<input class="baseEdit" id="base_'+k+'" type="number" min="0" max="10" inputmode="numeric" value="" placeholder="点数">'+
-        '<button class="mini" onclick="saveBaseForDate(\''+k+'\')">保存</button>'+
-      '</div></td>'+
-      '<td>'+(has?'':'<span class="baseMissing">❌</span>')+'</td></tr>';
-  }
-  box.innerHTML='<table class="baseTable"><thead><tr><th>日付</th><th>点数</th><th>追加入力</th><th>未実施</th></tr></thead><tbody>'+rows+'</tbody></table>';
-}
-
-
-const motherMessageKey='ma_mother_message_v1';
-function renderMotherMessage(){let m=localStorage.getItem(motherMessageKey)||'今日も自分のペースでいこう🌱',d=document.getElementById('motherMessageDisplay'),i=document.getElementById('motherMessageInput');if(d)d.textContent=m;if(i)i.value=m}
-function saveMotherMessage(){let i=document.getElementById('motherMessageInput'),o=document.getElementById('motherMessageSaved'),m=i?i.value.trim():'';if(!m){if(o)o.textContent='メッセージを入力してください';return}localStorage.setItem(motherMessageKey,m);renderMotherMessage();if(o)o.textContent='💌 届けました！'}
-
-const parentPinKey='ma_parent_pin_v2';
-function currentParentPin(){return localStorage.getItem(parentPinKey)||'1234'}
-function unlockParent(){let entered=parentPinEntry.value;if(entered===currentParentPin()||entered==='1234'){if(entered==='1234')localStorage.setItem(parentPinKey,'1234');parentLock.classList.add('hidden');parentContent.classList.remove('hidden');pinMessage.textContent='';parentPinEntry.value=''}else pinMessage.textContent='暗証番号が違います'}
-function changeParentPin(){let p=newParentPin.value.trim();if(!/^\d{4,8}$/.test(p)){pinChanged.textContent='4〜8桁の数字で設定してください';return}localStorage.setItem(parentPinKey,p);newParentPin.value='';pinChanged.textContent='✓ 暗証番号を変更しました'}
-function saveUserName(){let n=userNameInput.value.trim();if(n){localStorage.setItem('ma_name_v2',n);renderRoomTitle()}} function renderRoomTitle(){let n=localStorage.getItem('ma_name_v2')||'';roomTitle.textContent=n?n+'の勉強部屋':'わたしの勉強部屋'}
-let ds=getDates();let rd=document.getElementById('rangeDate'),tdt=document.getElementById('testDate');if(rd)rd.value=ds.range||'';if(tdt)tdt.value=ds.test||'';userNameInput.value=localStorage.getItem('ma_name_v2')||'';renderRoomTitle();renderMotherMessage();updateMaterials();updateStudyTexts();sortTasks();render();saveTodayStamp();renderVoyage();renderBase();renderBaseMonth();renderScoreInputs();ensurePastMonthArchived();renderStampCollection();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
-</script></body></html>
+})();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+</script>
+</body>
+</html>

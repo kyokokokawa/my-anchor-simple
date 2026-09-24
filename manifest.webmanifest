@@ -3,7 +3,7 @@
   "short_name": "My Anchor",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#fffdf7",
+  "background_color": "#FFFDF4",
   "theme_color": "#FFD84D",
   "lang": "ja"
 }
