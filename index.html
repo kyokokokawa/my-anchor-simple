@@ -77,8 +77,8 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 .today-task-subject:first-child{border-top:0;margin-top:0;padding-top:0}
 .today-task-name{font-size:16px;color:#667068;margin:4px 0 8px}
 .stamp-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:13px}
-.stamp-btn{border:1.5px solid #d8e2d3;border-radius:16px;background:#fff;padding:8px 3px;color:#283d30;font-size:13px;line-height:1.25}
-.stamp-btn .emoji{display:block;font-size:22px;margin-bottom:2px}.stamp-btn.active{outline:5px solid #dce8d8;font-weight:900}
+.stamp-btn,.stamp-state{border:1.5px solid #d8e2d3;border-radius:16px;background:#fff;padding:8px 3px;color:#283d30;font-size:13px;line-height:1.25;text-align:center}.stamp-state{background:#f7faf5}.stamp-state.active{outline:5px solid #dce8d8;font-weight:900}
+.stamp-btn .emoji,.stamp-state .emoji{display:block;font-size:22px;margin-bottom:2px}.stamp-btn.active{outline:5px solid #dce8d8;font-weight:900}
 .today-empty{padding:20px 4px;text-align:center;color:#879087}
 .task-delete{float:right;border:0;background:transparent;color:#a48f7a;font-size:14px}
 .no-task-btn{border:1.5px solid #eadfbd;background:#fffdf5;color:#7b745f;border-radius:14px;padding:8px 12px;font-weight:800;margin:2px 0 10px}
@@ -264,8 +264,11 @@ function renderTodayStudyTasks(){
     state.append(label,undo);h.appendChild(state);return;
    }
    const row=document.createElement("div");row.className="stamp-row";
-   [["まだ","🌱"],["やってる","🌿"],["できた！","🌸"],["もう一度","🍂"]].forEach(([label,emoji])=>{
-    const b=document.createElement("button");b.type="button";b.className="stamp-btn"+(stamps[x.id]===label?" active":"");
+   const current=stamps[x.id]||"まだ";
+   const pending=document.createElement("div");pending.className="stamp-state"+(current==="まだ"?" active":"");
+   pending.innerHTML='<span class="emoji">🌱</span>まだ';row.appendChild(pending);
+   [["やってる","🌿"],["できた！","🌸"],["もう一度","🍂"]].forEach(([label,emoji])=>{
+    const b=document.createElement("button");b.type="button";b.className="stamp-btn"+(current===label?" active":"");
     b.innerHTML=`<span class="emoji">${emoji}</span>${label}`;b.addEventListener("click",()=>setTaskStamp(x.id,label));row.appendChild(b)
    });h.appendChild(row);
    if(isDailyKanji){const none=document.createElement("button");none.type="button";none.className="no-task-btn";none.textContent="課題なし";none.addEventListener("click",()=>setNoTask(x.id,true));h.appendChild(none)}
