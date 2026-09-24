@@ -40,7 +40,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 .saved{min-height:22px;text-align:center;margin-top:9px;color:#4e8b58;font-size:13px}
 .basic-today{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .score-input{width:76px;font:inherit;font-size:18px;font-weight:800;text-align:center;padding:10px;border:1px solid #ddd3b8;border-radius:13px;background:#fff}
-.mini-save{border:0;border-radius:13px;padding:11px 13px;background:#FFD84D;color:#426446;font-weight:900}
+.mini-save{border:0;border-radius:13px;padding:11px 13px;background:#FFD84D;color:#426446;font-weight:900}#todayBasicCheck{font-weight:900;color:#4e8b58}
 .month-nav{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;gap:8px;margin-bottom:12px}
 .month-nav button{border:0;border-radius:13px;background:#FFF0B8;padding:10px;font-size:18px}
 .month-title{text-align:center;font-size:19px;font-weight:900;color:#367c47}
@@ -75,13 +75,13 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
     </div>
   </div>
   <div class="card">
-    <h2>⚓ 今日の基礎トレ</h2>
+    <h2 id="todayBasicTitle">⚓ 基礎トレ</h2>
     <div class="basic-today">
-      <input id="todayBasicScore" class="score-input" type="number" min="0" max="10" inputmode="numeric" placeholder="0〜10">
+      <input id="todayBasicScore" class="score-input" type="number" min="0" max="10" inputmode="numeric">
       <span>点</span>
       <button id="saveTodayBasic" class="mini-save" type="button">保存</button>
+      <span id="todayBasicCheck" aria-live="polite"></span>
     </div>
-    <div id="todayBasicMessage" class="saved"></div>
   </div>
 </section>
 
@@ -294,20 +294,23 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
   }
 
   function renderTodayBasic(){
-    const scores = readBasicScores();
-    const key = todayKey();
-    const input = document.getElementById("todayBasicScore");
-    if(Object.prototype.hasOwnProperty.call(scores,key)){
-      input.value = scores[key];
-    }
+    const now = new Date();
+    document.getElementById("todayBasicTitle").textContent =
+      `⚓ 基礎トレ：${now.getMonth()+1}月${now.getDate()}日`;
   }
 
   document.getElementById("saveTodayBasic").addEventListener("click",()=>{
-    saveBasicScore(
-      todayKey(),
-      document.getElementById("todayBasicScore").value,
-      document.getElementById("todayBasicMessage")
-    );
+    const input = document.getElementById("todayBasicScore");
+    const check = document.getElementById("todayBasicCheck");
+    const score = validBasicScore(input.value);
+    if(score === null){
+      check.textContent = " 0〜10で入力";
+      return;
+    }
+    if(saveBasicScore(todayKey(), input.value, null)){
+      input.value = "";
+      check.textContent = "✓";
+    }
   });
 
   function renderBasicMonth(){
@@ -337,9 +340,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
       tdScore.textContent = hasScore ? `${scores[key]}` : "—";
 
       const tdEntry = document.createElement("td");
-      if(hasScore){
-        tdEntry.textContent = "";
-      }else if(isPastOrToday){
+      if(isPastOrToday){
         const wrap = document.createElement("div");
         wrap.className = "inline-entry";
         const input = document.createElement("input");
@@ -347,10 +348,11 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
         input.min = "0";
         input.max = "10";
         input.inputMode = "numeric";
+        input.value = hasScore ? scores[key] : "";
         input.setAttribute("aria-label", `${month+1}月${day}日の点数`);
         const button = document.createElement("button");
         button.type = "button";
-        button.textContent = "保存";
+        button.textContent = hasScore ? "修正" : "保存";
         button.addEventListener("click",()=>{
           if(saveBasicScore(key,input.value,null)) renderBasicMonth();
         });
