@@ -175,8 +175,11 @@ function renderStampCollection(){
   }).join('');
 }
 function getDates(){
-  let old={};try{old=JSON.parse(localStorage.getItem('ma_dates_v2')||'{}')||{}}catch(e){}
-  return {range:old.range||old.start||'',start:old.range||old.start||'',test:old.test||''}
+  let old={};
+  try{old=JSON.parse(localStorage.getItem('ma_dates_v2')||'{}')||{}}catch(e){}
+  let test=old.test||'2026-10-21';
+  let range=old.range||old.start||'2026-10-07';
+  return {start:range,range:range,test:test};
 }
 function saveDates(){
   let r=document.getElementById('rangeDate'),t=document.getElementById('testDate'),o=document.getElementById('dateSaved');
