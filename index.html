@@ -54,6 +54,16 @@ nav button.active{background:#ffe16a;color:#376a43;border-radius:18px}
 .baseMissing{font-size:18px;font-weight:900;margin-right:7px;color:#d85b3d}
 .baseSaved{font-weight:900;color:#37794c}
 .baseTable td{vertical-align:middle}
+
+.baseInline{display:flex;align-items:center;justify-content:center;gap:5px}
+.baseInline .baseEdit{width:58px!important;padding:7px 4px!important}
+.baseInline .mini{padding:7px 8px!important;white-space:nowrap}
+.baseTable th,.baseTable td{padding:9px 5px!important;text-align:center}
+.baseTable th:nth-child(1){width:16%}.baseTable th:nth-child(2){width:18%}.baseTable th:nth-child(3){width:48%}.baseTable th:nth-child(4){width:18%}
+.monthTitle{font-size:20px;font-weight:900;color:#4b8448;margin:4px 0 14px}
+.scoreSpacer td{height:18px!important;border:0!important;background:transparent!important}
+.scoreTable input{width:100%;min-width:0;padding:8px 4px;text-align:center}
+.scoreTable th,.scoreTable td{padding:7px 3px}
 </style></head><body><main>
 <section id="home" class="page active">
 <div class="hero">
@@ -66,7 +76,7 @@ nav button.active{background:#ffe16a;color:#376a43;border-radius:18px}
 <div id="cheer" class="cheer">⚓ 今日の一歩を、ここに残そう。</div>
 <div class="stats"><div class="stat"><span>🌸</span><b id="statDone">0日</b><small>できた！</small></div><div class="stat"><span>🍀</span><b id="statGo">0日</b><small>あと少し</small></div><div class="stat"><span>🍂</span><b id="statRetry">0日</b><small>もう一度</small></div></div>
 </div>
-<div class="card"><h2>🌱 今月のスタンプカード</h2><div class="note">マスを進むのではなく、毎日のスタンプがつながって航海図になる。</div><div id="road" class="road"></div><div class="legend"><span>🌸 できた！</span><span>🍀 あと少し</span><span>🍂× もう一度</span></div></div>
+<div class="card"><h2>🌱 今月のスタンプカード</h2><div id="homeStampMonth" class="monthTitle"></div><div id="road" class="road"></div><div class="legend"><span>🌸 できた！</span><span>🍀 あと少し</span><span>🍂× もう一度</span></div></div>
 
 <div class="card"><h2>⚓ 今日の基礎トレ</h2><div id="baseDate" class="note"></div><div class="base-row"><input id="baseScore" class="base-score" type="number" inputmode="numeric" min="0" max="10" placeholder="0"><b>点</b><button class="primary" onclick="saveBaseScore()">保存</button></div><div id="baseSaved" class="saved"></div></div>
 <div class="card"><h2>今日のやること <span class="taskLegend">（🌸できた！・🌱まだ・🍂もう一度）</span></h2><div id="homeTasks"></div></div>
@@ -145,19 +155,19 @@ function defaultRangeFromTest(test){let e=new Date(test+'T00:00:00'),d=new Date(
 
 const voyageArchiveKey='ma_monthly_stamp_collection_v1';
 function archiveMonth(y,m){let hist={};try{hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}')||{}}catch(e){}let last=new Date(y,m+1,0).getDate(),stamps={};for(let d=1;d<=last;d++){let k=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');stamps[k]=hist[k]||'🌱'}let list=[];try{list=JSON.parse(localStorage.getItem(voyageArchiveKey)||'[]')||[]}catch(e){}let id=y+'-'+String(m+1).padStart(2,'0'),card={id,year:y,month:m+1,stamps};let p=list.findIndex(x=>x.id===id);if(p>=0)list[p]=card;else list.unshift(card);localStorage.setItem(voyageArchiveKey,JSON.stringify(list))}
-function ensurePastMonthArchived(){}
+function ensurePastMonthArchived(){
+  let now=new Date(),p=new Date(now.getFullYear(),now.getMonth()-1,1),hist={};
+  try{hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}')||{}}catch(e){}
+  let prefix=p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-';
+  if(Object.keys(hist).some(k=>k.startsWith(prefix)))archiveMonth(p.getFullYear(),p.getMonth());
+}
 function renderStampCollection(){
   let box=document.getElementById('stampCollection');if(!box)return;
-  let hist={};try{hist=JSON.parse(localStorage.getItem('ma_voyage_v2')||'{}')||{}}catch(e){}
   let now=new Date(),currentId=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   let list=[];try{list=JSON.parse(localStorage.getItem(voyageArchiveKey)||'[]')||[]}catch(e){}
-  list=list.filter(x=>x.id!=='2026-08');
-  // current month is always shown as a card, plus genuine archived months
-  let current={id:currentId,year:now.getFullYear(),month:now.getMonth()+1,stamps:{}},last=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-  for(let d=1;d<=last;d++){let k=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');current.stamps[k]=hist[k]||'🌱'}
-  list=list.filter(x=>x.id!==currentId);
-  list.unshift(current);
-  localStorage.setItem(voyageArchiveKey,JSON.stringify(list.filter(x=>x.id!=='2026-08')));
+  list=list.filter(x=>x.id!=='2026-08' && x.id!==currentId);
+  localStorage.setItem(voyageArchiveKey,JSON.stringify(list));
+  if(!list.length){box.innerHTML='<div class="collectionEmpty">過去のスタンプカードは、月が変わるとここに残るよ 🌱</div>';return}
   box.innerHTML=list.map(a=>{
     let days=new Date(a.year,a.month,0).getDate(),items=[];
     for(let d=1;d<=days;d++){let k=a.year+'-'+String(a.month).padStart(2,'0')+'-'+String(d).padStart(2,'0'),v=a.stamps[k]||'🌱';items.push('<div class="collectionStamp"><span>'+v+'</span><small>'+a.month+'/'+d+'</small></div>')}
@@ -182,8 +192,8 @@ function renderVoyage(){
   let now=new Date(),today=localDateKey(now);
   let dateEl=document.getElementById('todayDate'),titleEl=document.getElementById('todayTitle'),
       startEl=document.getElementById('voyageStart'),goalEl=document.getElementById('voyageGoal'),
-      fillEl=document.getElementById('progressFill'),countEl=document.getElementById('progressCount'),
-      grid=document.getElementById('voyageGrid');
+      fillEl=document.getElementById('progressBar'),countEl=document.getElementById('progressCount'),
+      grid=document.getElementById('road');
   if(dateEl)dateEl.textContent=(now.getMonth()+1)+'月'+now.getDate()+'日';
   if(ds.test){
     let test=new Date(ds.test+'T00:00:00'),td=new Date(today+'T00:00:00'),daysLeft=Math.max(0,Math.ceil((test-td)/86400000));
@@ -203,7 +213,7 @@ function renderVoyage(){
   }else if(fillEl)fillEl.style.width='0%';
   if(countEl)countEl.textContent='今日も進んだ！';
 
-  let y=now.getFullYear(),mo=now.getMonth(),last=new Date(y,mo+1,0).getDate(),cells=[];
+  let y=now.getFullYear(),mo=now.getMonth(),last=new Date(y,mo+1,0).getDate(),cells=[];let mh=document.getElementById('homeStampMonth');if(mh)mh.textContent=y+'年 '+(mo+1)+'月';
   for(let day=1;day<=last;day++){
     let k=y+'-'+String(mo+1).padStart(2,'0')+'-'+String(day).padStart(2,'0'),v=hist[k]||'🌱';
     cells.push('<div class="day"><div class="stamp">'+v+'</div><small>'+(mo+1)+'/'+day+'</small></div>');
@@ -216,16 +226,39 @@ function renderVoyage(){
 function renderBase(){let d=new Date(),h=JSON.parse(localStorage.getItem(baseKey)||'{}'),v=h[dateKey()];baseDate.textContent=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;baseScore.value=v??'';baseSaved.textContent=v!==undefined?'✓ 今日の基礎トレを記録しました':''}function saveBaseScore(){if(baseScore.value==='')return;let v=Math.max(0,Math.min(10,Number(baseScore.value))),h=JSON.parse(localStorage.getItem(baseKey)||'{}');h[dateKey()]=v;localStorage.setItem(baseKey,JSON.stringify(h));baseScore.value=v;renderBase()}
 const core=['国語','算数','理科','社会'];let scoreData=JSON.parse(localStorage.getItem('ma_scores_v2')||'null')||Object.fromEntries(core.map(s=>[s,{target:'',actual:'',dev:'',avg:''}]));
 function renderScoreInputs(){
-  let body=document.getElementById('scoreRows');if(!body)return;
+  let body=document.querySelector('#study #scoreRows');if(!body)return;
   let sc={};try{sc=JSON.parse(localStorage.getItem('ma_scores_v2')||'{}')||{}}catch(e){}
   let en={};try{en=JSON.parse(localStorage.getItem('ma_english_v2')||'{}')||{}}catch(e){}
   let subs=['国語','算数','理科','社会'],rows='';
-  subs.forEach(q=>{let v=sc[q]||{};rows+='<tr><td>'+q+'</td><td><input id="t_'+q+'" type="number" inputmode="decimal" value="'+(v.target??'')+'"></td><td><input id="a_'+q+'" type="number" inputmode="decimal" value="'+(v.actual??'')+'"></td><td><input id="d_'+q+'" type="number" inputmode="decimal" step="0.1" value="'+(v.dev??'')+'"></td><td><input id="m_'+q+'" type="number" inputmode="decimal" step="0.1" value="'+(v.avg??'')+'"></td></tr>'});
-  rows+='<tr class="scoreSpacer"><td colspan="5"></td></tr><tr class="en"><td>英語</td><td><input id="enTarget" type="number" inputmode="decimal" value="'+(en.target??'')+'"></td><td><input id="enActual" type="number" inputmode="decimal" value="'+(en.actual??'')+'"></td><td class="dash">—</td><td class="dash">—</td></tr>';
-  body.innerHTML=rows;updateTotals();
+  subs.forEach(q=>{
+    let v=sc[q]||{};
+    rows+='<tr><td>'+q+'</td>'+
+      '<td><input id="t_'+q+'" type="number" inputmode="decimal" value="'+(v.target??'')+'"></td>'+
+      '<td><input id="a_'+q+'" type="number" inputmode="decimal" value="'+(v.actual??'')+'"></td>'+
+      '<td><input id="d_'+q+'" type="number" inputmode="decimal" step="0.1" value="'+(v.dev??'')+'"></td>'+
+      '<td><input id="m_'+q+'" type="number" inputmode="decimal" step="0.1" value="'+(v.avg??'')+'"></td></tr>';
+  });
+  rows+='<tr class="scoreSpacer"><td colspan="5"></td></tr>'+
+    '<tr class="en"><td>英語</td>'+
+    '<td><input id="enTarget" type="number" inputmode="decimal" value="'+(en.target??'')+'"></td>'+
+    '<td><input id="enActual" type="number" inputmode="decimal" value="'+(en.actual??'')+'"></td>'+
+    '<td>—</td><td>—</td></tr>';
+  body.innerHTML=rows;
+  updateTotals();
 }
 function renderTotals(){let sum=k=>core.reduce((a,s)=>a+(Number(scoreData[s][k])||0),0),filled=k=>core.some(s=>scoreData[s][k]!==''&&scoreData[s][k]!=null);totalTarget.textContent=filled('target')?sum('target')+'点':'—';totalActual.textContent=filled('actual')?sum('actual')+'点':'—'}
-function saveScores(){core.forEach(s=>['target','actual','dev','avg'].forEach(k=>scoreData[s][k]=document.getElementById(`sc_${s}_${k}`).value));localStorage.setItem('ma_scores_v2',JSON.stringify(scoreData));localStorage.setItem('ma_english_v2',JSON.stringify({target:enTarget.value,actual:enActual.value}));renderTotals();scoreSaved.textContent='✓ 成績を保存しました'}
+function saveScores(){
+  let sc={},subs=['国語','算数','理科','社会'];
+  subs.forEach(q=>{
+    let g=id=>{let e=document.getElementById(id);return e?e.value:''};
+    sc[q]={target:g('t_'+q),actual:g('a_'+q),dev:g('d_'+q),avg:g('m_'+q)};
+  });
+  localStorage.setItem('ma_scores_v2',JSON.stringify(sc));
+  let et=document.getElementById('enTarget'),ea=document.getElementById('enActual');
+  localStorage.setItem('ma_english_v2',JSON.stringify({target:et?et.value:'',actual:ea?ea.value:''}));
+  updateTotals();
+  let o=document.getElementById('scoreSaved');if(o)o.textContent='保存しました ✓';
+}
 
 let baseViewDate=new Date();
 function changeBaseMonth(delta){baseViewDate=new Date(baseViewDate.getFullYear(),baseViewDate.getMonth()+delta,1);renderBaseMonth()}
@@ -235,12 +268,16 @@ function renderBaseMonth(){
   let y=baseViewDate.getFullYear(),m=baseViewDate.getMonth(),hist={};try{hist=JSON.parse(localStorage.getItem(baseKey)||'{}')||{}}catch(e){}
   let days=new Date(y,m+1,0).getDate();title.textContent=y+'年 '+(m+1)+'月';let rows='';
   for(let d=1;d<=days;d++){
-    let k=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'),v=hist[k];
-    rows+='<tr><td>'+(m+1)+'/'+d+'</td><td>'+(v!==undefined?'<span class="baseSaved">'+v+'点</span>':'<span class="baseMissing">❌</span>')+
-      '</td><td><input class="baseEdit" id="base_'+k+'" type="number" min="0" max="10" inputmode="numeric" value="'+(v!==undefined?v:'')+'" placeholder="点数"></td>'+
-      '<td><button class="mini" onclick="saveBaseForDate(\''+k+'\')">保存</button></td></tr>';
+    let k=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'),has=hist[k]!==undefined,v=has?hist[k]:'';
+    rows+='<tr><td>'+(m+1)+'/'+d+'</td>'+
+      '<td>'+(has?'<span class="baseSaved">'+v+'点</span>':'—')+'</td>'+
+      '<td><div class="baseInline">'+
+        '<input class="baseEdit" id="base_'+k+'" type="number" min="0" max="10" inputmode="numeric" value="" placeholder="点数">'+
+        '<button class="mini" onclick="saveBaseForDate(\''+k+'\')">保存</button>'+
+      '</div></td>'+
+      '<td>'+(has?'':'<span class="baseMissing">❌</span>')+'</td></tr>';
   }
-  box.innerHTML='<table class="baseTable"><thead><tr><th>日付</th><th>記録</th><th>点数</th><th></th></tr></thead><tbody id="scoreRows">'+rows+'</tbody></table>';
+  box.innerHTML='<table class="baseTable"><thead><tr><th>日付</th><th>点数</th><th>追加入力</th><th>未実施</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 
 
@@ -253,5 +290,5 @@ function currentParentPin(){return localStorage.getItem(parentPinKey)||'1234'}
 function unlockParent(){let entered=parentPinEntry.value;if(entered===currentParentPin()||entered==='1234'){if(entered==='1234')localStorage.setItem(parentPinKey,'1234');parentLock.classList.add('hidden');parentContent.classList.remove('hidden');pinMessage.textContent='';parentPinEntry.value=''}else pinMessage.textContent='暗証番号が違います'}
 function changeParentPin(){let p=newParentPin.value.trim();if(!/^\d{4,8}$/.test(p)){pinChanged.textContent='4〜8桁の数字で設定してください';return}localStorage.setItem(parentPinKey,p);newParentPin.value='';pinChanged.textContent='✓ 暗証番号を変更しました'}
 function saveUserName(){let n=userNameInput.value.trim();if(n){localStorage.setItem('ma_name_v2',n);renderRoomTitle()}} function renderRoomTitle(){let n=localStorage.getItem('ma_name_v2')||'';roomTitle.textContent=n?n+'の勉強部屋':'わたしの勉強部屋'}
-let ds=getDates();let rd=document.getElementById('rangeDate'),tdt=document.getElementById('testDate');if(rd)rd.value=ds.range||'';if(tdt)tdt.value=ds.test||'';userNameInput.value=localStorage.getItem('ma_name_v2')||'';renderRoomTitle();renderMotherMessage();updateMaterials();updateStudyTexts();sortTasks();render();saveTodayStamp();renderBase();renderBaseMonth();renderScoreInputs();renderStampCollection();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+let ds=getDates();let rd=document.getElementById('rangeDate'),tdt=document.getElementById('testDate');if(rd)rd.value=ds.range||'';if(tdt)tdt.value=ds.test||'';userNameInput.value=localStorage.getItem('ma_name_v2')||'';renderRoomTitle();renderMotherMessage();updateMaterials();updateStudyTexts();sortTasks();render();saveTodayStamp();renderBase();renderBaseMonth();renderScoreInputs();ensurePastMonthArchived();renderStampCollection();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script></body></html>
