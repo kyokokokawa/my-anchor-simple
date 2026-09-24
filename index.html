@@ -28,6 +28,16 @@ nav{position:fixed;z-index:10;left:50%;bottom:0;transform:translateX(-50%);width
 nav button{border:0;background:transparent;border-radius:15px;padding:8px 2px 6px;color:#657367;font-size:10px;line-height:1.25}
 nav button span{display:block;font-size:21px;margin-bottom:3px}
 nav button.active{background:#FFE16A;color:#386d43;font-weight:800}
+.challenge-box{text-align:center}
+.challenge-label{font-size:15px;font-weight:800;color:#5f735f}
+.countdown{font-size:38px;font-weight:900;color:#ef8c2f;margin:8px 0}
+.route{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;font-weight:800;color:#477451}
+.route .arrow{color:#ef9d35}
+.form-row{display:grid;gap:7px;margin:13px 0}
+.form-row label{font-weight:800;color:#477451}
+input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px solid #ddd3b8;border-radius:14px;background:#fff}
+.save-btn{width:100%;border:0;border-radius:15px;padding:13px;background:#FFD84D;color:#426446;font-size:16px;font-weight:900}
+.saved{min-height:22px;text-align:center;margin-top:9px;color:#4e8b58;font-size:13px}
 .screen-title{display:flex;align-items:center;gap:9px;margin:20px 2px 8px;font-size:24px;font-weight:900;color:#357b48}
 </style>
 </head>
@@ -41,7 +51,15 @@ nav button.active{background:#FFE16A;color:#386d43;font-weight:800}
 
 <section id="today" class="page active">
   <div class="screen-title">🏠 今日</div>
-  <div class="card"><div class="badge">NEW MY ANCHOR</div><h2>今日のページ</h2><div class="soft">ここから、必要な機能をひとつずつ作っていきます。</div></div>
+  <div class="card challenge-box">
+    <div class="challenge-label">次のチャレテまで</div>
+    <div id="countdown" class="countdown">日付を設定してね 🌱</div>
+    <div class="route">
+      <span id="startDisplay">出発 —</span>
+      <span class="arrow">→</span>
+      <span id="goalDisplay">GOAL ✨ —</span>
+    </div>
+  </div>
 </section>
 
 <section id="tasks" class="page">
@@ -66,7 +84,20 @@ nav button.active{background:#FFE16A;color:#386d43;font-weight:800}
 
 <section id="mother" class="page">
   <div class="screen-title">🌿 お母さん</div>
-  <div class="card placeholder">お母さん画面<br>— ベース完成 —</div>
+  <div class="card">
+    <h2>📅 チャレテの日付設定</h2>
+    <div class="soft">出発日とチャレテ本番日を設定します。</div>
+    <div class="form-row">
+      <label for="startDate">出発日</label>
+      <input id="startDate" type="date">
+    </div>
+    <div class="form-row">
+      <label for="goalDate">チャレテ本番日</label>
+      <input id="goalDate" type="date">
+    </div>
+    <button id="saveDates" class="save-btn" type="button">保存</button>
+    <div id="saveMessage" class="saved"></div>
+  </div>
 </section>
 
 <section id="ticket" class="page">
@@ -87,18 +118,97 @@ nav button.active{background:#FFE16A;color:#386d43;font-weight:800}
 
 <script>
 (function(){
-  const buttons=[...document.querySelectorAll('#nav button')];
-  const pages=[...document.querySelectorAll('.page')];
-  function openPage(id,button){
-    pages.forEach(p=>p.classList.toggle('active',p.id===id));
-    buttons.forEach(b=>b.classList.toggle('active',b===button));
-    window.scrollTo(0,0);
+  "use strict";
+
+  const STORAGE_KEY = "myAnchorV2.challengeDates";
+  const buttons = [...document.querySelectorAll("#nav button")];
+  const pages = [...document.querySelectorAll(".page")];
+
+  function openPage(id, button){
+    pages.forEach(page => page.classList.toggle("active", page.id === id));
+    buttons.forEach(btn => btn.classList.toggle("active", btn === button));
+    window.scrollTo(0, 0);
   }
-  buttons.forEach(button=>{
-    button.addEventListener('click',()=>openPage(button.dataset.page,button));
+
+  buttons.forEach(button => {
+    button.addEventListener("click", () => openPage(button.dataset.page, button));
   });
+
+  function readDates(){
+    try {
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      return {
+        start: typeof data.start === "string" ? data.start : "",
+        goal: typeof data.goal === "string" ? data.goal : ""
+      };
+    } catch (e) {
+      return {start:"", goal:""};
+    }
+  }
+
+  function parseLocalDate(value){
+    const parts = value.split("-").map(Number);
+    if(parts.length !== 3 || parts.some(Number.isNaN)) return null;
+    return new Date(parts[0], parts[1]-1, parts[2]);
+  }
+
+  function formatMD(value){
+    const d = parseLocalDate(value);
+    return d ? `${d.getMonth()+1}月${d.getDate()}日` : "—";
+  }
+
+  function todayAtMidnight(){
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+
+  function renderDates(){
+    const dates = readDates();
+    document.getElementById("startDate").value = dates.start;
+    document.getElementById("goalDate").value = dates.goal;
+    document.getElementById("startDisplay").textContent =
+      dates.start ? `出発 ${formatMD(dates.start)}` : "出発 —";
+    document.getElementById("goalDisplay").textContent =
+      dates.goal ? `GOAL ✨ ${formatMD(dates.goal)}` : "GOAL ✨ —";
+
+    const countdown = document.getElementById("countdown");
+    if(!dates.goal){
+      countdown.textContent = "日付を設定してね 🌱";
+      return;
+    }
+
+    const goal = parseLocalDate(dates.goal);
+    const diff = Math.ceil((goal - todayAtMidnight()) / 86400000);
+    if(diff > 0) countdown.textContent = `あと${diff}日！`;
+    else if(diff === 0) countdown.textContent = "今日がチャレテ！";
+    else countdown.textContent = "チャレテ終了 🌸";
+  }
+
+  document.getElementById("saveDates").addEventListener("click", () => {
+    const start = document.getElementById("startDate").value;
+    const goal = document.getElementById("goalDate").value;
+    const message = document.getElementById("saveMessage");
+
+    if(!start || !goal){
+      message.textContent = "出発日と本番日の両方を入れてね。";
+      return;
+    }
+    if(parseLocalDate(start) > parseLocalDate(goal)){
+      message.textContent = "出発日は本番日より前にしてね。";
+      return;
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({start, goal}));
+    message.textContent = "保存しました ✓";
+    renderDates();
+  });
+
+  renderDates();
 })();
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+}
 </script>
 </body>
 </html>
