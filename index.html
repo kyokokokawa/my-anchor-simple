@@ -204,8 +204,8 @@ function renderVoyage(){
   }
   if(ds.range){
     let range=new Date(ds.range+'T00:00:00');
-    if(startEl)startEl.textContent='範囲発表 '+(range.getMonth()+1)+'月'+range.getDate()+'日';
-  }else if(startEl)startEl.textContent='範囲発表 —';
+    if(startEl)startEl.textContent='出発 '+(range.getMonth()+1)+'月'+range.getDate()+'日';
+  }else if(startEl)startEl.textContent='出発 —';
   if(ds.range&&ds.test){
     let a=new Date(ds.range+'T00:00:00'),b=new Date(ds.test+'T00:00:00'),td=new Date(today+'T00:00:00'),
         total=Math.max(1,Math.round((b-a)/86400000)),elapsed=Math.max(0,Math.min(total,Math.round((td-a)/86400000)));
@@ -290,5 +290,5 @@ function currentParentPin(){return localStorage.getItem(parentPinKey)||'1234'}
 function unlockParent(){let entered=parentPinEntry.value;if(entered===currentParentPin()||entered==='1234'){if(entered==='1234')localStorage.setItem(parentPinKey,'1234');parentLock.classList.add('hidden');parentContent.classList.remove('hidden');pinMessage.textContent='';parentPinEntry.value=''}else pinMessage.textContent='暗証番号が違います'}
 function changeParentPin(){let p=newParentPin.value.trim();if(!/^\d{4,8}$/.test(p)){pinChanged.textContent='4〜8桁の数字で設定してください';return}localStorage.setItem(parentPinKey,p);newParentPin.value='';pinChanged.textContent='✓ 暗証番号を変更しました'}
 function saveUserName(){let n=userNameInput.value.trim();if(n){localStorage.setItem('ma_name_v2',n);renderRoomTitle()}} function renderRoomTitle(){let n=localStorage.getItem('ma_name_v2')||'';roomTitle.textContent=n?n+'の勉強部屋':'わたしの勉強部屋'}
-let ds=getDates();let rd=document.getElementById('rangeDate'),tdt=document.getElementById('testDate');if(rd)rd.value=ds.range||'';if(tdt)tdt.value=ds.test||'';userNameInput.value=localStorage.getItem('ma_name_v2')||'';renderRoomTitle();renderMotherMessage();updateMaterials();updateStudyTexts();sortTasks();render();saveTodayStamp();renderBase();renderBaseMonth();renderScoreInputs();ensurePastMonthArchived();renderStampCollection();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+let ds=getDates();let rd=document.getElementById('rangeDate'),tdt=document.getElementById('testDate');if(rd)rd.value=ds.range||'';if(tdt)tdt.value=ds.test||'';userNameInput.value=localStorage.getItem('ma_name_v2')||'';renderRoomTitle();renderMotherMessage();updateMaterials();updateStudyTexts();sortTasks();render();saveTodayStamp();renderVoyage();renderBase();renderBaseMonth();renderScoreInputs();ensurePastMonthArchived();renderStampCollection();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script></body></html>
