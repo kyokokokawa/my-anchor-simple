@@ -67,6 +67,20 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
   #basic tbody td:last-child{font-size:27px}
 
 .task-setup-card,.task-list-card{margin-bottom:16px}.task-setup-card h3,.task-list-card h3{margin:0 0 8px;color:#3f7f4d;font-size:21px}.task-help{margin:0 0 18px;color:#6f806f;font-size:14px}.task-label{display:block;margin:13px 0 6px;color:#4e6f52;font-weight:800}.task-select{width:100%;padding:13px 14px;border:1.5px solid #e8d9b8;border-radius:16px;background:#fff;font-size:17px;color:#365b40}.task-add-btn{margin-top:16px;border:0;border-radius:16px;background:#ffdb65;color:#42664a;font-size:17px;font-weight:900;padding:12px 24px}.task-add-message{margin-left:10px;color:#4e8b58;font-weight:800}.subject-block{padding:13px 0;border-bottom:1px solid #eee3c9}.subject-block:last-child{border-bottom:0}.subject-title{font-weight:900;color:#3f7f4d;font-size:18px;margin-bottom:7px}.material-chip{display:inline-block;margin:4px 6px 4px 0;padding:7px 11px;border-radius:999px;background:#fff8d9;color:#526d52;font-weight:700}.empty-study-items{padding:18px 4px;color:#899289;text-align:center}
+
+/* v5.1 今日のやること */
+.task-input{width:100%;padding:13px 14px;border:1.5px solid #e8d9b8;border-radius:16px;background:#fff;font-size:17px;color:#365b40}
+.page-range{display:grid;grid-template-columns:82px auto 82px auto;gap:7px;align-items:center;color:#5e715f;font-weight:700}
+.page-range .task-input{text-align:center;padding:12px 6px}.other-material-wrap{margin-top:8px}
+.today-task-card{margin-top:16px}.today-task-card h3{margin:0 0 14px;color:#3f7f4d;font-size:21px}
+.today-task-subject{font-size:19px;font-weight:900;color:#314c39;margin:16px 0 7px;padding-top:12px;border-top:1px solid #eee8d8}
+.today-task-subject:first-child{border-top:0;margin-top:0;padding-top:0}
+.today-task-name{font-size:16px;color:#667068;margin:4px 0 8px}
+.stamp-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:13px}
+.stamp-btn{border:1.5px solid #d8e2d3;border-radius:16px;background:#fff;padding:8px 3px;color:#283d30;font-size:13px;line-height:1.25}
+.stamp-btn .emoji{display:block;font-size:22px;margin-bottom:2px}.stamp-btn.active{outline:5px solid #dce8d8;font-weight:900}
+.today-empty{padding:20px 4px;text-align:center;color:#879087}
+.task-delete{float:right;border:0;background:transparent;color:#a48f7a;font-size:14px}
 </style>
 </head>
 <body>
@@ -101,21 +115,30 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
       <div class="basic-plant-badge"><span id="todayBasicPlant"></span></div>
     </div>
   </div>
-</section>
+<div class="card today-task-card">
+<h3>📚 今日のやること</h3>
+<div id="todayStudyTasks"></div>
+</div></section>
 
 <section id="tasks" class="page">
 <h2>📚 やること</h2>
 <div class="card task-setup-card">
 <h3>やることを決める</h3>
-<p class="task-help">まずは教科と内容を登録しよう 🌱</p>
+<p class="task-help">教科・内容・ページを登録しよう 🌱</p>
 <label class="task-label" for="taskSubject">教科</label>
 <select id="taskSubject" class="task-select"><option>国語</option><option>算数</option><option>理科</option><option>社会</option><option>英語</option></select>
 <label class="task-label" for="taskMaterial">内容</label>
 <select id="taskMaterial" class="task-select"></select>
-<button id="addStudyItem" class="task-add-btn" type="button">追加</button>
+<div id="otherMaterialWrap" class="other-material-wrap" hidden>
+<label class="task-label" for="otherMaterial">その他の内容</label>
+<input id="otherMaterial" class="task-input" type="text" placeholder="例：歴史プリント">
+</div>
+<label class="task-label">ページ</label>
+<div class="page-range"><input id="pageFrom" class="task-input" inputmode="numeric" type="number" min="1" placeholder="42"><span>ページから</span><input id="pageTo" class="task-input" inputmode="numeric" type="number" min="1" placeholder="45"><span>ページまで</span></div>
+<button id="addStudyItem" class="task-add-btn" type="button">今日のやることに追加</button>
 <span id="taskAddMessage" class="task-add-message"></span>
 </div>
-<div class="card task-list-card"><h3>登録したやること</h3><div id="studyItemList"></div></div>
+<div class="card task-list-card"><h3>今日のやること</h3><div id="studyItemList"></div></div>
 </section>
 
 <section id="challenge" class="page">
@@ -186,13 +209,65 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
 <script>
 
-const STUDY_MATERIALS={"国語":["毎日漢字","漢字","読解"],"算数":["プログレス","演習"],"理科":["サイエンスβ","サイエンスγ"],"社会":["アカデミーⅡ","アカデミーⅢ","予習シリーズ"],"英語":["筆記","音読","スピーキング"]};
+const STUDY_MATERIALS={
+"国語":["毎日漢字","漢字","読解","その他"],
+"算数":["プログレス","演習","その他"],
+"理科":["サイエンスβ","サイエンスγ","その他"],
+"社会":["アカデミーⅡ","アカデミーⅢ","予習シリーズ","その他"],
+"英語":["筆記","音読","スピーキング","その他"]
+};
 const STUDY_ITEM_KEY="myAnchorV2.studyItems";
+const STUDY_STAMP_KEY="myAnchorV2.studyTaskStamps";
+function localDateKey(d=new Date()){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`}
 function readStudyItems(){try{const x=JSON.parse(localStorage.getItem(STUDY_ITEM_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
 function writeStudyItems(x){localStorage.setItem(STUDY_ITEM_KEY,JSON.stringify(x))}
-function renderMaterialChoices(){const s=document.getElementById("taskSubject"),m=document.getElementById("taskMaterial");if(!s||!m)return;m.innerHTML="";(STUDY_MATERIALS[s.value]||[]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;m.appendChild(o)})}
-function renderStudyItems(){const h=document.getElementById("studyItemList");if(!h)return;const items=readStudyItems();h.innerHTML="";if(!items.length){h.innerHTML='<div class="empty-study-items">まだ登録されていません 🌱</div>';return}["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");c.className="material-chip";c.textContent=x.material;b.appendChild(c)});h.appendChild(b)})}
-function initStudyItems(){const s=document.getElementById("taskSubject"),a=document.getElementById("addStudyItem");if(!s||!a)return;renderMaterialChoices();renderStudyItems();s.addEventListener("change",renderMaterialChoices);a.addEventListener("click",()=>{const m=document.getElementById("taskMaterial"),msg=document.getElementById("taskAddMessage"),item={subject:s.value,material:m.value},items=readStudyItems();if(items.some(x=>x.subject===item.subject&&x.material===item.material)){msg.textContent="登録済みです"}else{items.push(item);writeStudyItems(items);renderStudyItems();msg.textContent="追加しました ✓"}setTimeout(()=>msg.textContent="",1500)})}
+function readTaskStamps(){try{return JSON.parse(localStorage.getItem(STUDY_STAMP_KEY)||"{}")||{}}catch(e){return{}}}
+function writeTaskStamps(x){localStorage.setItem(STUDY_STAMP_KEY,JSON.stringify(x))}
+function renderMaterialChoices(){
+ const s=document.getElementById("taskSubject"),m=document.getElementById("taskMaterial");if(!s||!m)return;m.innerHTML="";
+ (STUDY_MATERIALS[s.value]||[]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;m.appendChild(o)});
+ toggleOtherMaterial()
+}
+function toggleOtherMaterial(){const m=document.getElementById("taskMaterial"),w=document.getElementById("otherMaterialWrap");if(w&&m)w.hidden=m.value!=="その他"}
+function taskDisplayName(x){let n=x.material;if(x.pageFrom||x.pageTo){if(x.pageFrom&&x.pageTo)n+=` p.${x.pageFrom}〜${x.pageTo}`;else if(x.pageFrom)n+=` p.${x.pageFrom}〜`;else n+=` 〜p.${x.pageTo}`}return n}
+function renderStudyItems(){
+ const h=document.getElementById("studyItemList");if(!h)return;const items=readStudyItems().filter(x=>!x.date||x.date===localDateKey());h.innerHTML="";
+ if(!items.length){h.innerHTML='<div class="empty-study-items">まだ登録されていません 🌱</div>';return}
+ ["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");c.className="material-chip";c.textContent=taskDisplayName(x);b.appendChild(c)});h.appendChild(b)})
+}
+function setTaskStamp(id,status){
+ const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};all[date][id]=status;writeTaskStamps(all);renderTodayStudyTasks()
+}
+function renderTodayStudyTasks(){
+ const h=document.getElementById("todayStudyTasks");if(!h)return;const date=localDateKey(),items=readStudyItems().filter(x=>!x.date||x.date===date),stamps=(readTaskStamps()[date]||{});h.innerHTML="";
+ if(!items.length){h.innerHTML='<div class="today-empty">「やること」から今日の課題を追加しよう 🌱</div>';return}
+ ["国語","算数","理科","社会","英語"].forEach(s=>{
+  const a=items.filter(x=>x.subject===s);if(!a.length)return;
+  const title=document.createElement("div");title.className="today-task-subject";title.textContent=s;h.appendChild(title);
+  a.forEach(x=>{
+   const name=document.createElement("div");name.className="today-task-name";name.textContent=taskDisplayName(x);h.appendChild(name);
+   const row=document.createElement("div");row.className="stamp-row";
+   [["まだ","🌱"],["やってる","🌿"],["できた！","🌸"],["もう一度","🍂"]].forEach(([label,emoji])=>{
+    const b=document.createElement("button");b.type="button";b.className="stamp-btn"+(stamps[x.id]===label?" active":"");
+    b.innerHTML=`<span class="emoji">${emoji}</span>${label}`;b.addEventListener("click",()=>setTaskStamp(x.id,label));row.appendChild(b)
+   });h.appendChild(row)
+  })
+ })
+}
+function initStudyItems(){
+ const s=document.getElementById("taskSubject"),m=document.getElementById("taskMaterial"),a=document.getElementById("addStudyItem");if(!s||!a)return;
+ renderMaterialChoices();renderStudyItems();renderTodayStudyTasks();s.addEventListener("change",renderMaterialChoices);m.addEventListener("change",toggleOtherMaterial);
+ a.addEventListener("click",()=>{
+  const msg=document.getElementById("taskAddMessage"),other=document.getElementById("otherMaterial"),pf=document.getElementById("pageFrom"),pt=document.getElementById("pageTo");
+  let material=m.value;if(material==="その他")material=(other.value||"").trim();
+  if(!material){msg.textContent="内容を入力してね";return}
+  const from=(pf.value||"").trim(),to=(pt.value||"").trim();
+  if(from&&to&&Number(from)>Number(to)){msg.textContent="ページの順番を確認してね";return}
+  const items=readStudyItems(),item={id:"task_"+Date.now(),date:localDateKey(),subject:s.value,material,pageFrom:from,pageTo:to};
+  items.push(item);writeStudyItems(items);renderStudyItems();renderTodayStudyTasks();msg.textContent="今日に追加しました ✓";
+  pf.value="";pt.value="";if(other)other.value="";setTimeout(()=>msg.textContent="",1600)
+ })
+}
 
 (function(){
   "use strict";
