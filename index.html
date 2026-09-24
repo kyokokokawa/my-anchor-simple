@@ -40,7 +40,10 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 .saved{min-height:22px;text-align:center;margin-top:9px;color:#4e8b58;font-size:13px}
 .basic-today{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .score-input{width:76px;font:inherit;font-size:18px;font-weight:800;text-align:center;padding:10px;border:1px solid #ddd3b8;border-radius:13px;background:#fff}
-.mini-save{border:0;border-radius:13px;padding:11px 13px;background:#FFD84D;color:#426446;font-weight:900}#todayBasicCheck{font-weight:900;color:#4e8b58}.basic-result{text-align:center;font-size:30px;font-weight:900;color:#3f7f4d;padding:14px 2px}
+.mini-save{border:0;border-radius:13px;padding:11px 13px;background:#FFD84D;color:#426446;font-weight:900}#todayBasicCheck{font-weight:900;color:#4e8b58}.basic-result{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:16px;align-items:center;padding:12px 8px 4px}
+.basic-score-box{min-height:88px;border:2px solid #f0dfb8;border-radius:24px;display:flex;align-items:center;justify-content:center;background:#fffdf8;color:#3f7f4d;font-size:34px;font-weight:900}
+.basic-plant-badge{width:104px;height:104px;border:10px solid #f7c93e;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;justify-self:center;box-shadow:0 4px 12px rgba(239,183,42,.12)}
+.basic-plant-badge span{font-size:48px;line-height:1}
 .month-nav{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;gap:8px;margin-bottom:12px}
 .month-nav button{border:0;border-radius:13px;background:#FFF0B8;padding:10px;font-size:18px}
 .month-title{text-align:center;font-size:19px;font-weight:900;color:#367c47}
@@ -91,7 +94,10 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
       <button id="saveTodayBasic" class="mini-save" type="button">保存</button>
       <span id="todayBasicCheck" aria-live="polite"></span>
     </div>
-    <div id="todayBasicResult" class="basic-result" hidden></div>
+    <div id="todayBasicResult" class="basic-result" hidden>
+      <div class="basic-score-box"><span id="todayBasicScoreText"></span></div>
+      <div class="basic-plant-badge"><span id="todayBasicPlant"></span></div>
+    </div>
   </div>
 </section>
 
@@ -323,7 +329,8 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
     entry.hidden = hasScore;
     result.hidden = !hasScore;
-    result.textContent = hasScore ? `${scores[key]}点 ${basicPlant(scores[key])}` : "";
+    document.getElementById("todayBasicScoreText").textContent = hasScore ? `${scores[key]}点` : "";
+    document.getElementById("todayBasicPlant").textContent = hasScore ? basicPlant(scores[key]) : "";
   }
 
   document.getElementById("saveTodayBasic").addEventListener("click",()=>{
