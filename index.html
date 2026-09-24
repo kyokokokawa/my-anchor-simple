@@ -65,6 +65,8 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
   #basic .inline-entry input{font-size:19px}
   #basic .inline-entry button{font-size:17px}
   #basic tbody td:last-child{font-size:27px}
+
+.task-setup-card,.task-list-card{margin-bottom:16px}.task-setup-card h3,.task-list-card h3{margin:0 0 8px;color:#3f7f4d;font-size:21px}.task-help{margin:0 0 18px;color:#6f806f;font-size:14px}.task-label{display:block;margin:13px 0 6px;color:#4e6f52;font-weight:800}.task-select{width:100%;padding:13px 14px;border:1.5px solid #e8d9b8;border-radius:16px;background:#fff;font-size:17px;color:#365b40}.task-add-btn{margin-top:16px;border:0;border-radius:16px;background:#ffdb65;color:#42664a;font-size:17px;font-weight:900;padding:12px 24px}.task-add-message{margin-left:10px;color:#4e8b58;font-weight:800}.subject-block{padding:13px 0;border-bottom:1px solid #eee3c9}.subject-block:last-child{border-bottom:0}.subject-title{font-weight:900;color:#3f7f4d;font-size:18px;margin-bottom:7px}.material-chip{display:inline-block;margin:4px 6px 4px 0;padding:7px 11px;border-radius:999px;background:#fff8d9;color:#526d52;font-weight:700}.empty-study-items{padding:18px 4px;color:#899289;text-align:center}
 </style>
 </head>
 <body>
@@ -102,8 +104,18 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 </section>
 
 <section id="tasks" class="page">
-  <div class="screen-title">📚 やること</div>
-  <div class="card placeholder">やること画面<br>— ベース完成 —</div>
+<h2>📚 やること</h2>
+<div class="card task-setup-card">
+<h3>やることを決める</h3>
+<p class="task-help">まずは教科と内容を登録しよう 🌱</p>
+<label class="task-label" for="taskSubject">教科</label>
+<select id="taskSubject" class="task-select"><option>国語</option><option>算数</option><option>理科</option><option>社会</option><option>英語</option></select>
+<label class="task-label" for="taskMaterial">内容</label>
+<select id="taskMaterial" class="task-select"></select>
+<button id="addStudyItem" class="task-add-btn" type="button">追加</button>
+<span id="taskAddMessage" class="task-add-message"></span>
+</div>
+<div class="card task-list-card"><h3>登録したやること</h3><div id="studyItemList"></div></div>
 </section>
 
 <section id="challenge" class="page">
@@ -173,6 +185,15 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 </nav>
 
 <script>
+
+const STUDY_MATERIALS={"国語":["毎日漢字","漢字","読解"],"算数":["プログレス","演習"],"理科":["サイエンスβ","サイエンスγ"],"社会":["アカデミーⅡ","アカデミーⅢ","予習シリーズ"],"英語":["筆記","音読","スピーキング"]};
+const STUDY_ITEM_KEY="myAnchorV2.studyItems";
+function readStudyItems(){try{const x=JSON.parse(localStorage.getItem(STUDY_ITEM_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
+function writeStudyItems(x){localStorage.setItem(STUDY_ITEM_KEY,JSON.stringify(x))}
+function renderMaterialChoices(){const s=document.getElementById("taskSubject"),m=document.getElementById("taskMaterial");if(!s||!m)return;m.innerHTML="";(STUDY_MATERIALS[s.value]||[]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;m.appendChild(o)})}
+function renderStudyItems(){const h=document.getElementById("studyItemList");if(!h)return;const items=readStudyItems();h.innerHTML="";if(!items.length){h.innerHTML='<div class="empty-study-items">まだ登録されていません 🌱</div>';return}["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");c.className="material-chip";c.textContent=x.material;b.appendChild(c)});h.appendChild(b)})}
+function initStudyItems(){const s=document.getElementById("taskSubject"),a=document.getElementById("addStudyItem");if(!s||!a)return;renderMaterialChoices();renderStudyItems();s.addEventListener("change",renderMaterialChoices);a.addEventListener("click",()=>{const m=document.getElementById("taskMaterial"),msg=document.getElementById("taskAddMessage"),item={subject:s.value,material:m.value},items=readStudyItems();if(items.some(x=>x.subject===item.subject&&x.material===item.material)){msg.textContent="登録済みです"}else{items.push(item);writeStudyItems(items);renderStudyItems();msg.textContent="追加しました ✓"}setTimeout(()=>msg.textContent="",1500)})}
+
 (function(){
   "use strict";
 
@@ -423,6 +444,8 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 if("serviceWorker" in navigator){
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 }
+
+document.addEventListener("DOMContentLoaded",initStudyItems);
 </script>
 </body>
 </html>
