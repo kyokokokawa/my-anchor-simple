@@ -101,7 +101,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
     <div class="challenge-label">次のチャレテまで</div>
     <div id="countdown" class="countdown">日付を設定してね 🌱</div>
     <div class="route">
-      <span id="startDisplay">出発 —</span>
+      <span id="startDisplay">スタート —</span>
       <span class="arrow">→</span>
       <span id="goalDisplay">GOAL ✨ —</span>
     </div>
@@ -139,7 +139,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 </div>
 <label class="task-label">ページ</label>
 <div class="page-range"><input id="pageFrom" class="task-input" inputmode="numeric" type="number" min="1" placeholder="42"><span>ページから</span><input id="pageTo" class="task-input" inputmode="numeric" type="number" min="1" placeholder="45"><span>ページまで</span></div>
-<button id="addStudyItem" class="task-add-btn" type="button">毎日のやることに追加</button>
+<button id="addStudyItem" class="task-add-btn" type="button">今日やることに追加</button>
 <span id="taskAddMessage" class="task-add-message"></span>
 </div>
 <div class="card task-list-card"><h3>登録したやること</h3><div id="studyItemList"></div></div>
@@ -282,7 +282,7 @@ function initStudyItems(){
   const from=(pf.value||"").trim(),to=(pt.value||"").trim();
   if(from&&to&&Number(from)>Number(to)){msg.textContent="ページの順番を確認してね";return}
   const items=readStudyItems(),item={id:"task_"+Date.now(),date:localDateKey(),subject:s.value,material,pageFrom:from,pageTo:to};
-  items.push(item);writeStudyItems(items);renderStudyItems();renderTodayStudyTasks();msg.textContent="毎日のやることに追加しました ✓";
+  items.push(item);writeStudyItems(items);renderStudyItems();renderTodayStudyTasks();msg.textContent="今日やることに追加しました ✓";
   pf.value="";pt.value="";if(other)other.value="";setTimeout(()=>msg.textContent="",1600)
  })
 }
@@ -337,7 +337,7 @@ function initStudyItems(){
     document.getElementById("startDate").value = dates.start;
     document.getElementById("goalDate").value = dates.goal;
     document.getElementById("startDisplay").textContent =
-      dates.start ? `出発 ${formatMD(dates.start)}` : "出発 —";
+      dates.start ? `スタート ${formatMD(dates.start)}` : "スタート —";
     document.getElementById("goalDisplay").textContent =
       dates.goal ? `GOAL ✨ ${formatMD(dates.goal)}` : "GOAL ✨ —";
 
