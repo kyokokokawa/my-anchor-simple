@@ -279,6 +279,13 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
     return score;
   }
 
+  function basicPlant(score){
+    if(score === 10) return "🌸";
+    if(score >= 8) return "🌷";
+    if(score >= 4) return "🪴";
+    return "🌱";
+  }
+
   function saveBasicScore(key, rawValue, messageElement){
     const score = validBasicScore(rawValue);
     if(score === null){
@@ -307,7 +314,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
     entry.hidden = hasScore;
     result.hidden = !hasScore;
-    result.textContent = hasScore ? `${scores[key]}点  ✓` : "";
+    result.textContent = hasScore ? `${scores[key]}点 ${basicPlant(scores[key])} ✓` : "";
   }
 
   document.getElementById("saveTodayBasic").addEventListener("click",()=>{
@@ -348,7 +355,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
       const tdScore = document.createElement("td");
       tdScore.className = hasScore ? "done-score" : "";
-      tdScore.textContent = hasScore ? `${scores[key]}` : "—";
+      tdScore.textContent = hasScore ? `${scores[key]} ${basicPlant(scores[key])}` : "—";
 
       const tdEntry = document.createElement("td");
       if(isPastOrToday){
