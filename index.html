@@ -40,7 +40,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 .saved{min-height:22px;text-align:center;margin-top:9px;color:#4e8b58;font-size:13px}
 .basic-today{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .score-input{width:76px;font:inherit;font-size:18px;font-weight:800;text-align:center;padding:10px;border:1px solid #ddd3b8;border-radius:13px;background:#fff}
-.mini-save{border:0;border-radius:13px;padding:11px 13px;background:#FFD84D;color:#426446;font-weight:900}#todayBasicCheck{font-weight:900;color:#4e8b58}.basic-result{font-size:22px;font-weight:900;color:#3f7f4d;padding:8px 2px}
+.mini-save{border:0;border-radius:13px;padding:11px 13px;background:#FFD84D;color:#426446;font-weight:900}#todayBasicCheck{font-weight:900;color:#4e8b58}.basic-result{text-align:center;font-size:30px;font-weight:900;color:#3f7f4d;padding:14px 2px}
 .month-nav{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;gap:8px;margin-bottom:12px}
 .month-nav button{border:0;border-radius:13px;background:#FFF0B8;padding:10px;font-size:18px}
 .month-title{text-align:center;font-size:19px;font-weight:900;color:#367c47}
@@ -355,7 +355,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
       const tdScore = document.createElement("td");
       tdScore.className = hasScore ? "done-score" : "";
-      tdScore.textContent = hasScore ? `${scores[key]} ${basicPlant(scores[key])}` : "—";
+      tdScore.textContent = hasScore ? `${scores[key]}` : "—";
 
       const tdEntry = document.createElement("td");
       if(isPastOrToday){
@@ -381,8 +381,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
       }
 
       const tdMark = document.createElement("td");
-      tdMark.textContent = isPastOrToday ? (hasScore ? "✓" : "❌") : "";
-      if(hasScore) tdMark.style.color = "#4e8b58";
+      tdMark.textContent = isPastOrToday ? (hasScore ? basicPlant(scores[key]) : "−") : "";
 
       tr.append(tdDate,tdScore,tdEntry,tdMark);
       tbody.appendChild(tr);
