@@ -97,6 +97,9 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
 
 .challenge-section-title{font-size:1.22rem;color:#315c3f;margin:28px 0 14px;padding-top:20px;border-top:1px solid #eadfbd}.challenge-setup-card .challenge-section-title:first-of-type{border-top:0;padding-top:0}.challenge-subject-checks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 14px}.challenge-subject-checks label{padding:10px;border:1px solid #dbe5d4;border-radius:14px;background:#fff}.challenge-subject-checks label.speaking-check{display:flex;align-items:flex-start;gap:6px}.challenge-subject-checks label.speaking-check input{margin-top:3px}.challenge-subject-checks label.speaking-check span{line-height:1.35}.challenge-summary-list{margin:14px 0 4px}.schedule-row,.duration-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 4px;border-bottom:1px solid #eee4c9}.duration-grid{display:grid;gap:10px}.duration-row{display:grid;grid-template-columns:minmax(120px,1fr) minmax(130px,1fr);align-items:center;gap:10px}.duration-input{margin:0!important}.duration-summary span{color:#647064}
+
+/* v5.3 サピックス専用 */
+.sapi-card{margin-bottom:16px}.sapi-card h3{margin:0 0 14px;color:#3f7f4d;font-size:21px}.sapi-calendar-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.sapi-calendar-nav button{border:0;border-radius:12px;background:#fff1bb;color:#42664a;font-size:26px;min-width:44px;min-height:44px}.sapi-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.sapi-day,.sapi-weekday{min-width:0;text-align:center}.sapi-weekday{font-size:12px;color:#7b877a}.sapi-day{min-height:59px;padding:4px 1px;border:1px solid #eee4cb;border-radius:8px;font-size:12px;background:#fffdf6;overflow-wrap:anywhere}.sapi-day.today{border:2px solid #edbd4f}.sapi-code{display:block;color:#42664a;font-weight:850;font-size:12px;line-height:1.3}.sapi-form-row{display:flex;align-items:end;flex-wrap:wrap;gap:8px;margin-top:13px}.sapi-form-row label{flex:1 1 135px;font-size:14px;color:#55715a;font-weight:800}.sapi-form-row input{display:block;min-width:0;width:100%;padding:10px;border:1.5px solid #e8d9b8;border-radius:12px;background:#fff;font-size:16px}.sapi-form-row>.task-input{flex:1 1 150px;width:auto}.sapi-form-row .task-add-btn{margin-top:0}.sapi-check{display:flex;align-items:center;gap:8px;margin-top:15px;color:#526d52;font-weight:800}.sapi-check input{width:21px;height:21px}.sapi-entry{padding:12px 0;border-bottom:1px solid #eee4c9;overflow-wrap:anywhere}.sapi-entry:last-child{border-bottom:0}.sapi-entry-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sapi-entry strong{color:#42664a}.sapi-small{color:#758175;font-size:14px;margin-top:4px}.sapi-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}.sapi-actions button{border:1px solid #e7dbbd;border-radius:12px;background:#fffdf4;color:#42664a;padding:9px 12px;font-weight:800}.sapi-actions button:disabled{opacity:.5}.sapi-empty{color:#879087;padding:12px 0}.sapi-test-range{white-space:pre-wrap;line-height:1.55;margin-top:5px;color:#5e715f}
 </style>
 </head>
 <body>
@@ -228,7 +231,31 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
 <section id="sapix" class="page">
   <div class="screen-title">🎒 サピックス</div>
-  <div class="card placeholder">サピックス画面<br>— ベース完成 —</div>
+  <div class="card sapi-card">
+    <h3>📅 授業カレンダー</h3>
+    <div class="sapi-calendar-nav"><button id="sapiPrev" type="button" aria-label="前の月">‹</button><strong id="sapiMonth"></strong><button id="sapiNext" type="button" aria-label="次の月">›</button></div>
+    <div id="sapiCalendar" class="sapi-calendar"></div>
+    <div class="sapi-form-row"><label>授業日 <input id="sapiLessonDate" type="date"></label><label>授業コード <input id="sapiLessonCode" placeholder="例：D36" maxlength="30"></label><button id="sapiLessonAdd" type="button" class="task-add-btn">登録</button></div>
+    <div id="sapiLessonList"></div><div id="sapiLessonMessage" class="saved" aria-live="polite"></div>
+  </div>
+  <div class="card sapi-card">
+    <h3>📚 宿題</h3>
+    <label class="task-label" for="sapiHomeworkSubject">教科</label><select id="sapiHomeworkSubject" class="task-select"><option>国語</option><option>算数</option><option>理科</option><option>社会</option><option>英語</option><option>その他</option></select>
+    <label class="task-label" for="sapiHomeworkContent">宿題の内容</label><input id="sapiHomeworkContent" class="task-input" placeholder="例：D36 テキスト p.12〜15" maxlength="200">
+    <label class="task-label" for="sapiHomeworkDue">提出期限</label><input id="sapiHomeworkDue" class="task-input" type="date">
+    <label class="sapi-check"><input id="sapiHomeworkRequired" type="checkbox" checked> 提出あり</label>
+    <button id="sapiHomeworkAdd" type="button" class="task-add-btn">宿題を登録</button><div id="sapiHomeworkMessage" class="saved" aria-live="polite"></div>
+    <div id="sapiHomeworkList"></div>
+  </div>
+  <div class="card sapi-card">
+    <h3>📝 テスト</h3>
+    <label class="task-label" for="sapiTestType">種類</label><select id="sapiTestType" class="task-select"></select>
+    <div class="sapi-form-row"><input id="sapiNewTestType" class="task-input" placeholder="新しいテストの種類" maxlength="60"><button id="sapiAddTestType" type="button" class="task-add-btn">種類を追加</button></div>
+    <label class="task-label" for="sapiTestDate">テスト日</label><input id="sapiTestDate" type="date" class="task-input">
+    <label class="task-label" for="sapiTestRange">テスト範囲</label><textarea id="sapiTestRange" class="challenge-note" placeholder="科目・教材・ページなどを入力"></textarea>
+    <button id="sapiTestAdd" type="button" class="task-add-btn">テストを登録</button><div id="sapiTestMessage" class="saved" aria-live="polite"></div>
+    <div id="sapiTestList"></div>
+  </div>
 </section>
 
 <section id="mother" class="page">
@@ -643,7 +670,47 @@ if("serviceWorker" in navigator){
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 }
 
-document.addEventListener("DOMContentLoaded",()=>{initStudyItems();initChallengeOverview();initChallengeRanges();initChallengeViewToggle();renderChallengeMain()});
+
+/* サピックス：既存の保存キーや既存の画面は変更しない */
+const SAPI_LESSONS_KEY="myAnchorV2.sapixLessons";
+const SAPI_HOMEWORK_KEY="myAnchorV2.sapixHomework";
+const SAPI_TESTS_KEY="myAnchorV2.sapixTests";
+const SAPI_TYPES_KEY="myAnchorV2.sapixTestTypes";
+const SAPI_DEFAULT_TYPES=["マンスリー","組分け","復習","サピックスOP"];
+function sapiRead(key,fallback){try{const v=JSON.parse(localStorage.getItem(key));return Array.isArray(v)?v:fallback}catch(e){return fallback}}
+function sapiWrite(key,value){localStorage.setItem(key,JSON.stringify(value))}
+function sapiId(){return "sapi_"+Date.now()+"_"+Math.random().toString(36).slice(2,8)}
+function sapiDateLabel(key){if(!/^\d{4}-\d{2}-\d{2}$/.test(key||""))return key||"日付未設定";const [y,m,d]=key.split("-").map(Number);const day=new Date(y,m-1,d);return `${m}月${d}日（${"日月火水木金土"[day.getDay()]}）`}
+let sapiViewMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+function renderSapiCalendar(){
+ const y=sapiViewMonth.getFullYear(),m=sapiViewMonth.getMonth(),h=document.getElementById("sapiCalendar");if(!h)return;
+ document.getElementById("sapiMonth").textContent=`${y}年${m+1}月`;h.replaceChildren();
+ "日月火水木金土".split("").forEach(w=>{const x=document.createElement("div");x.className="sapi-weekday";x.textContent=w;h.appendChild(x)});
+ const offset=new Date(y,m,1).getDay(),count=new Date(y,m+1,0).getDate(),lessons=sapiRead(SAPI_LESSONS_KEY,[]);
+ for(let i=0;i<offset;i++){const x=document.createElement("div");h.appendChild(x)}
+ for(let d=1;d<=count;d++){const key=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`,cell=document.createElement("div");cell.className="sapi-day"+(key===localDateKey()?" today":"");const num=document.createElement("div");num.textContent=d;cell.appendChild(num);lessons.filter(x=>x.date===key).forEach(x=>{const code=document.createElement("span");code.className="sapi-code";code.textContent=x.code;cell.appendChild(code)});h.appendChild(cell)}
+}
+function renderSapiLessons(){const h=document.getElementById("sapiLessonList");h.replaceChildren();const a=sapiRead(SAPI_LESSONS_KEY,[]).slice().sort((x,y)=>x.date.localeCompare(y.date));if(!a.length){h.innerHTML='<div class="sapi-empty">授業予定はまだありません</div>';return}a.forEach(x=>{const row=document.createElement("div");row.className="sapi-entry";const label=document.createElement("span");label.textContent=sapiDateLabel(x.date)+"　"+x.code;const del=document.createElement("button");del.type="button";del.className="challenge-delete-btn";del.textContent="削除";del.addEventListener("click",()=>{sapiWrite(SAPI_LESSONS_KEY,sapiRead(SAPI_LESSONS_KEY,[]).filter(a=>a.id!==x.id));renderSapiLessons();renderSapiCalendar()});row.append(label,del);h.appendChild(row)})}
+function renderSapiHomework(){const h=document.getElementById("sapiHomeworkList");h.replaceChildren();const a=sapiRead(SAPI_HOMEWORK_KEY,[]).slice().sort((x,y)=>x.due.localeCompare(y.due));if(!a.length){h.innerHTML='<div class="sapi-empty">宿題はまだ登録されていません</div>';return}a.forEach(x=>{
+ const row=document.createElement("div");row.className="sapi-entry";const title=document.createElement("div");title.className="sapi-entry-head";const name=document.createElement("strong");name.textContent=x.subject+"｜"+x.content;title.appendChild(name);const meta=document.createElement("div");meta.className="sapi-small";meta.textContent="期限："+sapiDateLabel(x.due)+(x.required?(x.submitted?"　提出済み ✓":"　未提出"):"　提出不要");const actions=document.createElement("div");actions.className="sapi-actions";
+ const add=document.createElement("button");add.type="button";const already=readStudyItems().some(t=>t.sapixHomeworkId===x.id&&t.date===localDateKey());add.textContent=already?"今日やることに追加済み":"📚 今日やることに追加";add.disabled=already;add.addEventListener("click",()=>{const items=readStudyItems();if(items.some(t=>t.sapixHomeworkId===x.id&&t.date===localDateKey()))return;items.push({id:sapiId(),date:localDateKey(),subject:x.subject==="その他"?"国語":x.subject,material:x.content,pageFrom:"",pageTo:"",sapixHomeworkId:x.id});writeStudyItems(items);renderStudyItems();renderTodayStudyTasks();renderSapiHomework()});actions.appendChild(add);
+ if(x.required){const submit=document.createElement("button");submit.type="button";submit.textContent=x.submitted?"提出済み ✓（取り消す）":"□ 提出した";submit.addEventListener("click",()=>{const all=sapiRead(SAPI_HOMEWORK_KEY,[]);const found=all.find(t=>t.id===x.id);if(found)found.submitted=!found.submitted;sapiWrite(SAPI_HOMEWORK_KEY,all);renderSapiHomework()});actions.appendChild(submit)}
+ const del=document.createElement("button");del.type="button";del.textContent="削除";del.addEventListener("click",()=>{sapiWrite(SAPI_HOMEWORK_KEY,sapiRead(SAPI_HOMEWORK_KEY,[]).filter(t=>t.id!==x.id));renderSapiHomework()});actions.appendChild(del);row.append(title,meta,actions);h.appendChild(row)
+ })}
+function sapiTypes(){return [...new Set([...SAPI_DEFAULT_TYPES,...sapiRead(SAPI_TYPES_KEY,[])])]}
+function renderSapiTypes(){const h=document.getElementById("sapiTestType"),current=h.value;h.replaceChildren();sapiTypes().forEach(t=>{const o=document.createElement("option");o.value=t;o.textContent=t;h.appendChild(o)});if(sapiTypes().includes(current))h.value=current}
+function renderSapiTests(){const h=document.getElementById("sapiTestList");h.replaceChildren();const a=sapiRead(SAPI_TESTS_KEY,[]).slice().sort((x,y)=>x.date.localeCompare(y.date));if(!a.length){h.innerHTML='<div class="sapi-empty">テストはまだ登録されていません</div>';return}a.forEach(x=>{const row=document.createElement("div");row.className="sapi-entry";const title=document.createElement("div");title.className="sapi-entry-head";const name=document.createElement("strong");name.textContent=sapiDateLabel(x.date)+"　"+x.type;const del=document.createElement("button");del.type="button";del.className="challenge-delete-btn";del.textContent="削除";del.addEventListener("click",()=>{sapiWrite(SAPI_TESTS_KEY,sapiRead(SAPI_TESTS_KEY,[]).filter(t=>t.id!==x.id));renderSapiTests()});title.append(name,del);const range=document.createElement("div");range.className="sapi-test-range";range.textContent=x.range;row.append(title,range);h.appendChild(row)})}
+function initSapix(){
+ const $=id=>document.getElementById(id),today=localDateKey();$("sapiLessonDate").value=today;$("sapiHomeworkDue").value=today;$("sapiTestDate").value=today;
+ $("sapiPrev").addEventListener("click",()=>{sapiViewMonth=new Date(sapiViewMonth.getFullYear(),sapiViewMonth.getMonth()-1,1);renderSapiCalendar()});$("sapiNext").addEventListener("click",()=>{sapiViewMonth=new Date(sapiViewMonth.getFullYear(),sapiViewMonth.getMonth()+1,1);renderSapiCalendar()});
+ $("sapiLessonAdd").addEventListener("click",()=>{const date=$("sapiLessonDate").value,code=$("sapiLessonCode").value.trim(),msg=$("sapiLessonMessage");if(!date||!code){msg.textContent="日付と授業コードを入力してね";return}const a=sapiRead(SAPI_LESSONS_KEY,[]);a.push({id:sapiId(),date,code});sapiWrite(SAPI_LESSONS_KEY,a);sapiViewMonth=new Date(Number(date.slice(0,4)),Number(date.slice(5,7))-1,1);$("sapiLessonCode").value="";msg.textContent="授業を登録しました ✓";renderSapiCalendar();renderSapiLessons()});
+ $("sapiHomeworkAdd").addEventListener("click",()=>{const content=$("sapiHomeworkContent").value.trim(),due=$("sapiHomeworkDue").value,msg=$("sapiHomeworkMessage");if(!content||!due){msg.textContent="宿題の内容と期限を入力してね";return}const a=sapiRead(SAPI_HOMEWORK_KEY,[]);a.push({id:sapiId(),subject:$("sapiHomeworkSubject").value,content,due,required:$("sapiHomeworkRequired").checked,submitted:false});sapiWrite(SAPI_HOMEWORK_KEY,a);$("sapiHomeworkContent").value="";msg.textContent="宿題を登録しました ✓";renderSapiHomework()});
+ $("sapiAddTestType").addEventListener("click",()=>{const type=$("sapiNewTestType").value.trim();if(!type)return;const a=sapiRead(SAPI_TYPES_KEY,[]);if(!sapiTypes().includes(type)){a.push(type);sapiWrite(SAPI_TYPES_KEY,a)}renderSapiTypes();$("sapiTestType").value=type;$("sapiNewTestType").value="";$("sapiTestMessage").textContent="テストの種類を追加しました ✓"});
+ $("sapiTestAdd").addEventListener("click",()=>{const date=$("sapiTestDate").value,range=$("sapiTestRange").value.trim(),msg=$("sapiTestMessage");if(!date||!range){msg.textContent="テスト日と範囲を入力してね";return}const a=sapiRead(SAPI_TESTS_KEY,[]);a.push({id:sapiId(),date,type:$("sapiTestType").value,range});sapiWrite(SAPI_TESTS_KEY,a);$("sapiTestRange").value="";msg.textContent="テストを登録しました ✓";renderSapiTests()});
+ renderSapiCalendar();renderSapiLessons();renderSapiHomework();renderSapiTypes();renderSapiTests()
+}
+
+document.addEventListener("DOMContentLoaded",()=>{initStudyItems();initChallengeOverview();initChallengeRanges();initChallengeViewToggle();renderChallengeMain();initSapix()});
 </script>
 </body>
 </html>
