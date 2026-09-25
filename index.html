@@ -88,7 +88,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 .hidden{display:none!important}
 
 /* v5.2 チャレテ範囲 */
-.challenge-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.challenge-title-row .screen-title{margin-bottom:0}.challenge-settings-btn,.challenge-back-btn{border:1.5px solid #e4d6ac;background:#fffdf7;color:#42664a;border-radius:14px;padding:9px 13px;font-weight:850;font-size:14px}.challenge-view-section{padding:16px 0;border-top:1px solid #eee3c9}.challenge-view-section:first-of-type{border-top:0}.challenge-view-section h4{margin:0 0 10px;color:#315c3f;font-size:18px}.challenge-main-row{padding:8px 0;color:#58685b;line-height:1.55}.challenge-main-durations{display:flex;flex-wrap:wrap;gap:8px 14px}.challenge-duration-chip{color:#58685b;white-space:nowrap}.challenge-duration-chip strong{color:#3e6548}.challenge-main-row strong{color:#3e6548}.challenge-main-subject{padding:12px 0;border-top:1px solid #f0e7d2}.challenge-main-subject:first-child{border-top:0}.challenge-main-range{padding:7px 0}.challenge-settings-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.challenge-settings-head h3{margin:0}.challenge-settings-range{margin-top:26px;padding-top:20px;border-top:1px solid #eadfbd}.challenge-settings-range h4{color:#315c3f;font-size:18px;margin:0 0 10px}
+.challenge-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.challenge-title-row .screen-title{margin-bottom:0}.challenge-settings-btn,.challenge-back-btn{border:1.5px solid #e4d6ac;background:#fffdf7;color:#42664a;border-radius:14px;padding:9px 13px;font-weight:850;font-size:14px}.challenge-view-section{padding:16px 0;border-top:1px solid #eee3c9}.challenge-view-section:first-of-type{border-top:0}.challenge-view-section h4{margin:0 0 10px;color:#315c3f;font-size:18px}.challenge-main-row{padding:8px 0;color:#58685b;line-height:1.55}.challenge-main-durations{display:flex;flex-wrap:wrap;gap:8px 14px}.challenge-duration-chip{color:#58685b;white-space:nowrap}.challenge-duration-chip strong{color:#3e6548}.challenge-main-row strong{color:#3e6548}.challenge-main-subject{padding:12px 0;border-top:1px solid #f0e7d2}.challenge-main-subject:first-child{border-top:0}.challenge-main-range{padding:7px 0}.challenge-settings-head{display:block}.challenge-settings-head h3{margin:0}.challenge-date-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}.challenge-date-row .task-label{margin:0}.challenge-date-input{width:auto!important;min-width:170px;max-width:210px;margin:0!important;padding:10px 12px!important}.challenge-settings-title{font-size:21px;color:#3f7f4d;font-weight:850;margin:0 0 8px}.challenge-settings-range{margin-top:26px;padding-top:20px;border-top:1px solid #eadfbd}.challenge-settings-range h4{color:#315c3f;font-size:18px;margin:0 0 10px}
 
 .challenge-setup-card h3,.challenge-list-card h3{margin:0 0 8px;color:#3f7f4d;font-size:21px}
 .challenge-note{width:100%;min-height:92px;resize:vertical;padding:13px 14px;border:1.5px solid #e8d9b8;border-radius:16px;background:#fff;font:inherit;font-size:16px;color:#365b40}
@@ -158,7 +158,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 </section>
 
 <section id="challenge" class="page">
-  <div class="challenge-title-row"><div class="screen-title">📘 チャレテ</div><button id="openChallengeSettings" class="challenge-settings-btn" type="button">⚙️ 設定</button></div>
+  <div class="challenge-title-row"><div class="screen-title">📘 チャレテ</div><button id="openChallengeSettings" class="challenge-settings-btn" type="button">⚙️ 設定</button><button id="closeChallengeSettings" class="challenge-back-btn hidden" type="button">← チャレテ部屋に戻る</button></div>
 
   <div id="challengeMainView">
     <div class="card challenge-list-card">
@@ -171,12 +171,11 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
   <div id="challengeSettingsView" class="hidden">
     <div class="card challenge-setup-card">
-      <div class="challenge-settings-head"><h3>チャレテ設定</h3><button id="closeChallengeSettings" class="challenge-back-btn" type="button">← チャレテ部屋に戻る</button></div>
+      <div class="challenge-settings-title">チャレテ設定</div>
       <p class="task-help">学校から届いた範囲プリントの順番で登録しよう 🌱</p>
 
       <h4 class="challenge-section-title">1．日程</h4>
-      <label class="task-label" for="scheduleDate">日付</label>
-      <input id="scheduleDate" class="task-input" type="date">
+      <div class="challenge-date-row"><label class="task-label" for="scheduleDate">日付</label><input id="scheduleDate" class="task-input challenge-date-input" type="date"></div>
       <label class="task-label">その日の科目</label>
       <div id="scheduleSubjects" class="challenge-subject-checks">
         <label><input type="checkbox" value="国語"> 国語</label><label><input type="checkbox" value="算数"> 算数</label><label><input type="checkbox" value="理科"> 理科</label><label><input type="checkbox" value="社会"> 社会</label><label><input type="checkbox" value="英語（筆記）"> 英語（筆記）</label><label><input type="checkbox" value="英語（スピーキング）"> 英語（スピーキング）</label>
@@ -361,10 +360,10 @@ function initChallengeOverview(){renderChallengeSchedule();renderDurationInputs(
 function renderChallengeMain(){
  const sh=document.getElementById("challengeMainSchedule"),dh=document.getElementById("challengeMainDurations"),rh=document.getElementById("challengeMainRanges");
  if(sh){const a=readChallengeSchedule().slice().sort((x,y)=>x.date.localeCompare(y.date));sh.innerHTML=a.length?a.map(x=>`<div class="challenge-main-row"><strong>${formatScheduleDate(x.date)}</strong>　${x.subjects.join("・")}</div>`).join(""):'<div class="challenge-empty">まだ日程は登録されていません</div>'}
- if(dh){const d=readChallengeDurations(),rows=CHALLENGE_TESTS.filter(x=>d[x]);dh.innerHTML=rows.length?`<div class="challenge-main-durations">${rows.map(x=>`<span class="challenge-duration-chip"><strong>${x}</strong>（${d[x]}）</span>`).join(`<span aria-hidden="true">・</span>`)}</div>`:'<div class="challenge-empty">まだ試験時間は登録されていません</div>'}
+ if(dh){const d=readChallengeDurations();const parts=[];["国語","算数","理科","社会"].forEach(x=>{if(d[x])parts.push(`<span class="challenge-duration-chip"><strong>${x}</strong> ${d[x]}</span>`)});const ep=d["英語（筆記）"],es=d["英語（スピーキング）"];if(ep||es){let e=`<span class="challenge-duration-chip"><strong>英語</strong>`;if(ep)e+=` （筆記）${ep}`;if(es)e+=`${ep?" ":" "}（スピーキング）${es}`;e+=`</span>`;parts.push(e)}dh.innerHTML=parts.length?`<div class="challenge-main-durations">${parts.join(" ")}</div>`:'<div class="challenge-empty">まだ試験時間は登録されていません</div>'}
  if(rh){const ranges=readChallengeRanges();rh.innerHTML="";if(!ranges.length){rh.innerHTML='<div class="challenge-empty">まだテスト範囲は登録されていません 🌱</div>'}else{["国語","算数","理科","社会","英語"].forEach(subject=>{const a=ranges.filter(x=>x.subject===subject);if(!a.length)return;const block=document.createElement("div");block.className="challenge-main-subject";const title=document.createElement("div");title.className="subject-title";title.textContent=subject;block.appendChild(title);a.forEach(x=>{const row=document.createElement("div");row.className="challenge-main-range";const name=document.createElement("div");name.className="challenge-range-name";name.textContent=challengeRangeName(x);row.appendChild(name);if(x.note){const note=document.createElement("div");note.className="challenge-range-note";note.textContent=x.note;row.appendChild(note)}block.appendChild(row)});rh.appendChild(block)})}}
 }
-function initChallengeViewToggle(){const main=document.getElementById("challengeMainView"),settings=document.getElementById("challengeSettingsView"),open=document.getElementById("openChallengeSettings"),close=document.getElementById("closeChallengeSettings");if(!main||!settings)return;const showSettings=()=>{main.classList.add("hidden");settings.classList.remove("hidden");if(open)open.classList.add("hidden")};const showMain=()=>{settings.classList.add("hidden");main.classList.remove("hidden");if(open)open.classList.remove("hidden");renderChallengeMain()};if(open)open.onclick=showSettings;if(close)close.onclick=showMain;showMain()}
+function initChallengeViewToggle(){const main=document.getElementById("challengeMainView"),settings=document.getElementById("challengeSettingsView"),open=document.getElementById("openChallengeSettings"),close=document.getElementById("closeChallengeSettings");if(!main||!settings)return;const showSettings=()=>{main.classList.add("hidden");settings.classList.remove("hidden");if(open)open.classList.add("hidden");if(close)close.classList.remove("hidden")};const showMain=()=>{settings.classList.add("hidden");main.classList.remove("hidden");if(open)open.classList.remove("hidden");if(close)close.classList.add("hidden");renderChallengeMain()};if(open)open.onclick=showSettings;if(close)close.onclick=showMain;showMain()}
 
 const CHALLENGE_RANGE_KEY="myAnchorV2.challengeRanges";
 function readChallengeRanges(){try{const x=JSON.parse(localStorage.getItem(CHALLENGE_RANGE_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
