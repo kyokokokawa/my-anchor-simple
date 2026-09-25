@@ -91,6 +91,8 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 .challenge-subject-block{padding:14px 0;border-bottom:1px solid #eee3c9}.challenge-subject-block:last-child{border-bottom:0}
 .challenge-range-item{padding:10px 0}.challenge-range-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.challenge-range-name{font-weight:850;color:#4b6750;line-height:1.5}.challenge-range-date{font-size:12px;color:#8a9389;white-space:nowrap}.challenge-range-note{margin:5px 0 8px;color:#6d756e;line-height:1.55;font-size:14px;white-space:pre-wrap}.challenge-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.challenge-today-btn{border:0;border-radius:13px;padding:8px 12px;background:#ffdf73;color:#42664a;font-weight:900}.challenge-today-btn.added{background:#eef4e9;color:#758176}.challenge-delete-btn{border:0;background:transparent;color:#a48f7a;padding:8px;font-weight:700}.challenge-empty{padding:18px 4px;color:#899289;text-align:center}
 
+
+.challenge-section-title{font-size:1.22rem;color:#315c3f;margin:28px 0 14px;padding-top:20px;border-top:1px solid #eadfbd}.challenge-setup-card .challenge-section-title:first-of-type{border-top:0;padding-top:0}.challenge-subject-checks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 14px}.challenge-subject-checks label{padding:10px;border:1px solid #dbe5d4;border-radius:14px;background:#fff}.challenge-summary-list{margin:14px 0 4px}.schedule-row,.duration-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 4px;border-bottom:1px solid #eee4c9}.duration-grid{display:grid;gap:10px}.duration-row{display:grid;grid-template-columns:minmax(120px,1fr) minmax(130px,1fr);align-items:center;gap:10px}.duration-input{margin:0!important}.duration-summary span{color:#647064}
 </style>
 </head>
 <body>
@@ -154,10 +156,25 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 <section id="challenge" class="page">
   <div class="screen-title">📘 チャレテ</div>
   <div class="card challenge-setup-card">
-    <h3>今回のテスト範囲</h3>
-    <p class="task-help">学校から届いた範囲を登録しよう 🌱</p>
-    <label class="task-label" for="challengeDate">テスト日</label>
-    <input id="challengeDate" class="task-input" type="date">
+    <h3>今回のチャレテ</h3>
+    <p class="task-help">学校から届いた範囲プリントの順番で登録しよう 🌱</p>
+
+    <h4 class="challenge-section-title">1．日程</h4>
+    <label class="task-label" for="scheduleDate">日付</label>
+    <input id="scheduleDate" class="task-input" type="date">
+    <label class="task-label">その日の科目</label>
+    <div id="scheduleSubjects" class="challenge-subject-checks">
+      <label><input type="checkbox" value="国語"> 国語</label><label><input type="checkbox" value="算数"> 算数</label><label><input type="checkbox" value="理科"> 理科</label><label><input type="checkbox" value="社会"> 社会</label><label><input type="checkbox" value="英語（筆記）"> 英語（筆記）</label><label><input type="checkbox" value="英語（スピーキング）"> 英語（スピーキング）</label>
+    </div>
+    <button id="addSchedule" class="task-add-btn" type="button">日程を追加</button><span id="scheduleMessage" class="task-add-message"></span>
+    <div id="challengeScheduleList" class="challenge-summary-list"></div>
+
+    <h4 class="challenge-section-title">2．科目ごとの試験時間</h4>
+    <div id="durationInputs" class="duration-grid"></div>
+    <button id="saveDurations" class="task-add-btn" type="button">試験時間を保存</button><span id="durationMessage" class="task-add-message"></span>
+    <div id="challengeDurationList" class="challenge-summary-list"></div>
+
+    <h4 class="challenge-section-title">3．テスト範囲</h4>
     <label class="task-label" for="challengeSubject">教科</label>
     <select id="challengeSubject" class="task-select"><option>国語</option><option>算数</option><option>理科</option><option>社会</option><option>英語</option></select>
     <label class="task-label" for="challengeMaterial">教材・内容</label>
@@ -315,6 +332,19 @@ function initStudyItems(){
  })
 }
 
+const CHALLENGE_SCHEDULE_KEY="myAnchorV2.challengeSchedule";
+const CHALLENGE_DURATION_KEY="myAnchorV2.challengeDurations";
+const CHALLENGE_TESTS=["国語","算数","理科","社会","英語（筆記）","英語（スピーキング）"];
+function readChallengeSchedule(){try{const x=JSON.parse(localStorage.getItem(CHALLENGE_SCHEDULE_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
+function writeChallengeSchedule(x){localStorage.setItem(CHALLENGE_SCHEDULE_KEY,JSON.stringify(x))}
+function readChallengeDurations(){try{return JSON.parse(localStorage.getItem(CHALLENGE_DURATION_KEY)||"{}")||{}}catch(e){return{}}}
+function weekdayJa(v){if(!v)return"";const [y,m,d]=v.split("-").map(Number);return"日月火水木金土"[new Date(y,m-1,d).getDay()]}
+function formatScheduleDate(v){if(!v)return"";const [y,m,d]=v.split("-").map(Number);return `${m}月${d}日（${weekdayJa(v)}）`}
+function renderChallengeSchedule(){const h=document.getElementById("challengeScheduleList");if(!h)return;const a=readChallengeSchedule().slice().sort((x,y)=>x.date.localeCompare(y.date));h.innerHTML=a.length?"":"<div class='challenge-empty'>まだ日程は登録されていません</div>";a.forEach(x=>{const row=document.createElement("div");row.className="schedule-row";const t=document.createElement("div");t.innerHTML=`<strong>${formatScheduleDate(x.date)}</strong>　${x.subjects.join("・")}`;const b=document.createElement("button");b.type="button";b.className="challenge-delete-btn";b.textContent="削除";b.onclick=()=>{writeChallengeSchedule(readChallengeSchedule().filter(r=>r.id!==x.id));renderChallengeSchedule()};row.append(t,b);h.appendChild(row)})}
+function renderDurationInputs(){const h=document.getElementById("durationInputs");if(!h)return;const d=readChallengeDurations();h.innerHTML="";CHALLENGE_TESTS.forEach(s=>{const row=document.createElement("label");row.className="duration-row";const span=document.createElement("span");span.textContent=s;const input=document.createElement("input");input.className="task-input duration-input";input.dataset.subject=s;input.value=d[s]||"";input.placeholder=s.includes("スピーキング")?"例：個別実施":"例：40分";row.append(span,input);h.appendChild(row)})}
+function renderChallengeDurations(){const h=document.getElementById("challengeDurationList");if(!h)return;const d=readChallengeDurations();const rows=CHALLENGE_TESTS.filter(s=>d[s]);h.innerHTML=rows.length?rows.map(s=>`<div class="duration-summary"><strong>${s}</strong><span>${d[s]}</span></div>`).join(""):"<div class='challenge-empty'>まだ試験時間は登録されていません</div>"}
+function initChallengeOverview(){renderChallengeSchedule();renderDurationInputs();renderChallengeDurations();const add=document.getElementById("addSchedule");if(add)add.onclick=()=>{const date=document.getElementById("scheduleDate"),msg=document.getElementById("scheduleMessage"),subjects=[...document.querySelectorAll("#scheduleSubjects input:checked")].map(x=>x.value);if(!date.value){msg.textContent="日付を選んでね";return}if(!subjects.length){msg.textContent="科目を選んでね";return}const a=readChallengeSchedule();a.push({id:"schedule_"+Date.now(),date:date.value,subjects});writeChallengeSchedule(a);renderChallengeSchedule();document.querySelectorAll("#scheduleSubjects input").forEach(x=>x.checked=false);msg.textContent="日程を追加しました ✓";setTimeout(()=>msg.textContent="",1600)};const save=document.getElementById("saveDurations");if(save)save.onclick=()=>{const d={};document.querySelectorAll(".duration-input").forEach(x=>{if(x.value.trim())d[x.dataset.subject]=x.value.trim()});localStorage.setItem(CHALLENGE_DURATION_KEY,JSON.stringify(d));renderChallengeDurations();const msg=document.getElementById("durationMessage");msg.textContent="試験時間を保存しました ✓";setTimeout(()=>msg.textContent="",1600)}}
+
 const CHALLENGE_RANGE_KEY="myAnchorV2.challengeRanges";
 function readChallengeRanges(){try{const x=JSON.parse(localStorage.getItem(CHALLENGE_RANGE_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
 function writeChallengeRanges(x){localStorage.setItem(CHALLENGE_RANGE_KEY,JSON.stringify(x))}
@@ -331,13 +361,12 @@ function renderChallengeRanges(){
  ["国語","算数","理科","社会","英語"].forEach(subject=>{
   const a=ranges.filter(x=>x.subject===subject);if(!a.length)return;
   const block=document.createElement("div");block.className="challenge-subject-block";const title=document.createElement("div");title.className="subject-title";title.textContent=subject;block.appendChild(title);
-  a.forEach(x=>{const item=document.createElement("div");item.className="challenge-range-item";const head=document.createElement("div");head.className="challenge-range-head";const name=document.createElement("div");name.className="challenge-range-name";name.textContent=challengeRangeName(x);const date=document.createElement("div");date.className="challenge-range-date";date.textContent=formatChallengeDate(x.testDate);head.append(name,date);item.appendChild(head);if(x.note){const note=document.createElement("div");note.className="challenge-range-note";note.textContent=x.note;item.appendChild(note)}const actions=document.createElement("div");actions.className="challenge-actions";const today=document.createElement("button");today.type="button";const added=challengeAlreadyInToday(x.id);today.className="challenge-today-btn"+(added?" added":"");today.textContent=added?"今日やるに追加済み ✓":"今日やる";today.disabled=added;today.addEventListener("click",()=>addChallengeToToday(x));const del=document.createElement("button");del.type="button";del.className="challenge-delete-btn";del.textContent="削除";del.addEventListener("click",()=>{writeChallengeRanges(readChallengeRanges().filter(r=>r.id!==x.id));renderChallengeRanges()});actions.append(today,del);item.appendChild(actions);block.appendChild(item)});h.appendChild(block)
+  a.forEach(x=>{const item=document.createElement("div");item.className="challenge-range-item";const head=document.createElement("div");head.className="challenge-range-head";const name=document.createElement("div");name.className="challenge-range-name";name.textContent=challengeRangeName(x);head.append(name);item.appendChild(head);if(x.note){const note=document.createElement("div");note.className="challenge-range-note";note.textContent=x.note;item.appendChild(note)}const actions=document.createElement("div");actions.className="challenge-actions";const today=document.createElement("button");today.type="button";const added=challengeAlreadyInToday(x.id);today.className="challenge-today-btn"+(added?" added":"");today.textContent=added?"今日やるに追加済み ✓":"今日やる";today.disabled=added;today.addEventListener("click",()=>addChallengeToToday(x));const del=document.createElement("button");del.type="button";del.className="challenge-delete-btn";del.textContent="削除";del.addEventListener("click",()=>{writeChallengeRanges(readChallengeRanges().filter(r=>r.id!==x.id));renderChallengeRanges()});actions.append(today,del);item.appendChild(actions);block.appendChild(item)});h.appendChild(block)
  })
 }
 function initChallengeRanges(){
  const add=document.getElementById("addChallengeRange");if(!add)return;renderChallengeRanges();
- const goal=(()=>{try{return JSON.parse(localStorage.getItem("myAnchorV2.challengeDates")||"{}").goal||""}catch(e){return""}})();if(goal)document.getElementById("challengeDate").value=goal;
- add.addEventListener("click",()=>{const date=document.getElementById("challengeDate"),subject=document.getElementById("challengeSubject"),material=document.getElementById("challengeMaterial"),pf=document.getElementById("challengePageFrom"),pt=document.getElementById("challengePageTo"),note=document.getElementById("challengeNote"),msg=document.getElementById("challengeAddMessage");const m=material.value.trim(),from=pf.value.trim(),to=pt.value.trim();if(!date.value){msg.textContent="テスト日を入れてね";return}if(!m){msg.textContent="教材・内容を入れてね";return}if(from&&to&&Number(from)>Number(to)){msg.textContent="ページの順番を確認してね";return}const ranges=readChallengeRanges();ranges.push({id:"range_"+Date.now(),testDate:date.value,subject:subject.value,material:m,pageFrom:from,pageTo:to,note:note.value.trim()});writeChallengeRanges(ranges);renderChallengeRanges();material.value="";pf.value="";pt.value="";note.value="";msg.textContent="テスト範囲に追加しました ✓";setTimeout(()=>msg.textContent="",1600)})
+ add.addEventListener("click",()=>{const subject=document.getElementById("challengeSubject"),material=document.getElementById("challengeMaterial"),pf=document.getElementById("challengePageFrom"),pt=document.getElementById("challengePageTo"),note=document.getElementById("challengeNote"),msg=document.getElementById("challengeAddMessage");const m=material.value.trim(),from=pf.value.trim(),to=pt.value.trim();if(!m){msg.textContent="教材・内容を入れてね";return}if(from&&to&&Number(from)>Number(to)){msg.textContent="ページの順番を確認してね";return}const ranges=readChallengeRanges();ranges.push({id:"range_"+Date.now(),subject:subject.value,material:m,pageFrom:from,pageTo:to,note:note.value.trim()});writeChallengeRanges(ranges);renderChallengeRanges();material.value="";pf.value="";pt.value="";note.value="";msg.textContent="テスト範囲に追加しました ✓";setTimeout(()=>msg.textContent="",1600)})
 }
 
 (function(){
