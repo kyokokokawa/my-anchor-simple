@@ -711,8 +711,12 @@ function sapiLessonForHomework(hw){
  // 同じコードが複数ある場合は提出期限に最も近い授業へ紐づける。
  const due=hw.due||localDateKey();return lessons.slice().sort((a,b)=>Math.abs(new Date(a.date+'T00:00:00')-new Date(due+'T00:00:00'))-Math.abs(new Date(b.date+'T00:00:00')-new Date(due+'T00:00:00')))[0]
 }
-function sapiLessonResult(lessonId){
- const a=sapiRead(SAPI_HOMEWORK_RESULTS_KEY,[]).filter(r=>r.lessonId===lessonId);if(!a.length)return "";return a.some(r=>r.result==="missed")?"×":"○"
+function sapiLessonResult(lesson){
+ const all=sapiRead(SAPI_HOMEWORK_RESULTS_KEY,[]);
+ // lessonId を第一候補にし、旧データや更新前データでも日付＋授業コードで拾えるようにする。
+ const a=all.filter(r=>r.lessonId===lesson.id||(r.lessonDate===lesson.date&&r.code===lesson.code));
+ if(!a.length)return "";
+ return a.some(r=>r.result==="missed")?"×":"○"
 }
 function finalizeSapiHomework(hw,result){
  const lesson=sapiLessonForHomework(hw),results=sapiRead(SAPI_HOMEWORK_RESULTS_KEY,[]);
@@ -729,7 +733,7 @@ function renderSapiCalendar(){
  "日月火水木金土".split("").forEach(w=>{const x=document.createElement("div");x.className="sapi-weekday";x.textContent=w;h.appendChild(x)});
  const offset=new Date(y,m,1).getDay(),count=new Date(y,m+1,0).getDate(),lessons=sapiRead(SAPI_LESSONS_KEY,[]);
  for(let i=0;i<offset;i++){const x=document.createElement("div");h.appendChild(x)}
- for(let d=1;d<=count;d++){const key=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`,cell=document.createElement("div");cell.className="sapi-day"+(key===localDateKey()?" today":"");const num=document.createElement("div");num.textContent=d;cell.appendChild(num);lessons.filter(x=>x.date===key).forEach(x=>{const code=document.createElement("span");code.className="sapi-code";code.textContent=x.code;cell.appendChild(code);if(Array.isArray(x.subjects)&&x.subjects.length){const sub=document.createElement("span");sub.className="sapi-subjects";sub.textContent=x.subjects.join("・");cell.appendChild(sub)}const mark=sapiLessonResult(x.id);if(mark){const result=document.createElement("span");result.className="sapi-homework-result";result.textContent=mark;result.setAttribute("aria-label",mark==="○"?"宿題提出済み":"宿題未提出で終了");cell.appendChild(result)}});h.appendChild(cell)}
+ for(let d=1;d<=count;d++){const key=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`,cell=document.createElement("div");cell.className="sapi-day"+(key===localDateKey()?" today":"");const num=document.createElement("div");num.textContent=d;cell.appendChild(num);lessons.filter(x=>x.date===key).forEach(x=>{const code=document.createElement("span");code.className="sapi-code";code.textContent=x.code;cell.appendChild(code);if(Array.isArray(x.subjects)&&x.subjects.length){const sub=document.createElement("span");sub.className="sapi-subjects";sub.textContent=x.subjects.join("・");cell.appendChild(sub)}const mark=sapiLessonResult(x);if(mark){const result=document.createElement("span");result.className="sapi-homework-result";result.textContent=mark;result.setAttribute("aria-label",mark==="○"?"宿題提出済み":"宿題未提出で終了");cell.appendChild(result)}});h.appendChild(cell)}
 }
 function renderSapiLessons(){const h=document.getElementById("sapiLessonList");h.replaceChildren();const a=sapiRead(SAPI_LESSONS_KEY,[]).slice().sort((x,y)=>x.date.localeCompare(y.date));if(!a.length){h.innerHTML='<div class="sapi-empty">授業予定はまだありません</div>';return}a.forEach(x=>{const row=document.createElement("div");row.className="sapi-entry";const label=document.createElement("span");label.textContent=sapiDateLabel(x.date)+"　"+x.code+(Array.isArray(x.subjects)&&x.subjects.length?"　"+x.subjects.join("・"):"");const del=document.createElement("button");del.type="button";del.className="challenge-delete-btn";del.textContent="削除";del.addEventListener("click",()=>{sapiWrite(SAPI_LESSONS_KEY,sapiRead(SAPI_LESSONS_KEY,[]).filter(a=>a.id!==x.id));sapiWrite(SAPI_HOMEWORK_RESULTS_KEY,sapiRead(SAPI_HOMEWORK_RESULTS_KEY,[]).filter(r=>r.lessonId!==x.id));renderSapiLessons();renderSapiCalendar()});row.append(label,del);h.appendChild(row)})}
 function sapiHomeworkLines(x){
