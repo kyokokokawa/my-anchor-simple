@@ -320,6 +320,26 @@ function readTaskStamps(){try{return JSON.parse(localStorage.getItem(STUDY_STAMP
 function writeTaskStamps(x){localStorage.setItem(STUDY_STAMP_KEY,JSON.stringify(x))}
 function readNoTaskDays(){try{return JSON.parse(localStorage.getItem(STUDY_NO_TASK_KEY)||"{}")||{}}catch(e){return{}}}
 function writeNoTaskDays(x){localStorage.setItem(STUDY_NO_TASK_KEY,JSON.stringify(x))}
+function cleanupTodayTasks(){
+ const today=localDateKey();
+ // 「今日やること」に追加した単発課題は、その日だけ保持する。
+ const items=readStudyItems();
+ const current=items.filter(x=>!x.date||x.date===today);
+ if(current.length!==items.length)writeStudyItems(current);
+ // スタンプ／課題なしの詳細履歴は直近30日だけ保持する。
+ const cutoff=new Date();cutoff.setHours(0,0,0,0);cutoff.setDate(cutoff.getDate()-29);
+ const keepRecent=obj=>{
+  let changed=false;
+  Object.keys(obj).forEach(k=>{
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(k))return;
+   const d=new Date(k+'T00:00:00');
+   if(d<cutoff){delete obj[k];changed=true}
+  });
+  return changed;
+ };
+ const stamps=readTaskStamps();if(keepRecent(stamps))writeTaskStamps(stamps);
+ const noTasks=readNoTaskDays();if(keepRecent(noTasks))writeNoTaskDays(noTasks);
+}
 function setNoTask(id,isNoTask){const all=readNoTaskDays(),date=localDateKey();all[date]=all[date]||{};if(isNoTask)all[date][id]=true;else delete all[date][id];writeNoTaskDays(all);renderTodayStudyTasks();renderStudyItems()}
 function renderMaterialChoices(){
  const s=document.getElementById("taskSubject"),m=document.getElementById("taskMaterial");if(!s||!m)return;m.innerHTML="";
@@ -367,7 +387,7 @@ function renderTodayStudyTasks(){
 }
 function initStudyItems(){
  const s=document.getElementById("taskSubject"),m=document.getElementById("taskMaterial"),a=document.getElementById("addStudyItem");if(!s||!a)return;
- renderMaterialChoices();renderStudyItems();renderTodayStudyTasks();s.addEventListener("change",renderMaterialChoices);m.addEventListener("change",toggleOtherMaterial);
+ cleanupTodayTasks();renderMaterialChoices();renderStudyItems();renderTodayStudyTasks();s.addEventListener("change",renderMaterialChoices);m.addEventListener("change",toggleOtherMaterial);
  a.addEventListener("click",()=>{
   const msg=document.getElementById("taskAddMessage"),other=document.getElementById("otherMaterial"),pf=document.getElementById("pageFrom"),pt=document.getElementById("pageTo");
   let material=m.value;if(material==="その他")material=(other.value||"").trim();
