@@ -280,13 +280,13 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
   <div class="screen-title">🌿 お母さん</div>
   <div class="card">
     <h2>📅 チャレテの日付設定</h2>
-    <div class="soft">出発日とチャレテ本番日を設定します。</div>
+    <div class="soft">範囲発表日と日程を設定します。</div>
     <div class="form-row">
-      <label for="startDate">出発日</label>
+      <label for="startDate">範囲発表日</label>
       <input id="startDate" type="date">
     </div>
     <div class="form-row">
-      <label for="goalDate">チャレテ本番日</label>
+      <label for="goalDate">日程</label>
       <input id="goalDate" type="date">
     </div>
     <button id="saveDates" class="save-btn" type="button">保存</button>
@@ -539,11 +539,11 @@ function initChallengeRanges(){
     const message = document.getElementById("saveMessage");
 
     if(!start || !goal){
-      message.textContent = "出発日と本番日の両方を入れてね。";
+      message.textContent = "範囲発表日と日程の両方を入れてね。";
       return;
     }
     if(parseLocalDate(start) > parseLocalDate(goal)){
-      message.textContent = "出発日は本番日より前にしてね。";
+      message.textContent = "範囲発表日は日程より前にしてね。";
       return;
     }
 
