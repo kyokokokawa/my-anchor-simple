@@ -712,19 +712,28 @@ function sapiLessonForHomework(hw){
  const due=hw.due||localDateKey();return lessons.slice().sort((a,b)=>Math.abs(new Date(a.date+'T00:00:00')-new Date(due+'T00:00:00'))-Math.abs(new Date(b.date+'T00:00:00')-new Date(due+'T00:00:00')))[0]
 }
 function sapiLessonResult(lesson){
+ // V6.0.6: ○×は授業予定そのものにも保存。別テーブルは旧データ互換用。
+ if(lesson.homeworkResult==="missed")return "×";
+ if(lesson.homeworkResult==="submitted")return "○";
  const all=sapiRead(SAPI_HOMEWORK_RESULTS_KEY,[]);
- // lessonId を第一候補にし、旧データや更新前データでも日付＋授業コードで拾えるようにする。
  const a=all.filter(r=>r.lessonId===lesson.id||(r.lessonDate===lesson.date&&r.code===lesson.code));
  if(!a.length)return "";
  return a.some(r=>r.result==="missed")?"×":"○"
 }
 function finalizeSapiHomework(hw,result){
  const lesson=sapiLessonForHomework(hw),results=sapiRead(SAPI_HOMEWORK_RESULTS_KEY,[]);
- if(lesson){const subject=sapiSubjectShort(hw.subject);const old=results.find(r=>r.lessonId===lesson.id&&r.subject===subject);if(old){old.result=result;old.finishedAt=localDateKey()}else results.push({lessonId:lesson.id,lessonDate:lesson.date,code:lesson.code,subject,result,finishedAt:localDateKey()});sapiWrite(SAPI_HOMEWORK_RESULTS_KEY,results)}
+ if(lesson){
+  const subject=sapiSubjectShort(hw.subject),lessons=sapiRead(SAPI_LESSONS_KEY,[]);
+  const target=lessons.find(l=>l.id===lesson.id);
+  if(target){target.homeworkResult=result;target.homeworkFinishedAt=localDateKey();sapiWrite(SAPI_LESSONS_KEY,lessons)}
+  const old=results.find(r=>r.lessonId===lesson.id&&r.subject===subject);
+  if(old){old.result=result;old.finishedAt=localDateKey()}else results.push({lessonId:lesson.id,lessonDate:lesson.date,code:lesson.code,subject,result,finishedAt:localDateKey()});
+  sapiWrite(SAPI_HOMEWORK_RESULTS_KEY,results)
+ }
  sapiWrite(SAPI_HOMEWORK_KEY,sapiRead(SAPI_HOMEWORK_KEY,[]).filter(x=>x.id!==hw.id));
  // 今日やることに追加した同じ宿題も、完了処理と同時に整理する。
  writeStudyItems(readStudyItems().filter(t=>t.sapixHomeworkId!==hw.id));
- renderStudyItems();renderTodayStudyTasks();renderSapiHomework();renderSapiCalendar()
+ renderStudyItems();renderTodayStudyTasks();renderSapiHomework();renderSapiLessons();renderSapiCalendar()
 }
 
 function renderSapiCalendar(){
