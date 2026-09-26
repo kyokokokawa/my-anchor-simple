@@ -706,13 +706,25 @@ function sapiDateLabel(key){if(!/^\d{4}-\d{2}-\d{2}$/.test(key||""))return key||
 let sapiViewMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
 function sapiSubjectShort(subject){return ({"国語":"国","算数":"算","理科":"理","社会":"社","英語":"英","その他":"他"})[subject]||subject}
 function sapiLessonForHomework(hw){
- const short=sapiSubjectShort(hw.subject),lessons=sapiRead(SAPI_LESSONS_KEY,[]).filter(l=>l.code===hw.code&&(!Array.isArray(l.subjects)||!l.subjects.length||l.subjects.includes(short)));
- if(!lessons.length)return null;
- // 同じコードが複数ある場合は提出期限に最も近い授業へ紐づける。
- const due=hw.due||localDateKey();return lessons.slice().sort((a,b)=>Math.abs(new Date(a.date+'T00:00:00')-new Date(due+'T00:00:00'))-Math.abs(new Date(b.date+'T00:00:00')-new Date(due+'T00:00:00')))[0]
+ const lessons=sapiRead(SAPI_LESSONS_KEY,[]);
+ // V6.0.7: 新規宿題は登録時に授業IDを直接保存する。
+ if(hw.lessonId){const direct=lessons.find(l=>l.id===hw.lessonId);if(direct)return direct}
+ // 旧データ互換：まずコード＋科目、見つからなければコードだけで救済する。
+ const short=sapiSubjectShort(hw.subject);
+ let matches=lessons.filter(l=>l.code===hw.code&&(!Array.isArray(l.subjects)||!l.subjects.length||l.subjects.includes(short)));
+ if(!matches.length)matches=lessons.filter(l=>l.code===hw.code);
+ if(!matches.length)return null;
+ const due=hw.due||localDateKey();return matches.slice().sort((a,b)=>Math.abs(new Date(a.date+'T00:00:00')-new Date(due+'T00:00:00'))-Math.abs(new Date(b.date+'T00:00:00')-new Date(due+'T00:00:00')))[0]
+}
+function sapiLessonIdForNewHomework(code,subject,due){
+ const short=sapiSubjectShort(subject),lessons=sapiRead(SAPI_LESSONS_KEY,[]);
+ let matches=lessons.filter(l=>l.code===code&&Array.isArray(l.subjects)&&l.subjects.includes(short));
+ if(!matches.length)matches=lessons.filter(l=>l.code===code);
+ if(!matches.length)return "";
+ return matches.slice().sort((a,b)=>Math.abs(new Date(a.date+'T00:00:00')-new Date(due+'T00:00:00'))-Math.abs(new Date(b.date+'T00:00:00')-new Date(due+'T00:00:00')))[0].id
 }
 function sapiLessonResult(lesson){
- // V6.0.6: ○×は授業予定そのものにも保存。別テーブルは旧データ互換用。
+ // V6.0.7: ○×は授業予定そのものにも保存。別テーブルは旧データ互換用。
  if(lesson.homeworkResult==="missed")return "×";
  if(lesson.homeworkResult==="submitted")return "○";
  const all=sapiRead(SAPI_HOMEWORK_RESULTS_KEY,[]);
@@ -772,7 +784,7 @@ function initSapix(){
  $("sapiPrev").addEventListener("click",()=>{sapiViewMonth=new Date(sapiViewMonth.getFullYear(),sapiViewMonth.getMonth()-1,1);renderSapiCalendar()});$("sapiNext").addEventListener("click",()=>{sapiViewMonth=new Date(sapiViewMonth.getFullYear(),sapiViewMonth.getMonth()+1,1);renderSapiCalendar()});
  $("sapiLessonAdd").addEventListener("click",()=>{const date=$("sapiLessonDate").value,code=$("sapiLessonCode").value.trim(),subjects=sapiSelectedLessonSubjects(),msg=$("sapiLessonMessage");if(!date||!code){msg.textContent="日付と授業コードを入力してね";return}if(!subjects.length){msg.textContent="科目を1つ以上選んでね";return}const a=sapiRead(SAPI_LESSONS_KEY,[]);a.push({id:sapiId(),date,code,subjects});sapiWrite(SAPI_LESSONS_KEY,a);sapiViewMonth=new Date(Number(date.slice(0,4)),Number(date.slice(5,7))-1,1);$("sapiLessonCode").value=code;document.querySelectorAll("#sapiLessonSubjects input:checked").forEach(x=>x.checked=false);msg.textContent="授業を登録しました ✓";renderSapiCalendar();renderSapiLessons()});
  $("sapiRangeAdd").addEventListener("click",()=>{const page=Number($("sapiRangePage").value),daimon=sapiSelectedNums("sapiDaimonPicks"),shomon=sapiSelectedNums("sapiShomonPicks"),msg=$("sapiHomeworkMessage");if(!page||page<1){msg.textContent="ページを入力してね";return}if(!daimon.length&&!shomon.length){msg.textContent="大問か小問を選んでね";return}sapiDraftRanges.push({page,daimon,shomon});sapiDraftRanges.sort((a,b)=>a.page-b.page);sapiClearPicks();renderSapiRangePreview();msg.textContent="問題範囲を追加しました ✓"});
- $("sapiHomeworkAdd").addEventListener("click",()=>{const due=$("sapiHomeworkDue").value,msg=$("sapiHomeworkMessage");if(!due){msg.textContent="提出期限を入力してね";return}if(!sapiDraftRanges.length){msg.textContent="問題範囲を1つ以上追加してね";return}const code=$("sapiHomeworkCode").value,subject=$("sapiHomeworkSubject").value,ranges=sapiDraftRanges.map(r=>({page:r.page,daimon:[...r.daimon],shomon:[...r.shomon]}));const a=sapiRead(SAPI_HOMEWORK_KEY,[]);a.push({id:sapiId(),subject,code,ranges,content:code+" "+ranges.map(sapiRangeText).join(" / "),due,required:$("sapiHomeworkRequired").checked,submitted:false});sapiWrite(SAPI_HOMEWORK_KEY,a);sapiDraftRanges=[];renderSapiRangePreview();sapiClearPicks();msg.textContent="宿題を登録しました ✓";renderSapiHomework()});
+ $("sapiHomeworkAdd").addEventListener("click",()=>{const due=$("sapiHomeworkDue").value,msg=$("sapiHomeworkMessage");if(!due){msg.textContent="提出期限を入力してね";return}if(!sapiDraftRanges.length){msg.textContent="問題範囲を1つ以上追加してね";return}const code=$("sapiHomeworkCode").value,subject=$("sapiHomeworkSubject").value,ranges=sapiDraftRanges.map(r=>({page:r.page,daimon:[...r.daimon],shomon:[...r.shomon]}));const a=sapiRead(SAPI_HOMEWORK_KEY,[]);const lessonId=sapiLessonIdForNewHomework(code,subject,due);a.push({id:sapiId(),subject,code,lessonId,ranges,content:code+" "+ranges.map(sapiRangeText).join(" / "),due,required:$("sapiHomeworkRequired").checked,submitted:false});sapiWrite(SAPI_HOMEWORK_KEY,a);sapiDraftRanges=[];renderSapiRangePreview();sapiClearPicks();msg.textContent="宿題を登録しました ✓";renderSapiHomework()});
  $("sapiAddTestType").addEventListener("click",()=>{const type=$("sapiNewTestType").value.trim();if(!type)return;const a=sapiRead(SAPI_TYPES_KEY,[]);if(!sapiTypes().includes(type)){a.push(type);sapiWrite(SAPI_TYPES_KEY,a)}renderSapiTypes();$("sapiTestType").value=type;$("sapiNewTestType").value="";$("sapiTestMessage").textContent="テストの種類を追加しました ✓"});
  $("sapiTestAdd").addEventListener("click",()=>{const date=$("sapiTestDate").value,range=$("sapiTestRange").value.trim(),msg=$("sapiTestMessage");if(!date||!range){msg.textContent="テスト日と範囲を入力してね";return}const a=sapiRead(SAPI_TESTS_KEY,[]);a.push({id:sapiId(),date,type:$("sapiTestType").value,range});sapiWrite(SAPI_TESTS_KEY,a);$("sapiTestRange").value="";msg.textContent="テストを登録しました ✓";renderSapiTests()});
  renderSapiCalendar();renderSapiLessons();renderSapiHomework();renderSapiTypes();renderSapiTests()
