@@ -66,7 +66,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
   #basic .inline-entry button{font-size:17px}
   #basic tbody td:last-child{font-size:27px}
 
-.task-setup-card,.task-list-card{margin-bottom:16px}.task-setup-card h3,.task-list-card h3{margin:0 0 8px;color:#3f7f4d;font-size:21px}.task-help{margin:0 0 18px;color:#6f806f;font-size:14px}.task-label{display:block;margin:13px 0 6px;color:#4e6f52;font-weight:800}.task-select{width:100%;padding:13px 14px;border:1.5px solid #e8d9b8;border-radius:16px;background:#fff;font-size:17px;color:#365b40}.task-add-btn{margin-top:16px;border:0;border-radius:16px;background:#ffdb65;color:#42664a;font-size:17px;font-weight:900;padding:12px 24px}.task-add-message{margin-left:10px;color:#4e8b58;font-weight:800}.subject-block{padding:13px 0;border-bottom:1px solid #eee3c9}.subject-block:last-child{border-bottom:0}.subject-title{font-weight:900;color:#3f7f4d;font-size:18px;margin-bottom:7px}.material-chip{display:inline-block;margin:4px 6px 4px 0;padding:7px 11px;border-radius:999px;background:#fff8d9;color:#526d52;font-weight:700}.material-chip.completed{opacity:.38;text-decoration:line-through;text-decoration-thickness:2px}.empty-study-items{padding:18px 4px;color:#899289;text-align:center}
+.task-setup-card,.task-list-card{margin-bottom:16px}.task-setup-card h3,.task-list-card h3{margin:0 0 8px;color:#3f7f4d;font-size:21px}.task-help{margin:0 0 18px;color:#6f806f;font-size:14px}.task-label{display:block;margin:13px 0 6px;color:#4e6f52;font-weight:800}.task-select{width:100%;padding:13px 14px;border:1.5px solid #e8d9b8;border-radius:16px;background:#fff;font-size:17px;color:#365b40}.task-add-btn{margin-top:16px;border:0;border-radius:16px;background:#ffdb65;color:#42664a;font-size:17px;font-weight:900;padding:12px 24px}.task-add-message{margin-left:10px;color:#4e8b58;font-weight:800}.room-link-btn{width:100%;border:1.5px solid #e8d9b8;background:#fffdf7;color:#42664a;border-radius:16px;padding:14px 16px;font-size:17px;font-weight:850;text-align:left;margin-bottom:16px}.calendar-placeholder{text-align:center;padding:30px 12px;color:#718071;line-height:1.8}.subject-block{padding:13px 0;border-bottom:1px solid #eee3c9}.subject-block:last-child{border-bottom:0}.subject-title{font-weight:900;color:#3f7f4d;font-size:18px;margin-bottom:7px}.material-chip{display:inline-block;margin:4px 6px 4px 0;padding:7px 11px;border-radius:999px;background:#fff8d9;color:#526d52;font-weight:700}.material-chip.completed{opacity:.38;text-decoration:line-through;text-decoration-thickness:2px}.empty-study-items{padding:18px 4px;color:#899289;text-align:center}
 
 /* v5.1 今日のやること */
 .task-input{width:100%;padding:13px 14px;border:1.5px solid #e8d9b8;border-radius:16px;background:#fff;font-size:17px;color:#365b40}
@@ -141,6 +141,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
 <section id="tasks" class="page">
 <h2>📚 やること</h2>
+<button id="openMotherRoom" class="room-link-btn" type="button">🌿 お母さん部屋を開く ›</button>
 <div class="card task-setup-card">
 <h3>やることを決める</h3>
 <p class="task-help">教科・内容・ページを登録しよう 🌱</p>
@@ -267,6 +268,14 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
   </div>
 </section>
 
+<section id="calendar" class="page">
+  <div class="screen-title">📅 カレンダー</div>
+  <div class="card calendar-placeholder">
+    <strong>My Anchor カレンダー</strong><br>
+    ここに予定をまとめていきます 🌱
+  </div>
+</section>
+
 <section id="mother" class="page">
   <div class="screen-title">🌿 お母さん</div>
   <div class="card">
@@ -297,7 +306,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 <button data-page="challenge"><span>📘</span>チャレテ</button>
 <button data-page="basic"><span>⚓</span>基礎トレ</button>
 <button data-page="sapix"><span>🎒</span>サピックス</button>
-<button data-page="mother"><span>🌿</span>お母さん</button>
+<button data-page="calendar"><span>📅</span>カレンダー</button>
 <button data-page="ticket"><span>🎟️</span>チケット</button>
 </nav>
 
@@ -464,6 +473,15 @@ function initChallengeRanges(){
   buttons.forEach(button => {
     button.addEventListener("click", () => openPage(button.dataset.page, button));
   });
+
+  const openMotherRoom = document.getElementById("openMotherRoom");
+  if(openMotherRoom){
+    openMotherRoom.addEventListener("click", () => {
+      pages.forEach(page => page.classList.toggle("active", page.id === "mother"));
+      buttons.forEach(btn => btn.classList.toggle("active", btn.dataset.page === "tasks"));
+      window.scrollTo(0, 0);
+    });
+  }
 
   function readDates(){
     try {
