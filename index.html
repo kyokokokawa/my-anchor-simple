@@ -280,13 +280,13 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
   <div class="screen-title">🌿 お母さん</div>
   <div class="card">
     <h2>📅 チャレテの日付設定</h2>
-    <div class="soft">範囲発表日と日程を設定します。</div>
+    <div class="soft">出発日とチャレテ本番日を設定します。</div>
     <div class="form-row">
-      <label for="startDate">範囲発表日</label>
+      <label for="startDate">出発日</label>
       <input id="startDate" type="date">
     </div>
     <div class="form-row">
-      <label for="goalDate">日程</label>
+      <label for="goalDate">チャレテ本番日</label>
       <input id="goalDate" type="date">
     </div>
     <button id="saveDates" class="save-btn" type="button">保存</button>
@@ -372,10 +372,21 @@ function renderTodayStudyTasks(){
  const visibleItems=[dailyKanji,...items.filter(x=>!(x.subject==="国語"&&x.material==="毎日漢字"))];
  ["国語","算数","理科","社会","英語"].forEach(s=>{
   const a=visibleItems.filter(x=>x.subject===s);if(!a.length)return;
-  const title=document.createElement("div");title.className="today-task-subject";title.textContent=s;h.appendChild(title);
+  if(s!=="国語"){
+   const title=document.createElement("div");title.className="today-task-subject";title.textContent=s;h.appendChild(title);
+  }
+  let hasOtherJapaneseTask=false;
   a.forEach(x=>{
-   const name=document.createElement("div");name.className="today-task-name";name.textContent=taskDisplayName(x);h.appendChild(name);
    const isDailyKanji=x.id==="default_daily_kanji";
+   if(isDailyKanji){
+    const title=document.createElement("div");title.className="today-task-subject";title.textContent="毎日漢字";h.appendChild(title);
+   }else{
+    if(s==="国語"&&!hasOtherJapaneseTask){
+     const title=document.createElement("div");title.className="today-task-subject";title.textContent=s;h.appendChild(title);
+     hasOtherJapaneseTask=true;
+    }
+    const name=document.createElement("div");name.className="today-task-name";name.textContent=taskDisplayName(x);h.appendChild(name);
+   }
    if(isDailyKanji&&noTasks[x.id]){
     const state=document.createElement("div");state.className="no-task-state";
     const label=document.createElement("span");label.textContent="今日は課題なし";
@@ -539,11 +550,11 @@ function initChallengeRanges(){
     const message = document.getElementById("saveMessage");
 
     if(!start || !goal){
-      message.textContent = "範囲発表日と日程の両方を入れてね。";
+      message.textContent = "出発日と本番日の両方を入れてね。";
       return;
     }
     if(parseLocalDate(start) > parseLocalDate(goal)){
-      message.textContent = "範囲発表日は日程より前にしてね。";
+      message.textContent = "出発日は本番日より前にしてね。";
       return;
     }
 
