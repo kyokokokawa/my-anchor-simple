@@ -278,7 +278,8 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
     </div>
     <div class="form-row">
       <label for="goalDate">日程</label>
-      <input id="goalDate" type="date">
+      <div id="goalDateList"><input id="goalDate" class="goal-date-input" type="date" aria-label="チャレテの日程 1"></div>
+      <button id="addGoalDate" class="task-add-btn" type="button">日付を追加</button>
     </div>
     <button id="saveDates" class="save-btn" type="button">保存</button>
     <div id="saveMessage" class="saved"></div>
@@ -393,6 +394,7 @@ function sapiTaskSubmitted(x,homework){return !!sapiTaskSubmissionDate(x,homewor
 function submitSapiTask(x){
  const homework=sapiRead(SAPI_HOMEWORK_KEY,[]),items=readStudyItems(),task=items.find(t=>t.id===x.id);if(!task)return;
  const entry=homework.find(h=>h.id===task.sapixHomeworkId),date=localDateKey();
+ if(!entry||!entry.required)return;
  const submitted=!sapiTaskSubmitted(task,homework);
  if(entry){
   if(!entry.rangeSubmissions){entry.rangeSubmissions={};items.filter(t=>t.sapixHomeworkId===entry.id).forEach(t=>{entry.rangeSubmissions[t.id]=entry.submitted?(entry.submittedDate||"legacy"):null})}
@@ -430,7 +432,7 @@ function renderTodayStudyTasks(){
    const row=document.createElement("div");row.className="stamp-row";
    const current=isDailyKanji?(stamps[x.id]==="できた！"?"できた！":"まだ"):(stamps[x.id]||"まだ");
    const pending=document.createElement("div");pending.className="stamp-state"+(current==="まだ"&&!sapiTaskSubmitted(x,sapiRead(SAPI_HOMEWORK_KEY,[]))?" active":"");pending.innerHTML='<span class="emoji">🌱</span>まだ';row.appendChild(pending);
-   const choices=isDailyKanji?[["できた！","🌸"]]:[["やってる","🌿"],["できた！","🌸"],...(isSapi?(!homework||homework.required?[["宿題提出","📮"]]:[]):[["もう一度","🍂"]])];
+   const choices=isDailyKanji?[["できた！","🌸"]]:[["やってる","🌿"],["できた！","🌸"],...(isSapi?(homework&&homework.required?[["宿題提出","📮"]]:[]):[["もう一度","🍂"]])];
    choices.forEach(([label,emoji])=>{
     const submit=label==="宿題提出",active=submit?!!sapiTaskSubmitted(x,sapiRead(SAPI_HOMEWORK_KEY,[])):current===label;
     const b=document.createElement("button");b.type="button";b.className="stamp-btn"+(active?" active":"");
@@ -537,14 +539,17 @@ function initChallengeRanges(){
   function readDates(){
     try {
       const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      return {
-        start: typeof data.start === "string" ? data.start : "",
-        goal: typeof data.goal === "string" ? data.goal : ""
-      };
-    } catch (e) {
-      return {start:"", goal:""};
-    }
+      const goals=[...new Set((Array.isArray(data.goals)?data.goals:[data.goal]).filter(d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)))].sort();
+      return {start:typeof data.start==="string"?data.start:"",goal:goals[0]||"",goals};
+    } catch (e) {return {start:"",goal:"",goals:[]};}
   }
+  function addGoalDateInput(value=""){
+    const row=document.createElement("div");row.className="sapi-form-row";
+    const input=document.createElement("input");input.type="date";input.className="goal-date-input";input.value=value;input.setAttribute("aria-label","チャレテの追加日程");
+    const remove=document.createElement("button");remove.type="button";remove.className="challenge-delete-btn";remove.textContent="削除";remove.onclick=()=>row.remove();
+    row.append(input,remove);document.getElementById("goalDateList").appendChild(row);
+  }
+  document.getElementById("addGoalDate").addEventListener("click",()=>addGoalDateInput());
 
   function parseLocalDate(value){
     const parts = value.split("-").map(Number);
@@ -565,11 +570,13 @@ function initChallengeRanges(){
   function renderDates(){
     const dates = readDates();
     document.getElementById("startDate").value = dates.start;
+    document.getElementById("goalDateList").replaceChildren(document.getElementById("goalDate"));
     document.getElementById("goalDate").value = dates.goal;
+    dates.goals.slice(1).forEach(addGoalDateInput);
     document.getElementById("startDisplay").textContent =
       dates.start ? `スタート ${formatMD(dates.start)}` : "スタート —";
     document.getElementById("goalDisplay").textContent =
-      dates.goal ? `GOAL ✨ ${formatMD(dates.goal)}` : "GOAL ✨ —";
+      dates.goal ? `GOAL ✨ ${dates.goals.map(formatMD).join("・")}` : "GOAL ✨ —";
 
     const countdown = document.getElementById("countdown");
     if(!dates.goal){
@@ -577,7 +584,9 @@ function initChallengeRanges(){
       return;
     }
 
-    const goal = parseLocalDate(dates.goal);
+    const today=todayAtMidnight();
+    const next=dates.goals.find(d=>parseLocalDate(d)>=today);
+    const goal = parseLocalDate(next||dates.goals.at(-1));
     const diff = Math.ceil((goal - todayAtMidnight()) / 86400000);
     if(diff > 0) countdown.textContent = `あと${diff}日！`;
     else if(diff === 0) countdown.textContent = "今日がチャレテ！";
@@ -586,7 +595,8 @@ function initChallengeRanges(){
 
   document.getElementById("saveDates").addEventListener("click", () => {
     const start = document.getElementById("startDate").value;
-    const goal = document.getElementById("goalDate").value;
+    const goals=[...new Set([...document.querySelectorAll(".goal-date-input")].map(x=>x.value).filter(Boolean))].sort();
+    const goal=goals[0]||"";
     const message = document.getElementById("saveMessage");
 
     if(!start || !goal){
@@ -598,7 +608,7 @@ function initChallengeRanges(){
       return;
     }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({start, goal}));markSettingDate(STORAGE_KEY);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({start, goal, goals}));markSettingDate(STORAGE_KEY);
     message.textContent = "保存しました ✓";
     renderDates();
   });
@@ -845,7 +855,7 @@ function isSapiSubmissionDay(date){const [y,m,d]=date.split("-").map(Number);ret
 function sapiRecordMark(value,date){if(!isSapiSubmissionDay(date)||value==null||value==="−"||value==="-")return "−";return value===true||value==="◯"||value==="○"?"○":value==="△"?"△":"×"}
 function sapixDayComplete(tasks,stamps,homework,date){
  if(!isSapiSubmissionDay(date))return "−";
- const eligible=tasks.filter(t=>!t.sapixHomeworkId||homework.find(h=>h.id===t.sapixHomeworkId)?.required!==false);
+ const eligible=tasks.filter(t=>t.sapixHomeworkId&&homework.find(h=>h.id===t.sapixHomeworkId)?.required);
  if(!eligible.length)return "−";
  const submitted=eligible.filter(t=>{const submittedDate=sapiTaskSubmissionDate(t,homework);return submittedDate&&(submittedDate==="legacy"||submittedDate<=date)}).length;
  return submitted===0?"×":submitted===eligible.length?"○":"△";
