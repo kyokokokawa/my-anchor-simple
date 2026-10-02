@@ -104,7 +104,9 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
 .app-logo{margin:0 0 12px 8px}header h1{margin-top:0}.mother-messages{margin:12px 0;color:#42664a;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}.mother-message+.mother-message{margin-top:10px;padding-top:10px;border-top:1px solid #e9dfc5}.record-mail{display:block;margin:3px auto 0;border:0;border-radius:9px;background:#fff1bb;font-size:19px;min-width:36px;min-height:36px;cursor:pointer}.message-dialog{width:calc(100% - 32px);max-width:480px;max-height:80vh;overflow:auto;border:2px solid #ffe27a;border-radius:22px;padding:22px;background:#fffdf4;color:#395548}.message-dialog::backdrop{background:#25352c66}.message-dialog h2{font-size:20px;color:#34764a}.message-dialog .subtitle{margin-top:14px}.message-close{width:100%;margin-top:18px;border:0;border-radius:14px;padding:12px;background:#ffe16a;font:inherit;color:#386d43;font-weight:800}
 </style>
-</head>
+<style>
+.sync-bar{display:flex;align-items:center;gap:8px;padding:8px 18px;flex-wrap:wrap;color:#557454;font-size:13px}.sync-bar span{flex:1;min-width:180px}.sync-bar button{border:1px solid #e3d7ad;background:#fff9d8;border-radius:12px;padding:7px 10px;color:#52724c;font-weight:bold}.sync-dialog{width:min(520px,90vw);max-height:85vh;overflow:auto;border:1px solid #e3d7ad;border-radius:24px;padding:22px;color:#405949}.sync-dialog input{box-sizing:border-box;width:100%;margin:6px 0 14px}.sync-dialog .task-add-btn{margin:8px 0;display:block;width:100%}.sync-dialog .soft{font-size:14px}.sync-dialog details{margin:12px 0}.sync-dialog label{display:block}
+</style></head>
 <body>
 <div class="app">
 <div class="logo app-logo">⚓ MY ANCHOR ✨</div>
@@ -114,6 +116,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
   <div id="defaultEncouragement" class="subtitle">できない日があっても、また始めれば大丈夫</div>
 </header>
 
+<div class="sync-bar"><span id="syncStatus" role="status" aria-live="polite">この端末に保存しています</span><button id="syncNow" type="button">↻</button><button id="openSync" type="button">共有</button></div>
 <section id="today" class="page active">
   <div class="screen-title">🏠 今日</div>
   <div class="card challenge-box">
@@ -268,6 +271,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
   <div class="screen-title">🌿 お母さん</div>
   <div class="card"><h3>📧 メッセージを送る</h3><form id="motherMessageForm"><label class="task-label" for="motherMessageDate">日付</label><input id="motherMessageDate" type="date" required><label class="task-label" for="motherMessageText">メッセージ</label><textarea id="motherMessageText" class="challenge-note" required maxlength="2000" placeholder="今日のひとことを送ろう"></textarea><button class="task-add-btn" type="submit">📧 メッセージを送る</button><div id="motherMessageStatus" class="saved" role="status" aria-live="polite"></div></form></div>
+  <div class="card"><h3>🤝 家族で手帳を共有</h3><p class="soft">予定・メッセージ・チケットと、勉強の記録を同じ手帳で確認できます。</p><button id="openMotherSync" class="task-add-btn" type="button">共有設定を開く</button></div>
   <div class="card"><h3>🔐 パスワード変更</h3><details><summary class="soft">パスワードを変更する</summary><form id="motherPasswordChangeForm">
 <label class="task-label" for="motherNewPassword">新しいパスワード（数字4桁以上）</label><input id="motherNewPassword" class="task-input" type="password" inputmode="numeric" pattern="[0-9]{4,}" minlength="4" required autocomplete="off">
 <label class="task-label" for="motherNewPasswordConfirm">新しいパスワードをもう一度</label><input id="motherNewPasswordConfirm" class="task-input" type="password" inputmode="numeric" pattern="[0-9]{4,}" minlength="4" required autocomplete="off">
@@ -326,11 +330,13 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 <button data-page="ticket"><span>🎟️</span>チケット</button>
 </nav>
 
+<script src="./sync.js"></script>
 <script>
 // One-time initialization explicitly requested for the trial data.
 const TRIAL_RESET_KEY="myAnchorV2.trialResetV6025";
-function resetAnchorData(){const keep=new Set(["myAnchorV2.userName","myAnchorV2.motherPassword",TRIAL_RESET_KEY]);for(let i=localStorage.length-1;i>=0;i--){const key=localStorage.key(i);if(key&&key.startsWith("myAnchor")&&!keep.has(key))localStorage.removeItem(key)}localStorage.setItem(TRIAL_RESET_KEY,"done")}
-if(localStorage.getItem(TRIAL_RESET_KEY)!=="done")resetAnchorData();
+function resetAnchorData(){return AnchorSync.reset(()=>resetAnchorDataLocal())}
+function resetAnchorDataLocal(){const keep=new Set(["myAnchorV2.userName","myAnchorV2.motherPassword",TRIAL_RESET_KEY]);for(let i=anchorStorage.length-1;i>=0;i--){const key=anchorStorage.key(i);if(key&&key.startsWith("myAnchor")&&!keep.has(key))anchorStorage.removeItem(key)}anchorStorage.setItem(TRIAL_RESET_KEY,"done")}
+if(anchorStorage.getItem(TRIAL_RESET_KEY)!=="done")resetAnchorData();
 
 
 const STUDY_MATERIALS={
@@ -344,12 +350,12 @@ const STUDY_ITEM_KEY="myAnchorV2.studyItems";
 const STUDY_STAMP_KEY="myAnchorV2.studyTaskStamps";
 const STUDY_NO_TASK_KEY="myAnchorV2.studyNoTaskDays";
 function localDateKey(d=new Date()){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`}
-function readStudyItems(){try{const x=JSON.parse(localStorage.getItem(STUDY_ITEM_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
-function writeStudyItems(x){localStorage.setItem(STUDY_ITEM_KEY,JSON.stringify(x))}
-function readTaskStamps(){try{return JSON.parse(localStorage.getItem(STUDY_STAMP_KEY)||"{}")||{}}catch(e){return{}}}
-function writeTaskStamps(x){localStorage.setItem(STUDY_STAMP_KEY,JSON.stringify(x))}
-function readNoTaskDays(){try{return JSON.parse(localStorage.getItem(STUDY_NO_TASK_KEY)||"{}")||{}}catch(e){return{}}}
-function writeNoTaskDays(x){localStorage.setItem(STUDY_NO_TASK_KEY,JSON.stringify(x))}
+function readStudyItems(){try{const x=JSON.parse(anchorStorage.getItem(STUDY_ITEM_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
+function writeStudyItems(x){anchorStorage.setItem(STUDY_ITEM_KEY,JSON.stringify(x))}
+function readTaskStamps(){try{return JSON.parse(anchorStorage.getItem(STUDY_STAMP_KEY)||"{}")||{}}catch(e){return{}}}
+function writeTaskStamps(x){anchorStorage.setItem(STUDY_STAMP_KEY,JSON.stringify(x))}
+function readNoTaskDays(){try{return JSON.parse(anchorStorage.getItem(STUDY_NO_TASK_KEY)||"{}")||{}}catch(e){return{}}}
+function writeNoTaskDays(x){anchorStorage.setItem(STUDY_NO_TASK_KEY,JSON.stringify(x))}
 function cleanupTodayTasks(){
  const today=localDateKey();
  // 「今日やること」に追加した単発課題は、その日だけ保持する。
@@ -466,16 +472,16 @@ function initStudyItems(){
 const CHALLENGE_SCHEDULE_KEY="myAnchorV2.challengeSchedule";
 const CHALLENGE_DURATION_KEY="myAnchorV2.challengeDurations";
 const CHALLENGE_TESTS=["国語","算数","理科","社会","英語（筆記）","英語（スピーキング）"];
-function readChallengeSchedule(){try{const x=JSON.parse(localStorage.getItem(CHALLENGE_SCHEDULE_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
-function writeChallengeSchedule(x){localStorage.setItem(CHALLENGE_SCHEDULE_KEY,JSON.stringify(x))}
-function readChallengeDurations(){try{return JSON.parse(localStorage.getItem(CHALLENGE_DURATION_KEY)||"{}")||{}}catch(e){return{}}}
+function readChallengeSchedule(){try{const x=JSON.parse(anchorStorage.getItem(CHALLENGE_SCHEDULE_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
+function writeChallengeSchedule(x){anchorStorage.setItem(CHALLENGE_SCHEDULE_KEY,JSON.stringify(x))}
+function readChallengeDurations(){try{return JSON.parse(anchorStorage.getItem(CHALLENGE_DURATION_KEY)||"{}")||{}}catch(e){return{}}}
 function weekdayJa(v){if(!v)return"";const [y,m,d]=v.split("-").map(Number);return"日月火水木金土"[new Date(y,m-1,d).getDay()]}
 function formatScheduleDate(v){if(!v)return"";const [y,m,d]=v.split("-").map(Number);return `${m}月${d}日（${weekdayJa(v)}）`}
 function formatScheduleSubjects(subjects,mainView=false){return subjects.join("・")}
 function renderChallengeSchedule(){const h=document.getElementById("challengeScheduleList");if(!h)return;const a=readChallengeSchedule().slice().sort((x,y)=>x.date.localeCompare(y.date));h.innerHTML=a.length?"":"<div class='challenge-empty'>まだ日程は登録されていません</div>";a.forEach(x=>{const row=document.createElement("div");row.className="schedule-row";const t=document.createElement("div");t.innerHTML=`<strong>${formatScheduleDate(x.date)}</strong>　${formatScheduleSubjects(x.subjects)}`;const b=document.createElement("button");b.type="button";b.className="challenge-delete-btn";b.textContent="削除";b.onclick=()=>{writeChallengeSchedule(readChallengeSchedule().filter(r=>r.id!==x.id));renderChallengeSchedule();renderChallengeMain()};row.append(t,b);h.appendChild(row)})}
 function renderDurationInputs(){const h=document.getElementById("durationInputs");if(!h)return;const d=readChallengeDurations();h.innerHTML="";CHALLENGE_TESTS.forEach(s=>{const row=document.createElement("label");row.className="duration-row";const span=document.createElement("span");span.textContent=s;const input=document.createElement("select");input.className="task-select duration-input";input.dataset.subject=s;["","10分","20分","30分","40分","50分","60分"].forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v||"選択";input.appendChild(o)});if(d[s]&&[...input.options].some(o=>o.value===d[s]))input.value=d[s];row.append(span,input);h.appendChild(row)})}
 function renderChallengeDurations(){const h=document.getElementById("challengeDurationList");if(!h)return;const d=readChallengeDurations();const rows=CHALLENGE_TESTS.filter(s=>d[s]);h.innerHTML=rows.length?rows.map(s=>`<div class="duration-summary"><strong>${s}</strong><span>${d[s]}</span></div>`).join(""):"<div class='challenge-empty'>まだ試験時間は登録されていません</div>"}
-function initChallengeOverview(){renderChallengeSchedule();renderDurationInputs();renderChallengeDurations();const add=document.getElementById("addSchedule");if(add)add.onclick=()=>{const date=document.getElementById("scheduleDate"),msg=document.getElementById("scheduleMessage"),subjects=[...document.querySelectorAll("#scheduleSubjects input:checked")].map(x=>x.value);if(!date.value){msg.textContent="日付を選んでね";return}if(!subjects.length){msg.textContent="科目を選んでね";return}const a=readChallengeSchedule();a.push({id:"schedule_"+Date.now(),createdDate:localDateKey(),date:date.value,subjects});writeChallengeSchedule(a);renderChallengeSchedule();renderChallengeMain();document.querySelectorAll("#scheduleSubjects input").forEach(x=>x.checked=false);msg.textContent="日程を追加しました ✓";setTimeout(()=>msg.textContent="",1600)};const save=document.getElementById("saveDurations");if(save)save.onclick=()=>{const d={};document.querySelectorAll(".duration-input").forEach(x=>{if(x.value.trim())d[x.dataset.subject]=x.value.trim()});localStorage.setItem(CHALLENGE_DURATION_KEY,JSON.stringify(d));markSettingDate(CHALLENGE_DURATION_KEY);renderChallengeDurations();renderChallengeMain();const msg=document.getElementById("durationMessage");msg.textContent="試験時間を保存しました ✓";setTimeout(()=>msg.textContent="",1600)}}
+function initChallengeOverview(){renderChallengeSchedule();renderDurationInputs();renderChallengeDurations();const add=document.getElementById("addSchedule");if(add)add.onclick=()=>{const date=document.getElementById("scheduleDate"),msg=document.getElementById("scheduleMessage"),subjects=[...document.querySelectorAll("#scheduleSubjects input:checked")].map(x=>x.value);if(!date.value){msg.textContent="日付を選んでね";return}if(!subjects.length){msg.textContent="科目を選んでね";return}const a=readChallengeSchedule();a.push({id:"schedule_"+Date.now(),createdDate:localDateKey(),date:date.value,subjects});writeChallengeSchedule(a);renderChallengeSchedule();renderChallengeMain();document.querySelectorAll("#scheduleSubjects input").forEach(x=>x.checked=false);msg.textContent="日程を追加しました ✓";setTimeout(()=>msg.textContent="",1600)};const save=document.getElementById("saveDurations");if(save)save.onclick=()=>{const d={};document.querySelectorAll(".duration-input").forEach(x=>{if(x.value.trim())d[x.dataset.subject]=x.value.trim()});anchorStorage.setItem(CHALLENGE_DURATION_KEY,JSON.stringify(d));markSettingDate(CHALLENGE_DURATION_KEY);renderChallengeDurations();renderChallengeMain();const msg=document.getElementById("durationMessage");msg.textContent="試験時間を保存しました ✓";setTimeout(()=>msg.textContent="",1600)}}
 
 function renderChallengeMain(){
  const sh=document.getElementById("challengeMainSchedule"),dh=document.getElementById("challengeMainDurations"),rh=document.getElementById("challengeMainRanges");
@@ -486,8 +492,8 @@ function renderChallengeMain(){
 function initChallengeViewToggle(){const main=document.getElementById("challengeMainView"),settings=document.getElementById("challengeSettingsView"),open=document.getElementById("openChallengeSettings"),close=document.getElementById("closeChallengeSettings");if(!main||!settings)return;const showSettings=()=>{main.classList.add("hidden");settings.classList.remove("hidden");if(open)open.classList.add("hidden");if(close)close.classList.remove("hidden")};const showMain=()=>{settings.classList.add("hidden");main.classList.remove("hidden");if(open)open.classList.remove("hidden");if(close)close.classList.add("hidden");renderChallengeMain()};if(open)open.onclick=showSettings;if(close)close.onclick=showMain;showMain()}
 
 const CHALLENGE_RANGE_KEY="myAnchorV2.challengeRanges";
-function readChallengeRanges(){try{const x=JSON.parse(localStorage.getItem(CHALLENGE_RANGE_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
-function writeChallengeRanges(x){localStorage.setItem(CHALLENGE_RANGE_KEY,JSON.stringify(x))}
+function readChallengeRanges(){try{const x=JSON.parse(anchorStorage.getItem(CHALLENGE_RANGE_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
+function writeChallengeRanges(x){anchorStorage.setItem(CHALLENGE_RANGE_KEY,JSON.stringify(x))}
 function challengeRangeName(x){let n=x.material||"範囲";if(x.pageFrom||x.pageTo){if(x.pageFrom&&x.pageTo)n+=` p.${x.pageFrom}〜${x.pageTo}`;else if(x.pageFrom)n+=` p.${x.pageFrom}〜`;else n+=` 〜p.${x.pageTo}`}return n}
 function formatChallengeDate(v){if(!v)return "";const a=v.split("-").map(Number);return a.length===3?`${a[1]}月${a[2]}日`:v}
 function challengeAlreadyInToday(rangeId){return readStudyItems().some(x=>x.challengeRangeId===rangeId&&x.date===localDateKey())}
@@ -551,7 +557,7 @@ function initChallengeRanges(){
 
   function readDates(){
     try {
-      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      const data = JSON.parse(anchorStorage.getItem(STORAGE_KEY) || "{}");
       const goals=[...new Set((Array.isArray(data.goals)?data.goals:[data.goal]).filter(d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)))].sort();
       return {start:typeof data.start==="string"?data.start:"",goal:goals[0]||"",goals};
     } catch (e) {return {start:"",goal:"",goals:[]};}
@@ -621,7 +627,7 @@ function initChallengeRanges(){
       return;
     }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({start, goal, goals}));markSettingDate(STORAGE_KEY);
+    anchorStorage.setItem(STORAGE_KEY, JSON.stringify({start, goal, goals}));markSettingDate(STORAGE_KEY);
     message.textContent = "保存しました ✓";
     renderDates();
   });
@@ -643,7 +649,7 @@ function initChallengeRanges(){
 
   function readBasicScores(){
     try{
-      const data = JSON.parse(localStorage.getItem(BASIC_STORAGE_KEY) || "{}");
+      const data = JSON.parse(anchorStorage.getItem(BASIC_STORAGE_KEY) || "{}");
       return data && typeof data === "object" ? data : {};
     }catch(e){
       return {};
@@ -651,7 +657,7 @@ function initChallengeRanges(){
   }
 
   function writeBasicScores(scores){
-    localStorage.setItem(BASIC_STORAGE_KEY, JSON.stringify(scores));
+    anchorStorage.setItem(BASIC_STORAGE_KEY, JSON.stringify(scores));
   }
 
   function validBasicScore(value){
@@ -782,6 +788,10 @@ function initChallengeRanges(){
     renderBasicMonth();
   });
 
+  document.addEventListener("anchorDataChanged",()=>{
+    renderTodayBasic();renderBasicMonth();
+    if(!document.getElementById("mother").classList.contains("active"))renderDates();
+  });
   renderDates();
   renderTodayBasic();
   renderBasicMonth();
@@ -798,8 +808,8 @@ const SAPI_HOMEWORK_KEY="myAnchorV2.sapixHomework";
 const SAPI_TESTS_KEY="myAnchorV2.sapixTests";
 const SAPI_TYPES_KEY="myAnchorV2.sapixTestTypes";
 const SAPI_DEFAULT_TYPES=["マンスリー","組分け","復習","サピックスOP"];
-function sapiRead(key,fallback){try{const v=JSON.parse(localStorage.getItem(key));return Array.isArray(v)?v:fallback}catch(e){return fallback}}
-function sapiWrite(key,value){localStorage.setItem(key,JSON.stringify(value))}
+function sapiRead(key,fallback){try{const v=JSON.parse(anchorStorage.getItem(key));return Array.isArray(v)?v:fallback}catch(e){return fallback}}
+function sapiWrite(key,value){anchorStorage.setItem(key,JSON.stringify(value))}
 function sapiId(){return "sapi_"+Date.now()+"_"+Math.random().toString(36).slice(2,8)}
 function sapiDateLabel(key){if(!/^\d{4}-\d{2}-\d{2}$/.test(key||""))return key||"日付未設定";const [y,m,d]=key.split("-").map(Number);const day=new Date(y,m-1,d);return `${m}月${d}日（${"日月火水木金土"[day.getDay()]}）`}
 let sapiViewMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
@@ -863,7 +873,7 @@ function initSapix(){
 /* Permanent daily study records. Today follows the latest saved state. */
 const STUDY_RECORD_KEY="myAnchorV2.studyRecords";
 let recordViewMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
-function readStudyRecords(){try{return JSON.parse(localStorage.getItem(STUDY_RECORD_KEY)||"{}")||{}}catch(e){return{}}}
+function readStudyRecords(){try{return JSON.parse(anchorStorage.getItem(STUDY_RECORD_KEY)||"{}")||{}}catch(e){return{}}}
 function isSapiSubmissionDay(date){const [y,m,d]=date.split("-").map(Number);return [1,3,5].includes(new Date(y,m-1,d).getDay())}
 function sapiRecordMark(value,date){if(!isSapiSubmissionDay(date)||value==null||value==="−"||value==="-")return "−";return value===true||value==="◯"||value==="○"?"○":value==="△"?"△":"×"}
 function sapixDayComplete(tasks,stamps,homework,date){
@@ -878,11 +888,11 @@ function syncStudyRecord(){
  // Snapshot existing dated tasks before the next-day cleanup removes them.
  const dates=new Set([today,...items.map(x=>x.date).filter(Boolean)]);
  dates.forEach(date=>{if(date>today)return;const tasks=items.filter(t=>(t.date||today)===date&&(t.sapixRange||t.sapixHomeworkId));records[date]={...(records[date]||{}),sapix:sapixDayComplete(tasks,stamps[date]||{},homework,date)};});
- localStorage.setItem(STUDY_RECORD_KEY,JSON.stringify(records));
+ anchorStorage.setItem(STUDY_RECORD_KEY,JSON.stringify(records));
 }
 function renderStudyRecord(){
  syncStudyRecord();const h=document.getElementById("recordRows");if(!h)return;h.replaceChildren();
- const y=recordViewMonth.getFullYear(),m=recordViewMonth.getMonth(),today=localDateKey(),stamps=readTaskStamps(),records=readStudyRecords();let scores={};try{scores=JSON.parse(localStorage.getItem("myAnchorV2.basicScores")||"{}")}catch(e){}
+ const y=recordViewMonth.getFullYear(),m=recordViewMonth.getMonth(),today=localDateKey(),stamps=readTaskStamps(),records=readStudyRecords();let scores={};try{scores=JSON.parse(anchorStorage.getItem("myAnchorV2.basicScores")||"{}")}catch(e){}
  document.getElementById("recordMonth").textContent=`${y}年${m+1}月`;
  for(let d=1;d<=new Date(y,m+1,0).getDate();d++){const date=localDateKey(new Date(y,m,d)),row=document.createElement("tr");row.className=date===today?"record-today":date>today?"record-future":"";const label=document.createElement("td");label.textContent=`${m+1}/${d}（${"日月火水木金土"[new Date(y,m,d).getDay()]}）`;if(readMotherMessages()[date]?.length){const mail=document.createElement("button");mail.type="button";mail.className="record-mail";mail.textContent="📧";mail.setAttribute("aria-label",date+"のお母さんからのメッセージを読む");mail.addEventListener("click",()=>openMotherMessages(date));label.appendChild(mail)}row.appendChild(label);const done=[Object.prototype.hasOwnProperty.call(scores,date),stamps[date]?.default_daily_kanji==="できた！",records[date]?.sapix];done.forEach((v,i)=>{const cell=document.createElement("td");cell.textContent=date>today?"":i===2?sapiRecordMark(v,date):v?"○":"−";row.appendChild(cell)});h.appendChild(row)}
 }
@@ -893,7 +903,7 @@ function initStudyRecord(){
 
 
 const TICKET_WALLET_KEY="myAnchorV2.ticketWallet";
-function readTicketWallet(){try{const value=JSON.parse(localStorage.getItem(TICKET_WALLET_KEY)||"{}");const count=n=>Number.isSafeInteger(n)&&n>=0?n:0;return {red:count(value?.red),yellow:count(value?.yellow)}}catch(e){return {red:0,yellow:0}}}
+function readTicketWallet(){try{const value=JSON.parse(anchorStorage.getItem(TICKET_WALLET_KEY)||"{}");const count=n=>Number.isSafeInteger(n)&&n>=0?n:0;return {red:count(value?.red),yellow:count(value?.yellow)}}catch(e){return {red:0,yellow:0}}}
 function renderTicketWallet(){
  const wallet=readTicketWallet();
  [["red","🎟️"],["yellow","🎫"]].forEach(([color,emoji])=>{
@@ -905,31 +915,31 @@ function renderTicketWallet(){
 }
 function initTickets(){
  [["sendRedTicket","red","赤チケット🎟️"],["sendYellowTicket","yellow","黄色チケット🎫"]].forEach(([id,color,label])=>document.getElementById(id).addEventListener("click",()=>{
-  const wallet=readTicketWallet();wallet[color]++;const ledger=readEraseJSON("myAnchorV2.ticketLedger",[]);ledger.push({date:localDateKey(),color});localStorage.setItem("myAnchorV2.ticketLedger",JSON.stringify(ledger));localStorage.setItem(TICKET_WALLET_KEY,JSON.stringify(wallet));renderTicketWallet();document.getElementById("ticketSendMessage").textContent=label+"を1枚送りました ✓（合計"+wallet[color]+"枚）";
+  const wallet=readTicketWallet();wallet[color]++;const ledger=readEraseJSON("myAnchorV2.ticketLedger",[]);ledger.push({id:crypto.randomUUID(),date:localDateKey(),color});anchorStorage.setItem("myAnchorV2.ticketLedger",JSON.stringify(ledger));anchorStorage.setItem(TICKET_WALLET_KEY,JSON.stringify(wallet));renderTicketWallet();document.getElementById("ticketSendMessage").textContent=label+"を1枚送りました ✓（合計"+wallet[color]+"枚）";
  }));renderTicketWallet();window.addEventListener("storage",event=>{if(event.key===TICKET_WALLET_KEY)renderTicketWallet()});
 }
 
-function markSettingDate(key){const dates=readEraseJSON("myAnchorV2.settingDates",{});dates[key]=localDateKey();localStorage.setItem("myAnchorV2.settingDates",JSON.stringify(dates))}
-function readEraseJSON(key,fallback){try{return JSON.parse(localStorage.getItem(key)||"null")||fallback}catch(e){return fallback}}
+function markSettingDate(key){const dates=readEraseJSON("myAnchorV2.settingDates",{});dates[key]=localDateKey();anchorStorage.setItem("myAnchorV2.settingDates",JSON.stringify(dates))}
+function readEraseJSON(key,fallback){try{return JSON.parse(anchorStorage.getItem(key)||"null")||fallback}catch(e){return fallback}}
 function eraseAnchorDay(date){
- const settingDates=readEraseJSON("myAnchorV2.settingDates",{});Object.keys(settingDates).forEach(key=>{if(settingDates[key]===date){localStorage.removeItem(key);delete settingDates[key]}});localStorage.setItem("myAnchorV2.settingDates",JSON.stringify(settingDates));
+ const settingDates=readEraseJSON("myAnchorV2.settingDates",{});Object.keys(settingDates).forEach(key=>{if(settingDates[key]===date){anchorStorage.removeItem(key);delete settingDates[key]}});anchorStorage.setItem("myAnchorV2.settingDates",JSON.stringify(settingDates));
  const removedHomework=new Set();
- const homework=readEraseJSON("myAnchorV2.sapixHomework",[]).filter(x=>{if(x.createdDate===date){removedHomework.add(x.id);return false}if(x.rangeSubmissions){Object.keys(x.rangeSubmissions).forEach(id=>{if(x.rangeSubmissions[id]===date)x.rangeSubmissions[id]=null});const dates=Object.values(x.rangeSubmissions);x.submitted=dates.length>0&&dates.every(Boolean);x.submittedDate=x.submitted?dates.filter(d=>d!=="legacy").sort().at(-1)||null:null}else if(x.submittedDate===date){x.submitted=false;x.submittedDate=null}return true});localStorage.setItem("myAnchorV2.sapixHomework",JSON.stringify(homework));
- const removedTasks=new Set();const tasks=readEraseJSON("myAnchorV2.studyItems",[]).filter(x=>{if(x.date===date||removedHomework.has(x.sapixHomeworkId)){removedTasks.add(x.id);return false}if(x.sapixSubmittedDate===date){x.sapixSubmitted=false;x.sapixSubmittedDate=null}return true});localStorage.setItem("myAnchorV2.studyItems",JSON.stringify(tasks));
- ["basicScores","studyTaskStamps","studyNoTaskDays","studyRecords"].forEach(name=>{const key="myAnchorV2."+name,value=readEraseJSON(key,{});delete value[date];localStorage.setItem(key,JSON.stringify(value))});
- const messages=readEraseJSON("myAnchorV2.motherMessages",{});delete messages[date];Object.keys(messages).forEach(day=>{messages[day]=messages[day].filter(x=>!x.sentAt||localDateKey(new Date(x.sentAt))!==date);if(!messages[day].length)delete messages[day]});localStorage.setItem("myAnchorV2.motherMessages",JSON.stringify(messages));
- ["sapixLessons","sapixTests","challengeSchedule","challengeRanges"].forEach(name=>{const key="myAnchorV2."+name;localStorage.setItem(key,JSON.stringify(readEraseJSON(key,[]).filter(x=>(x.createdDate||x.date)!==date)))});
- localStorage.setItem("myAnchorV2.sapixDraftRanges",JSON.stringify(readEraseJSON("myAnchorV2.sapixDraftRanges",[]).filter(x=>!removedTasks.has(x.studyTaskId))));
- const ledger=readEraseJSON("myAnchorV2.ticketLedger",[]),wallet=readEraseJSON("myAnchorV2.ticketWallet",{});ledger.filter(x=>x.date===date).forEach(x=>wallet[x.color]=Math.max(0,(wallet[x.color]||0)-1));localStorage.setItem("myAnchorV2.ticketWallet",JSON.stringify(wallet));localStorage.setItem("myAnchorV2.ticketLedger",JSON.stringify(ledger.filter(x=>x.date!==date)));
+ const homework=readEraseJSON("myAnchorV2.sapixHomework",[]).filter(x=>{if(x.createdDate===date){removedHomework.add(x.id);return false}if(x.rangeSubmissions){Object.keys(x.rangeSubmissions).forEach(id=>{if(x.rangeSubmissions[id]===date)x.rangeSubmissions[id]=null});const dates=Object.values(x.rangeSubmissions);x.submitted=dates.length>0&&dates.every(Boolean);x.submittedDate=x.submitted?dates.filter(d=>d!=="legacy").sort().at(-1)||null:null}else if(x.submittedDate===date){x.submitted=false;x.submittedDate=null}return true});anchorStorage.setItem("myAnchorV2.sapixHomework",JSON.stringify(homework));
+ const removedTasks=new Set();const tasks=readEraseJSON("myAnchorV2.studyItems",[]).filter(x=>{if(x.date===date||removedHomework.has(x.sapixHomeworkId)){removedTasks.add(x.id);return false}if(x.sapixSubmittedDate===date){x.sapixSubmitted=false;x.sapixSubmittedDate=null}return true});anchorStorage.setItem("myAnchorV2.studyItems",JSON.stringify(tasks));
+ ["basicScores","studyTaskStamps","studyNoTaskDays","studyRecords"].forEach(name=>{const key="myAnchorV2."+name,value=readEraseJSON(key,{});delete value[date];anchorStorage.setItem(key,JSON.stringify(value))});
+ const messages=readEraseJSON("myAnchorV2.motherMessages",{});delete messages[date];Object.keys(messages).forEach(day=>{messages[day]=messages[day].filter(x=>!x.sentAt||localDateKey(new Date(x.sentAt))!==date);if(!messages[day].length)delete messages[day]});anchorStorage.setItem("myAnchorV2.motherMessages",JSON.stringify(messages));
+ ["sapixLessons","sapixTests","challengeSchedule","challengeRanges"].forEach(name=>{const key="myAnchorV2."+name;anchorStorage.setItem(key,JSON.stringify(readEraseJSON(key,[]).filter(x=>(x.createdDate||x.date)!==date)))});
+ anchorStorage.setItem("myAnchorV2.sapixDraftRanges",JSON.stringify(readEraseJSON("myAnchorV2.sapixDraftRanges",[]).filter(x=>!removedTasks.has(x.studyTaskId))));
+ const ledger=readEraseJSON("myAnchorV2.ticketLedger",[]),wallet=readEraseJSON("myAnchorV2.ticketWallet",{});ledger.filter(x=>x.date===date).forEach(x=>wallet[x.color]=Math.max(0,(wallet[x.color]||0)-1));anchorStorage.setItem("myAnchorV2.ticketWallet",JSON.stringify(wallet));anchorStorage.setItem("myAnchorV2.ticketLedger",JSON.stringify(ledger.filter(x=>x.date!==date)));
 }
 function initDataErase(){document.getElementById("eraseDate").value=localDateKey();document.getElementById("eraseDay").addEventListener("click",()=>{const date=document.getElementById("eraseDate").value;if(!date)return;if(!confirm(date+" の入力データを消去します。元に戻せません。よろしいですか？"))return;eraseAnchorDay(date);location.reload()});document.getElementById("eraseAll").addEventListener("click",()=>{if(!confirm("すべての入力データを初期化します。名前とパスワードは残ります。元に戻せません。よろしいですか？"))return;resetAnchorData();location.reload()})}
 
 const MOTHER_PASSWORD_KEY="myAnchorV2.motherPassword";
 let motherAccessCallback=null;
-function readMotherPassword(){try{const value=JSON.parse(localStorage.getItem(MOTHER_PASSWORD_KEY)||"null");return value&&typeof value.salt==="string"&&typeof value.hash==="string"?value:null}catch(e){return null}}
+function readMotherPassword(){try{const value=JSON.parse(anchorStorage.getItem(MOTHER_PASSWORD_KEY)||"null");return value&&typeof value.salt==="string"&&typeof value.hash==="string"?value:null}catch(e){return null}}
 async function motherPasswordHash(password,salt){const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(password),"PBKDF2",false,["deriveBits"]);const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:new TextEncoder().encode(salt),iterations:100000,hash:"SHA-256"},key,256);return Array.from(new Uint8Array(bits),x=>x.toString(16).padStart(2,"0")).join("")}
 function requestMotherAccess(callback){const saved=readMotherPassword(),dialog=document.getElementById("motherLockDialog");motherAccessCallback=callback;document.getElementById("motherLockTitle").textContent=saved?"🔒 お母さんの部屋":"🔐 パスワードを設定";document.getElementById("motherLockHelp").textContent=saved?"パスワードを入力してください。":"お母さんの部屋を開くためのパスワードを設定してください（4文字以上）。";document.getElementById("motherPassword").value="";document.getElementById("motherPasswordConfirm").value="";document.getElementById("motherConfirmLabel").hidden=!!saved;document.getElementById("motherPasswordConfirm").required=!saved;document.getElementById("motherLockStatus").textContent="";document.getElementById("motherLockSubmit").textContent=saved?"鍵を開ける":"設定して開く";dialog.showModal();document.getElementById("motherPassword").focus()}
-function initMotherLock(){const dialog=document.getElementById("motherLockDialog"),submit=document.getElementById("motherLockSubmit"),status=document.getElementById("motherLockStatus");document.getElementById("motherLockForm").addEventListener("submit",async event=>{event.preventDefault();const password=document.getElementById("motherPassword").value,saved=readMotherPassword();if(!saved&&(password.length<4||password!==document.getElementById("motherPasswordConfirm").value)){status.textContent=password.length<4?"4文字以上で入力してください。":"確認用のパスワードが一致しません。";return}submit.disabled=true;try{if(saved){if(await motherPasswordHash(password,saved.salt)!==saved.hash){status.textContent="パスワードが違います。";return}}else{const salt=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join("");localStorage.setItem(MOTHER_PASSWORD_KEY,JSON.stringify({salt,hash:await motherPasswordHash(password,salt)}))}const callback=motherAccessCallback;motherAccessCallback=null;dialog.close();document.getElementById("motherPassword").value="";document.getElementById("motherPasswordConfirm").value="";if(callback)callback()}catch(e){status.textContent="鍵を設定できませんでした。もう一度お試しください。"}finally{submit.disabled=false}});document.getElementById("motherLockCancel").addEventListener("click",()=>dialog.close());dialog.addEventListener("close",()=>{motherAccessCallback=null;document.getElementById("motherPassword").value="";document.getElementById("motherPasswordConfirm").value=""})}
+function initMotherLock(){const dialog=document.getElementById("motherLockDialog"),submit=document.getElementById("motherLockSubmit"),status=document.getElementById("motherLockStatus");document.getElementById("motherLockForm").addEventListener("submit",async event=>{event.preventDefault();const password=document.getElementById("motherPassword").value,saved=readMotherPassword();if(!saved&&(password.length<4||password!==document.getElementById("motherPasswordConfirm").value)){status.textContent=password.length<4?"4文字以上で入力してください。":"確認用のパスワードが一致しません。";return}submit.disabled=true;try{if(saved){if(await motherPasswordHash(password,saved.salt)!==saved.hash){status.textContent="パスワードが違います。";return}}else{const salt=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join("");anchorStorage.setItem(MOTHER_PASSWORD_KEY,JSON.stringify({salt,hash:await motherPasswordHash(password,salt)}))}const callback=motherAccessCallback;motherAccessCallback=null;dialog.close();document.getElementById("motherPassword").value="";document.getElementById("motherPasswordConfirm").value="";if(callback)callback()}catch(e){status.textContent="鍵を設定できませんでした。もう一度お試しください。"}finally{submit.disabled=false}});document.getElementById("motherLockCancel").addEventListener("click",()=>dialog.close());dialog.addEventListener("close",()=>{motherAccessCallback=null;document.getElementById("motherPassword").value="";document.getElementById("motherPasswordConfirm").value=""})}
 
 async function changeMotherPassword(password,confirmation){
  const saved=readMotherPassword();
@@ -938,7 +948,7 @@ async function changeMotherPassword(password,confirmation){
  if(password!==confirmation)return "新しいパスワードが一致しません。";
  const salt=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join("");
  const hash=await motherPasswordHash(password,salt);
- localStorage.setItem(MOTHER_PASSWORD_KEY,JSON.stringify({salt,hash}));
+ anchorStorage.setItem(MOTHER_PASSWORD_KEY,JSON.stringify({salt,hash}));
  return "";
 }
 function initMotherPasswordChange(){
@@ -955,26 +965,45 @@ function initMotherPasswordChange(){
 }
 
 const MOTHER_MESSAGES_KEY="myAnchorV2.motherMessages";
-function readMotherMessages(){try{const messages=JSON.parse(localStorage.getItem(MOTHER_MESSAGES_KEY)||"{}");return messages&&typeof messages==="object"&&!Array.isArray(messages)?messages:{}}catch(e){return{}}}
+function readMotherMessages(){try{const messages=JSON.parse(anchorStorage.getItem(MOTHER_MESSAGES_KEY)||"{}");return messages&&typeof messages==="object"&&!Array.isArray(messages)?messages:{}}catch(e){return{}}}
 function fillMotherMessages(box,date){box.replaceChildren();const messages=readMotherMessages()[date];if(!Array.isArray(messages))return;messages.forEach(message=>{const item=document.createElement("div");item.className="mother-message";item.textContent=message.text;box.appendChild(item)})}
 function renderMotherMessages(){const box=document.getElementById("todayMotherMessages");fillMotherMessages(box,localDateKey());box.hidden=!box.childElementCount;document.getElementById("defaultEncouragement").hidden=!!box.childElementCount}
 function openMotherMessages(date){const dialog=document.getElementById("motherMessageDialog");document.getElementById("motherMessageDialogTitle").textContent=date.replaceAll("-","/")+" お母さんから📧";fillMotherMessages(document.getElementById("motherMessageDialogBody"),date);dialog.showModal()}
-function initMotherMessages(){const date=document.getElementById("motherMessageDate"),text=document.getElementById("motherMessageText");date.value=localDateKey();document.getElementById("motherMessageForm").addEventListener("submit",event=>{event.preventDefault();const value=text.value.trim();if(!value){text.setCustomValidity("メッセージを入力してね");text.reportValidity();return}const messages=readMotherMessages();if(!Array.isArray(messages[date.value]))messages[date.value]=[];messages[date.value].push({text:value,sentAt:new Date().toISOString()});localStorage.setItem(MOTHER_MESSAGES_KEY,JSON.stringify(messages));text.value="";renderMotherMessages();renderStudyRecord();document.getElementById("motherMessageStatus").textContent="メッセージを送りました ✓"});text.addEventListener("input",()=>text.setCustomValidity(""));document.getElementById("closeMotherMessage").addEventListener("click",()=>document.getElementById("motherMessageDialog").close());window.addEventListener("storage",event=>{if(event.key===MOTHER_MESSAGES_KEY){renderMotherMessages();renderStudyRecord()}});renderMotherMessages()}
+function initMotherMessages(){const date=document.getElementById("motherMessageDate"),text=document.getElementById("motherMessageText");date.value=localDateKey();document.getElementById("motherMessageForm").addEventListener("submit",event=>{event.preventDefault();const value=text.value.trim();if(!value){text.setCustomValidity("メッセージを入力してね");text.reportValidity();return}const messages=readMotherMessages();if(!Array.isArray(messages[date.value]))messages[date.value]=[];messages[date.value].push({text:value,sentAt:new Date().toISOString()});anchorStorage.setItem(MOTHER_MESSAGES_KEY,JSON.stringify(messages));text.value="";renderMotherMessages();renderStudyRecord();document.getElementById("motherMessageStatus").textContent="メッセージを送りました ✓"});text.addEventListener("input",()=>text.setCustomValidity(""));document.getElementById("closeMotherMessage").addEventListener("click",()=>document.getElementById("motherMessageDialog").close());window.addEventListener("storage",event=>{if(event.key===MOTHER_MESSAGES_KEY){renderMotherMessages();renderStudyRecord()}});renderMotherMessages()}
 
 const USER_NAME_KEY="myAnchorV2.userName";
 function initUserName(){
  const welcome=document.getElementById("nameWelcome"),input=document.getElementById("profileName");
  function showName(name){document.getElementById("roomTitle").textContent=name+"の勉強手帳";document.title=name+"の勉強手帳";input.value=name}
- const saved=(localStorage.getItem(USER_NAME_KEY)||"").trim();
+ const saved=(anchorStorage.getItem(USER_NAME_KEY)||"").trim();
  if(saved)showName(saved);else{welcome.hidden=false;document.getElementById("welcomeName").focus()}
- function saveName(event,field){event.preventDefault();const name=field.value.trim();if(!name){field.setCustomValidity("名前を入力してね");field.reportValidity();return}field.setCustomValidity("");localStorage.setItem(USER_NAME_KEY,name);showName(name);welcome.hidden=true}
+ function saveName(event,field){event.preventDefault();const name=field.value.trim();if(!name){field.setCustomValidity("名前を入力してね");field.reportValidity();return}field.setCustomValidity("");anchorStorage.setItem(USER_NAME_KEY,name);showName(name);welcome.hidden=true}
  document.getElementById("welcomeNameForm").addEventListener("submit",e=>saveName(e,document.getElementById("welcomeName")));
  document.getElementById("profileForm").addEventListener("submit",e=>{saveName(e,input);document.getElementById("profileMessage").textContent="名前を保存しました ✓"});
  [input,document.getElementById("welcomeName")].forEach(field=>field.addEventListener("input",()=>field.setCustomValidity("")));
 }
 
-document.addEventListener("DOMContentLoaded",()=>{initUserName();initDataErase();initMotherLock();initMotherPasswordChange();initTickets();initMotherMessages();syncStudyRecord();cleanupTodayTasks();initSapix();initStudyItems();initChallengeOverview();initChallengeRanges();initChallengeViewToggle();renderChallengeMain();initStudyRecord();document.dispatchEvent(new Event("anchorRestorePage"))});
+let anchorUIReady=false;
+document.addEventListener("anchorDataChanged",()=>{
+ if(!anchorUIReady)return;
+ // Avoid rebuilding editable forms or registering handlers a second time.
+ const name=anchorStorage.getItem(USER_NAME_KEY);if(name){document.getElementById("roomTitle").textContent=name+"の勉強手帳";document.title=name+"の勉強手帳";document.getElementById("nameWelcome").hidden=true}
+ renderTodayStudyTasks();renderStudyItems();renderChallengeMain();renderChallengeSchedule();renderChallengeRanges();renderChallengeDurations();renderSapiLessons();renderSapiCalendar();renderSapiHomework();renderSapiTests();renderStudyRecord();renderTicketWallet();renderMotherMessages();
+});
+document.addEventListener("DOMContentLoaded",async()=>{await AnchorSync.ready;initUserName();initDataErase();initMotherLock();initMotherPasswordChange();initTickets();initMotherMessages();syncStudyRecord();cleanupTodayTasks();initSapix();initStudyItems();initChallengeOverview();initChallengeRanges();initChallengeViewToggle();renderChallengeMain();initStudyRecord();anchorUIReady=true;document.dispatchEvent(new Event("anchorRestorePage"));AnchorSync.setupUI()});
 </script>
 
 
-<div id="nameWelcome" class="name-welcome" role="dialog" aria-modal="true" aria-labelledby="nameWelcomeTitle" hidden=""><div class="card name-welcome-card"><h2 id="nameWelcomeTitle">📖 勉強手帳をはじめよう</h2><form id="welcomeNameForm"><label class="task-label" for="welcomeName">あなたの名前を教えてね</label><input id="welcomeName" class="task-input" required="" maxlength="30" autocomplete="nickname" placeholder="名前を入力"><button class="task-add-btn" type="submit">勉強手帳をはじめる</button></form></div></div><dialog id="motherMessageDialog" class="message-dialog" aria-labelledby="motherMessageDialogTitle"><h2 id="motherMessageDialogTitle"></h2><div id="motherMessageDialogBody" class="mother-messages"></div><button id="closeMotherMessage" class="message-close" type="button">閉じる</button></dialog><dialog id="motherLockDialog" class="message-dialog" aria-labelledby="motherLockTitle"><h2 id="motherLockTitle"></h2><p id="motherLockHelp" class="soft"></p><form id="motherLockForm"><label class="task-label" for="motherPassword">パスワード</label><input id="motherPassword" class="task-input" type="password" inputmode="numeric" required autocomplete="off"><label id="motherConfirmLabel" class="task-label">もう一度入力<input id="motherPasswordConfirm" class="task-input" type="password" inputmode="numeric" autocomplete="off"></label><div id="motherLockStatus" class="saved" role="status" aria-live="polite"></div><button id="motherLockSubmit" class="message-close" type="submit">鍵を開ける</button><button id="motherLockCancel" class="message-close" type="button">戻る</button></form></dialog></body></html>
+<div id="nameWelcome" class="name-welcome" role="dialog" aria-modal="true" aria-labelledby="nameWelcomeTitle" hidden=""><div class="card name-welcome-card"><h2 id="nameWelcomeTitle">📖 勉強手帳をはじめよう</h2><form id="welcomeNameForm"><label class="task-label" for="welcomeName">あなたの名前を教えてね</label><input id="welcomeName" class="task-input" required="" maxlength="30" autocomplete="nickname" placeholder="名前を入力"><button class="task-add-btn" type="submit">勉強手帳をはじめる</button></form></div></div><dialog id="motherMessageDialog" class="message-dialog" aria-labelledby="motherMessageDialogTitle"><h2 id="motherMessageDialogTitle"></h2><div id="motherMessageDialogBody" class="mother-messages"></div><button id="closeMotherMessage" class="message-close" type="button">閉じる</button></dialog><dialog id="motherLockDialog" class="message-dialog" aria-labelledby="motherLockTitle"><h2 id="motherLockTitle"></h2><p id="motherLockHelp" class="soft"></p><form id="motherLockForm"><label class="task-label" for="motherPassword">パスワード</label><input id="motherPassword" class="task-input" type="password" inputmode="numeric" required autocomplete="off"><label id="motherConfirmLabel" class="task-label">もう一度入力<input id="motherPasswordConfirm" class="task-input" type="password" inputmode="numeric" autocomplete="off"></label><div id="motherLockStatus" class="saved" role="status" aria-live="polite"></div><button id="motherLockSubmit" class="message-close" type="submit">鍵を開ける</button><button id="motherLockCancel" class="message-close" type="button">戻る</button></form></dialog><dialog id="syncDialog" class="sync-dialog" aria-labelledby="syncTitle"><h2 id="syncTitle">🤝 同じ勉強手帳を開く</h2>
+<p class="soft">2人の端末で、同じ共有ログインを使ってください。お母さんの部屋の数字パスワードとは別です。</p>
+<form id="syncForm"><details><summary>接続先の設定（入力済み）</summary><p class="soft">My Anchorの接続先は設定済みです。</p>
+<label for="syncDatabaseURL">保存先URL</label><input id="syncDatabaseURL" value="https://my-anchor-e209f-default-rtdb.asia-southeast1.firebasedatabase.app" type="url" class="task-input" required placeholder="https://…firebasedatabase.app" autocomplete="off">
+<label for="syncApiKey">APIキー</label><input id="syncApiKey" value="AIzaSyBCLgu1Pa0MhmulIGIXe4-oV-VmJMo2ZAw" class="task-input" required autocomplete="off"></details>
+<label for="syncEmail">共有ログインのメールアドレス</label><input id="syncEmail" type="email" class="task-input" required autocomplete="username">
+<label for="syncPassword">共有ログインのパスワード（8文字以上）</label><input id="syncPassword" type="password" class="task-input" required minlength="8" autocomplete="current-password">
+<button id="syncJoin" type="submit" class="task-add-btn">共有手帳を開く</button>
+<details><summary>お母さんの端末から初めて共有する</summary><p class="soft">新しい共有ログインを作り、この端末の記録を共有手帳へ移します。接続前の記録は予備保存します。</p><button id="syncCreate" type="submit" class="task-add-btn">今の記録で共有を始める</button></details>
+<div id="syncFormStatus" class="saved" role="status" aria-live="polite"></div></form>
+<button id="syncShare" class="task-add-btn" type="button">次男の端末へ共有リンクを送る</button><textarea id="syncInvite" class="task-input" readonly hidden aria-label="共有リンク"></textarea>
+<button id="syncBackup" class="task-add-btn" type="button">接続前の記録をダウンロード</button>
+<button id="closeSync" class="message-close" type="button">閉じる</button></dialog></body></html>
