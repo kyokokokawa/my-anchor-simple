@@ -383,16 +383,27 @@ function renderStudyItems(){
 }
 function isSapiTask(x){return !!(x.sapixRange||x.sapixHomeworkId)}
 function taskSubjectLabel(x){return (isSapiTask(x)?"サピ":"")+x.subject}
-function sapiTaskSubmitted(x,homework){return x.sapixHomeworkId?!!homework.find(h=>h.id===x.sapixHomeworkId)?.submitted:!!x.sapixSubmitted}
+function sapiTaskSubmissionDate(x,homework){
+ const entry=homework.find(h=>h.id===x.sapixHomeworkId);
+ if(entry?.rangeSubmissions)return entry.rangeSubmissions[x.id]||null;
+ if(entry)return entry.submitted?(entry.submittedDate||"legacy"):null;
+ return x.sapixSubmitted?(x.sapixSubmittedDate||"legacy"):null;
+}
+function sapiTaskSubmitted(x,homework){return !!sapiTaskSubmissionDate(x,homework)}
 function submitSapiTask(x){
- const homework=sapiRead(SAPI_HOMEWORK_KEY,[]),entry=homework.find(h=>h.id===x.sapixHomeworkId);if(!entry){
- const items=readStudyItems(),task=items.find(t=>t.id===x.id);if(!task)return;
- task.sapixSubmitted=!task.sapixSubmitted;task.sapixSubmittedDate=task.sapixSubmitted?localDateKey():null;writeStudyItems(items);
- if(task.sapixSubmitted){const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};all[date][task.id]="できた！";writeTaskStamps(all)}
- renderTodayStudyTasks();renderStudyItems();renderStudyRecord();return;
+ const homework=sapiRead(SAPI_HOMEWORK_KEY,[]),items=readStudyItems(),task=items.find(t=>t.id===x.id);if(!task)return;
+ const entry=homework.find(h=>h.id===task.sapixHomeworkId),date=localDateKey();
+ const submitted=!sapiTaskSubmitted(task,homework);
+ if(entry){
+  if(!entry.rangeSubmissions){entry.rangeSubmissions={};items.filter(t=>t.sapixHomeworkId===entry.id).forEach(t=>{entry.rangeSubmissions[t.id]=entry.submitted?(entry.submittedDate||"legacy"):null})}
+  entry.rangeSubmissions[task.id]=submitted?date:null;
+  const dates=Object.values(entry.rangeSubmissions);
+  entry.submitted=dates.length>0&&dates.every(Boolean);
+  entry.submittedDate=entry.submitted?dates.filter(d=>d!=="legacy").sort().at(-1)||null:null;
+  sapiWrite(SAPI_HOMEWORK_KEY,homework);
  }
- entry.submitted=!entry.submitted;entry.submittedDate=entry.submitted?localDateKey():null;sapiWrite(SAPI_HOMEWORK_KEY,homework);
- if(entry.submitted){const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};readStudyItems().filter(t=>t.sapixHomeworkId===entry.id).forEach(t=>all[date][t.id]="できた！");writeTaskStamps(all)}
+ task.sapixSubmitted=submitted;task.sapixSubmittedDate=submitted?date:null;writeStudyItems(items);
+ if(submitted){const all=readTaskStamps();all[date]=all[date]||{};all[date][task.id]="できた！";writeTaskStamps(all)}
  renderTodayStudyTasks();renderStudyItems();renderSapiHomework();renderStudyRecord();
 }
 function setTaskStamp(id,status){
@@ -819,7 +830,7 @@ function initSapix(){
  $("sapiPrev").addEventListener("click",()=>{sapiViewMonth=new Date(sapiViewMonth.getFullYear(),sapiViewMonth.getMonth()-1,1);renderSapiCalendar()});$("sapiNext").addEventListener("click",()=>{sapiViewMonth=new Date(sapiViewMonth.getFullYear(),sapiViewMonth.getMonth()+1,1);renderSapiCalendar()});
  $("sapiLessonAdd").addEventListener("click",()=>{const date=$("sapiLessonDate").value,code=$("sapiLessonCode").value.trim(),subjects=sapiSelectedLessonSubjects(),msg=$("sapiLessonMessage");if(!date||!code){msg.textContent="日付と授業コードを入力してね";return}if(!subjects.length){msg.textContent="科目を1つ以上選んでね";return}const a=sapiRead(SAPI_LESSONS_KEY,[]);a.push({id:sapiId(),createdDate:localDateKey(),date,code,subjects});sapiWrite(SAPI_LESSONS_KEY,a);sapiViewMonth=new Date(Number(date.slice(0,4)),Number(date.slice(5,7))-1,1);$("sapiLessonCode").value=code;document.querySelectorAll("#sapiLessonSubjects input:checked").forEach(x=>x.checked=false);msg.textContent="授業を登録しました ✓";renderSapiCalendar();renderSapiLessons()});
  $("sapiRangeAdd").addEventListener("click",()=>{const page=Number($("sapiRangePage").value),daimon=sapiSelectedNums("sapiDaimonPicks"),shomon=sapiSelectedNums("sapiShomonPicks"),msg=$("sapiHomeworkMessage");if(!page||page<1){msg.textContent="ページを入力してね";return}if(!daimon.length&&!shomon.length){msg.textContent="大問か小問を選んでね";return}const code=$("sapiHomeworkCode").value,subject=$("sapiHomeworkSubject").value,range={page,daimon,shomon};const material=code+" "+sapiRangeText(range),items=readStudyItems();let task=items.find(t=>t.date===localDateKey()&&t.sapixRange&&t.subject===(subject==="その他"?"国語":subject)&&t.material===material);if(!task){task={id:sapiId(),date:localDateKey(),subject:subject==="その他"?"国語":subject,material,pageFrom:"",pageTo:"",sapixRange:true,sapixRangeDetail:range};items.push(task);writeStudyItems(items)}if(!sapiDraftRanges.some(r=>r.studyTaskId===task.id))sapiDraftRanges.push({...range,studyTaskId:task.id});renderStudyItems();renderTodayStudyTasks();sapiDraftRanges.sort((a,b)=>a.page-b.page);saveSapiDraftRanges();sapiClearPicks();renderSapiRangePreview();msg.textContent="問題範囲と今日やることに追加しました ✓"});
- $("sapiHomeworkAdd").addEventListener("click",()=>{const due=$("sapiHomeworkDue").value,msg=$("sapiHomeworkMessage");if(!due){msg.textContent="提出期限を入力してね";return}if(!sapiDraftRanges.length){msg.textContent="問題範囲を1つ以上追加してね";return}const code=$("sapiHomeworkCode").value,subject=$("sapiHomeworkSubject").value,ranges=sapiDraftRanges.map(r=>({page:r.page,daimon:[...r.daimon],shomon:[...r.shomon]}));const a=sapiRead(SAPI_HOMEWORK_KEY,[]),homeworkId=sapiId();const items=readStudyItems();const draftSubmitted=sapiDraftRanges.every(r=>items.find(t=>t.id===r.studyTaskId)?.sapixSubmitted);sapiDraftRanges.forEach(r=>{const task=items.find(t=>t.id===r.studyTaskId);if(task)task.sapixHomeworkId=homeworkId});writeStudyItems(items);a.push({id:homeworkId,createdDate:localDateKey(),subject,code,ranges,content:code+" "+ranges.map(sapiRangeText).join(" / "),due,required:$("sapiHomeworkRequired").checked,submitted:draftSubmitted,submittedDate:draftSubmitted?localDateKey():null});sapiWrite(SAPI_HOMEWORK_KEY,a);sapiDraftRanges=[];saveSapiDraftRanges();renderSapiRangePreview();sapiClearPicks();msg.textContent="宿題を登録しました ✓";renderSapiHomework();renderTodayStudyTasks();renderStudyItems()});
+ $("sapiHomeworkAdd").addEventListener("click",()=>{const due=$("sapiHomeworkDue").value,msg=$("sapiHomeworkMessage");if(!due){msg.textContent="提出期限を入力してね";return}if(!sapiDraftRanges.length){msg.textContent="問題範囲を1つ以上追加してね";return}const code=$("sapiHomeworkCode").value,subject=$("sapiHomeworkSubject").value,ranges=sapiDraftRanges.map(r=>({page:r.page,daimon:[...r.daimon],shomon:[...r.shomon]}));const a=sapiRead(SAPI_HOMEWORK_KEY,[]),homeworkId=sapiId();const items=readStudyItems();const draftSubmitted=sapiDraftRanges.every(r=>items.find(t=>t.id===r.studyTaskId)?.sapixSubmitted);sapiDraftRanges.forEach(r=>{const task=items.find(t=>t.id===r.studyTaskId);if(task)task.sapixHomeworkId=homeworkId});writeStudyItems(items);a.push({id:homeworkId,createdDate:localDateKey(),subject,code,ranges,content:code+" "+ranges.map(sapiRangeText).join(" / "),due,required:$("sapiHomeworkRequired").checked,rangeSubmissions:Object.fromEntries(sapiDraftRanges.map(r=>{const t=items.find(t=>t.id===r.studyTaskId);return [r.studyTaskId,t?.sapixSubmitted?(t.sapixSubmittedDate||localDateKey()):null]})),submitted:draftSubmitted,submittedDate:draftSubmitted?localDateKey():null});sapiWrite(SAPI_HOMEWORK_KEY,a);sapiDraftRanges=[];saveSapiDraftRanges();renderSapiRangePreview();sapiClearPicks();msg.textContent="宿題を登録しました ✓";renderSapiHomework();renderTodayStudyTasks();renderStudyItems()});
  $("sapiAddTestType").addEventListener("click",()=>{const type=$("sapiNewTestType").value.trim();if(!type)return;const a=sapiRead(SAPI_TYPES_KEY,[]);if(!sapiTypes().includes(type)){a.push(type);sapiWrite(SAPI_TYPES_KEY,a);markSettingDate(SAPI_TYPES_KEY)}renderSapiTypes();$("sapiTestType").value=type;$("sapiNewTestType").value="";$("sapiTestMessage").textContent="テストの種類を追加しました ✓"});
  $("sapiTestAdd").addEventListener("click",()=>{const date=$("sapiTestDate").value,range=$("sapiTestRange").value.trim(),msg=$("sapiTestMessage");if(!date||!range){msg.textContent="テスト日と範囲を入力してね";return}const a=sapiRead(SAPI_TESTS_KEY,[]);a.push({id:sapiId(),createdDate:localDateKey(),date,type:$("sapiTestType").value,range});sapiWrite(SAPI_TESTS_KEY,a);$("sapiTestRange").value="";msg.textContent="テストを登録しました ✓";renderSapiTests()});
  restoreSapiDraftRanges();renderSapiCalendar();renderSapiLessons();renderSapiHomework();renderSapiTypes();renderSapiTests()
@@ -831,13 +842,13 @@ const STUDY_RECORD_KEY="myAnchorV2.studyRecords";
 let recordViewMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
 function readStudyRecords(){try{return JSON.parse(localStorage.getItem(STUDY_RECORD_KEY)||"{}")||{}}catch(e){return{}}}
 function isSapiSubmissionDay(date){const [y,m,d]=date.split("-").map(Number);return [1,3,5].includes(new Date(y,m-1,d).getDay())}
-function sapiRecordMark(value,date){if(!isSapiSubmissionDay(date))return "−";return value===true||value==="◯"||value==="○"?"○":value==="△"?"△":"×"}
+function sapiRecordMark(value,date){if(!isSapiSubmissionDay(date)||value==null||value==="−"||value==="-")return "−";return value===true||value==="◯"||value==="○"?"○":value==="△"?"△":"×"}
 function sapixDayComplete(tasks,stamps,homework,date){
  if(!isSapiSubmissionDay(date))return "−";
  const eligible=tasks.filter(t=>!t.sapixHomeworkId||homework.find(h=>h.id===t.sapixHomeworkId)?.required!==false);
- const entries=[...new Set(eligible.map(t=>t.sapixHomeworkId||t.id))];
- const submitted=entries.filter(id=>{const h=homework.find(h=>h.id===id),t=eligible.find(t=>t.id===id);return h?!!h.submitted&&(!h.submittedDate||h.submittedDate<=date):!!t?.sapixSubmitted&&(!t.sapixSubmittedDate||t.sapixSubmittedDate<=date)}).length;
- return submitted===0?"×":submitted===entries.length?"○":"△";
+ if(!eligible.length)return "−";
+ const submitted=eligible.filter(t=>{const submittedDate=sapiTaskSubmissionDate(t,homework);return submittedDate&&(submittedDate==="legacy"||submittedDate<=date)}).length;
+ return submitted===0?"×":submitted===eligible.length?"○":"△";
 }
 function syncStudyRecord(){
  const records=readStudyRecords(),items=readStudyItems(),stamps=readTaskStamps(),homework=sapiRead(SAPI_HOMEWORK_KEY,[]),today=localDateKey();
@@ -880,7 +891,7 @@ function readEraseJSON(key,fallback){try{return JSON.parse(localStorage.getItem(
 function eraseAnchorDay(date){
  const settingDates=readEraseJSON("myAnchorV2.settingDates",{});Object.keys(settingDates).forEach(key=>{if(settingDates[key]===date){localStorage.removeItem(key);delete settingDates[key]}});localStorage.setItem("myAnchorV2.settingDates",JSON.stringify(settingDates));
  const removedHomework=new Set();
- const homework=readEraseJSON("myAnchorV2.sapixHomework",[]).filter(x=>{if(x.createdDate===date){removedHomework.add(x.id);return false}if(x.submittedDate===date){x.submitted=false;x.submittedDate=null}return true});localStorage.setItem("myAnchorV2.sapixHomework",JSON.stringify(homework));
+ const homework=readEraseJSON("myAnchorV2.sapixHomework",[]).filter(x=>{if(x.createdDate===date){removedHomework.add(x.id);return false}if(x.rangeSubmissions){Object.keys(x.rangeSubmissions).forEach(id=>{if(x.rangeSubmissions[id]===date)x.rangeSubmissions[id]=null});const dates=Object.values(x.rangeSubmissions);x.submitted=dates.length>0&&dates.every(Boolean);x.submittedDate=x.submitted?dates.filter(d=>d!=="legacy").sort().at(-1)||null:null}else if(x.submittedDate===date){x.submitted=false;x.submittedDate=null}return true});localStorage.setItem("myAnchorV2.sapixHomework",JSON.stringify(homework));
  const removedTasks=new Set();const tasks=readEraseJSON("myAnchorV2.studyItems",[]).filter(x=>{if(x.date===date||removedHomework.has(x.sapixHomeworkId)){removedTasks.add(x.id);return false}if(x.sapixSubmittedDate===date){x.sapixSubmitted=false;x.sapixSubmittedDate=null}return true});localStorage.setItem("myAnchorV2.studyItems",JSON.stringify(tasks));
  ["basicScores","studyTaskStamps","studyNoTaskDays","studyRecords"].forEach(name=>{const key="myAnchorV2."+name,value=readEraseJSON(key,{});delete value[date];localStorage.setItem(key,JSON.stringify(value))});
  const messages=readEraseJSON("myAnchorV2.motherMessages",{});delete messages[date];Object.keys(messages).forEach(day=>{messages[day]=messages[day].filter(x=>!x.sentAt||localDateKey(new Date(x.sentAt))!==date);if(!messages[day].length)delete messages[day]});localStorage.setItem("myAnchorV2.motherMessages",JSON.stringify(messages));
