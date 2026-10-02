@@ -369,6 +369,14 @@ function renderStudyItems(){
  if(!items.length){h.innerHTML='<div class="empty-study-items">まだ登録されていません 🌱</div>';return}
  ["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");const isDailyKanji=x.subject==="国語"&&x.material==="毎日漢字";const completed=isDailyKanji?(todayStamps["default_daily_kanji"]==="できた！"):todayStamps[x.id]==="できた！";c.className="material-chip"+(completed?" completed":"");c.textContent=taskDisplayName(x);const row=document.createElement("div");row.className="registered-task";const del=document.createElement("button");del.type="button";del.className="task-delete";del.textContent="削除";del.setAttribute("aria-label",taskDisplayName(x)+"を削除");del.addEventListener("click",()=>deleteStudyItem(x.id));row.append(c,del);b.appendChild(row)});h.appendChild(b)})
 }
+function isSapiTask(x){return !!(x.sapixRange||x.sapixHomeworkId)}
+function taskSubjectLabel(x){return (isSapiTask(x)?"サピ":"")+x.subject}
+function submitSapiTask(x){
+ const homework=sapiRead(SAPI_HOMEWORK_KEY,[]),entry=homework.find(h=>h.id===x.sapixHomeworkId);if(!entry)return;
+ entry.submitted=!entry.submitted;entry.submittedDate=entry.submitted?localDateKey():null;sapiWrite(SAPI_HOMEWORK_KEY,homework);
+ if(entry.submitted){const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};readStudyItems().filter(t=>t.sapixHomeworkId===entry.id).forEach(t=>all[date][t.id]="できた！");writeTaskStamps(all)}
+ renderTodayStudyTasks();renderStudyItems();renderSapiHomework();
+}
 function setTaskStamp(id,status){
  const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};all[date][id]=status;writeTaskStamps(all);renderTodayStudyTasks();renderStudyItems()
 }
@@ -378,30 +386,28 @@ function renderTodayStudyTasks(){
  const date=localDateKey(),items=readStudyItems(),stamps=(readTaskStamps()[date]||{}),noTasks=(readNoTaskDays()[date]||{});h.innerHTML="";
  const dailyKanji={id:"default_daily_kanji",subject:"国語",material:"毎日漢字",pageFrom:"",pageTo:""};
  const visibleItems=[dailyKanji,...items.filter(x=>!(x.subject==="国語"&&x.material==="毎日漢字"))];
- ["国語","算数","理科","社会","英語"].forEach(s=>{
-  const a=visibleItems.filter(x=>x.subject===s);if(!a.length)return;
-  if(s!=="国語"){
-   const title=document.createElement("div");title.className="today-task-subject";title.textContent=s;h.appendChild(title);
-  }
-  let hasOtherJapaneseTask=false;
+ const subjects=["国語","算数","理科","社会","英語"];
+ [...subjects,...subjects.map(s=>"サピ"+s)].forEach(s=>{
+  const a=visibleItems.filter(x=>taskSubjectLabel(x)===s);if(!a.length)return;
+  let shownTitle=false;
   a.forEach(x=>{
-   const isDailyKanji=x.id==="default_daily_kanji";
-   if(isDailyKanji){
-    const title=document.createElement("div");title.className="today-task-subject";title.textContent="毎日漢字";h.appendChild(title);
-   }else{
-    if(s==="国語"&&!hasOtherJapaneseTask){
-     const title=document.createElement("div");title.className="today-task-subject";title.textContent=s;h.appendChild(title);
-     hasOtherJapaneseTask=true;
-    }
+   const isDailyKanji=x.id==="default_daily_kanji",isSapi=isSapiTask(x);
+   const homework=isSapi?sapiRead(SAPI_HOMEWORK_KEY,[]).find(t=>t.id===x.sapixHomeworkId):null;
+   if(isDailyKanji){const title=document.createElement("div");title.className="today-task-subject";title.textContent="毎日漢字";h.appendChild(title)}
+   else{
+    if(!shownTitle){const title=document.createElement("div");title.className="today-task-subject";title.textContent=s;h.appendChild(title);shownTitle=true}
     const name=document.createElement("div");name.className="today-task-name";name.textContent=taskDisplayName(x);h.appendChild(name);
    }
    const row=document.createElement("div");row.className="stamp-row";
    const current=isDailyKanji?(stamps[x.id]==="できた！"?"できた！":"まだ"):(stamps[x.id]||"まだ");
-   const pending=document.createElement("div");pending.className="stamp-state"+(current==="まだ"?" active":"");
-   pending.innerHTML='<span class="emoji">🌱</span>まだ';row.appendChild(pending);
-   (isDailyKanji?[["できた！","🌸"]]:[["やってる","🌿"],["できた！","🌸"],["もう一度","🍂"]]).forEach(([label,emoji])=>{
-    const b=document.createElement("button");b.type="button";b.className="stamp-btn"+(current===label?" active":"");
-    b.innerHTML=`<span class="emoji">${emoji}</span>${label}`;b.addEventListener("click",()=>setTaskStamp(x.id,label));row.appendChild(b)
+   const pending=document.createElement("div");pending.className="stamp-state"+(current==="まだ"&&!homework?.submitted?" active":"");pending.innerHTML='<span class="emoji">🌱</span>まだ';row.appendChild(pending);
+   const choices=isDailyKanji?[["できた！","🌸"]]:[["やってる","🌿"],["できた！","🌸"],...(isSapi?(!homework||homework.required?[["宿題提出","📮"]]:[]):[["もう一度","🍂"]])];
+   choices.forEach(([label,emoji])=>{
+    const submit=label==="宿題提出",active=submit?!!homework?.submitted:current===label;
+    const b=document.createElement("button");b.type="button";b.className="stamp-btn"+(active?" active":"");
+    b.innerHTML=`<span class="emoji">${emoji}</span>${submit&&homework?.submitted?"提出済み":label}`;
+    if(submit){b.disabled=!homework;b.title=homework?(homework.submitted?"提出を取り消す":"宿題を提出済みにする"):"サピ部屋で宿題を登録してね"}
+    b.addEventListener("click",()=>submit?submitSapiTask(x):setTaskStamp(x.id,label));row.appendChild(b)
    });h.appendChild(row);
   })
  })
@@ -758,8 +764,6 @@ function sapiHomeworkLines(x){
 function sapiHomeworkMaterial(x){const lines=sapiHomeworkLines(x);return x.code?x.code+(lines.length?" "+lines.join(" / "):""):(x.content||"")}
 function renderSapiHomework(){syncStudyRecord();const h=document.getElementById("sapiHomeworkList");h.replaceChildren();const a=sapiRead(SAPI_HOMEWORK_KEY,[]).slice().sort((x,y)=>x.due.localeCompare(y.due));if(!a.length){h.innerHTML='<div class="sapi-empty">宿題はまだ登録されていません</div>';return}a.forEach(x=>{
  const row=document.createElement("div");row.className="sapi-entry";const title=document.createElement("div");title.className="sapi-entry-head";const name=document.createElement("strong");name.textContent=x.subject+"｜"+(x.code||((x.content||"").match(/^D\d+/)||[""])[0]);title.appendChild(name);const lines=sapiHomeworkLines(x);if(lines.length){const detail=document.createElement("div");detail.className="sapi-homework-detail";detail.textContent=lines.join("\n");row.append(title,detail)}else row.appendChild(title);const meta=document.createElement("div");meta.className="sapi-small";meta.textContent="期限："+sapiDateLabel(x.due)+(x.required?(x.submitted?"　提出済み ✓":"　未提出"):"　提出不要");const actions=document.createElement("div");actions.className="sapi-actions";
- const add=document.createElement("button");add.type="button";const already=readStudyItems().some(t=>t.sapixHomeworkId===x.id&&t.date===localDateKey());add.textContent=already?"今日やることに追加済み":"📚 今日やることに追加";add.disabled=already;add.addEventListener("click",()=>{const items=readStudyItems();if(items.some(t=>t.sapixHomeworkId===x.id&&t.date===localDateKey()))return;items.push({id:sapiId(),date:localDateKey(),subject:x.subject==="その他"?"国語":x.subject,material:sapiHomeworkMaterial(x),pageFrom:"",pageTo:"",sapixHomeworkId:x.id});writeStudyItems(items);renderStudyItems();renderTodayStudyTasks();renderSapiHomework()});actions.appendChild(add);
- if(x.required){const submit=document.createElement("button");submit.type="button";submit.textContent=x.submitted?"提出済み ✓（取り消す）":"□ 提出した";submit.addEventListener("click",()=>{const all=sapiRead(SAPI_HOMEWORK_KEY,[]);const found=all.find(t=>t.id===x.id);if(found){found.submitted=!found.submitted;found.submittedDate=found.submitted?localDateKey():null;}sapiWrite(SAPI_HOMEWORK_KEY,all);renderSapiHomework()});actions.appendChild(submit)}
  const del=document.createElement("button");del.type="button";del.textContent="削除";del.addEventListener("click",()=>{sapiWrite(SAPI_HOMEWORK_KEY,sapiRead(SAPI_HOMEWORK_KEY,[]).filter(t=>t.id!==x.id));renderSapiHomework()});actions.appendChild(del);row.append(meta,actions);h.appendChild(row)
  })}
 let sapiDraftRanges=[];
@@ -778,7 +782,7 @@ function initSapix(){
  $("sapiPrev").addEventListener("click",()=>{sapiViewMonth=new Date(sapiViewMonth.getFullYear(),sapiViewMonth.getMonth()-1,1);renderSapiCalendar()});$("sapiNext").addEventListener("click",()=>{sapiViewMonth=new Date(sapiViewMonth.getFullYear(),sapiViewMonth.getMonth()+1,1);renderSapiCalendar()});
  $("sapiLessonAdd").addEventListener("click",()=>{const date=$("sapiLessonDate").value,code=$("sapiLessonCode").value.trim(),subjects=sapiSelectedLessonSubjects(),msg=$("sapiLessonMessage");if(!date||!code){msg.textContent="日付と授業コードを入力してね";return}if(!subjects.length){msg.textContent="科目を1つ以上選んでね";return}const a=sapiRead(SAPI_LESSONS_KEY,[]);a.push({id:sapiId(),date,code,subjects});sapiWrite(SAPI_LESSONS_KEY,a);sapiViewMonth=new Date(Number(date.slice(0,4)),Number(date.slice(5,7))-1,1);$("sapiLessonCode").value=code;document.querySelectorAll("#sapiLessonSubjects input:checked").forEach(x=>x.checked=false);msg.textContent="授業を登録しました ✓";renderSapiCalendar();renderSapiLessons()});
  $("sapiRangeAdd").addEventListener("click",()=>{const page=Number($("sapiRangePage").value),daimon=sapiSelectedNums("sapiDaimonPicks"),shomon=sapiSelectedNums("sapiShomonPicks"),msg=$("sapiHomeworkMessage");if(!page||page<1){msg.textContent="ページを入力してね";return}if(!daimon.length&&!shomon.length){msg.textContent="大問か小問を選んでね";return}const code=$("sapiHomeworkCode").value,subject=$("sapiHomeworkSubject").value,range={page,daimon,shomon};const material=code+" "+sapiRangeText(range),items=readStudyItems();let task=items.find(t=>t.date===localDateKey()&&t.sapixRange&&t.subject===(subject==="その他"?"国語":subject)&&t.material===material);if(!task){task={id:sapiId(),date:localDateKey(),subject:subject==="その他"?"国語":subject,material,pageFrom:"",pageTo:"",sapixRange:true};items.push(task);writeStudyItems(items)}if(!sapiDraftRanges.some(r=>r.studyTaskId===task.id))sapiDraftRanges.push({...range,studyTaskId:task.id});renderStudyItems();renderTodayStudyTasks();sapiDraftRanges.sort((a,b)=>a.page-b.page);sapiClearPicks();renderSapiRangePreview();msg.textContent="問題範囲と今日やることに追加しました ✓"});
- $("sapiHomeworkAdd").addEventListener("click",()=>{const due=$("sapiHomeworkDue").value,msg=$("sapiHomeworkMessage");if(!due){msg.textContent="提出期限を入力してね";return}if(!sapiDraftRanges.length){msg.textContent="問題範囲を1つ以上追加してね";return}const code=$("sapiHomeworkCode").value,subject=$("sapiHomeworkSubject").value,ranges=sapiDraftRanges.map(r=>({page:r.page,daimon:[...r.daimon],shomon:[...r.shomon]}));const a=sapiRead(SAPI_HOMEWORK_KEY,[]),homeworkId=sapiId();const items=readStudyItems();sapiDraftRanges.forEach(r=>{const task=items.find(t=>t.id===r.studyTaskId);if(task)task.sapixHomeworkId=homeworkId});writeStudyItems(items);a.push({id:homeworkId,createdDate:localDateKey(),subject,code,ranges,content:code+" "+ranges.map(sapiRangeText).join(" / "),due,required:$("sapiHomeworkRequired").checked,submitted:false});sapiWrite(SAPI_HOMEWORK_KEY,a);sapiDraftRanges=[];renderSapiRangePreview();sapiClearPicks();msg.textContent="宿題を登録しました ✓";renderSapiHomework()});
+ $("sapiHomeworkAdd").addEventListener("click",()=>{const due=$("sapiHomeworkDue").value,msg=$("sapiHomeworkMessage");if(!due){msg.textContent="提出期限を入力してね";return}if(!sapiDraftRanges.length){msg.textContent="問題範囲を1つ以上追加してね";return}const code=$("sapiHomeworkCode").value,subject=$("sapiHomeworkSubject").value,ranges=sapiDraftRanges.map(r=>({page:r.page,daimon:[...r.daimon],shomon:[...r.shomon]}));const a=sapiRead(SAPI_HOMEWORK_KEY,[]),homeworkId=sapiId();const items=readStudyItems();sapiDraftRanges.forEach(r=>{const task=items.find(t=>t.id===r.studyTaskId);if(task)task.sapixHomeworkId=homeworkId});writeStudyItems(items);a.push({id:homeworkId,createdDate:localDateKey(),subject,code,ranges,content:code+" "+ranges.map(sapiRangeText).join(" / "),due,required:$("sapiHomeworkRequired").checked,submitted:false});sapiWrite(SAPI_HOMEWORK_KEY,a);sapiDraftRanges=[];renderSapiRangePreview();sapiClearPicks();msg.textContent="宿題を登録しました ✓";renderSapiHomework();renderTodayStudyTasks();renderStudyItems()});
  $("sapiAddTestType").addEventListener("click",()=>{const type=$("sapiNewTestType").value.trim();if(!type)return;const a=sapiRead(SAPI_TYPES_KEY,[]);if(!sapiTypes().includes(type)){a.push(type);sapiWrite(SAPI_TYPES_KEY,a)}renderSapiTypes();$("sapiTestType").value=type;$("sapiNewTestType").value="";$("sapiTestMessage").textContent="テストの種類を追加しました ✓"});
  $("sapiTestAdd").addEventListener("click",()=>{const date=$("sapiTestDate").value,range=$("sapiTestRange").value.trim(),msg=$("sapiTestMessage");if(!date||!range){msg.textContent="テスト日と範囲を入力してね";return}const a=sapiRead(SAPI_TESTS_KEY,[]);a.push({id:sapiId(),date,type:$("sapiTestType").value,range});sapiWrite(SAPI_TESTS_KEY,a);$("sapiTestRange").value="";msg.textContent="テストを登録しました ✓";renderSapiTests()});
  renderSapiCalendar();renderSapiLessons();renderSapiHomework();renderSapiTypes();renderSapiTests()
