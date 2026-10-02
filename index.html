@@ -268,6 +268,12 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 
   <div class="screen-title">🌿 お母さん</div>
   <div class="card"><h3>📧 メッセージを送る</h3><form id="motherMessageForm"><label class="task-label" for="motherMessageDate">日付</label><input id="motherMessageDate" type="date" required><label class="task-label" for="motherMessageText">メッセージ</label><textarea id="motherMessageText" class="challenge-note" required maxlength="2000" placeholder="今日のひとことを送ろう"></textarea><button class="task-add-btn" type="submit">📧 メッセージを送る</button><div id="motherMessageStatus" class="saved" role="status" aria-live="polite"></div></form></div>
+  <div class="card"><h3>🔐 パスワード変更</h3><details><summary class="soft">パスワードを変更する</summary><form id="motherPasswordChangeForm">
+<label class="task-label" for="motherCurrentPassword">今のパスワード</label><input id="motherCurrentPassword" class="task-input" type="password" inputmode="numeric" required autocomplete="off">
+<label class="task-label" for="motherNewPassword">新しいパスワード（数字4桁以上）</label><input id="motherNewPassword" class="task-input" type="password" inputmode="numeric" pattern="[0-9]{4,}" minlength="4" required autocomplete="off">
+<label class="task-label" for="motherNewPasswordConfirm">新しいパスワードをもう一度</label><input id="motherNewPasswordConfirm" class="task-input" type="password" inputmode="numeric" pattern="[0-9]{4,}" minlength="4" required autocomplete="off">
+<button id="motherPasswordChangeSubmit" class="task-add-btn" type="submit">パスワードを変更</button><div id="motherPasswordChangeStatus" class="saved" role="status" aria-live="polite"></div>
+</form></details></div>
   <div class="card"><h3>📖 勉強手帳の名前</h3><form id="profileForm"><label class="task-label" for="profileName">ユーザー名</label><input id="profileName" class="task-input" required="" maxlength="30" autocomplete="nickname" placeholder="名前を入力"><button class="task-add-btn" type="submit">名前を保存</button><div id="profileMessage" class="saved" aria-live="polite"></div></form></div>
   <div class="card">
     <h2>📅 チャレテの日付設定</h2>
@@ -918,6 +924,30 @@ async function motherPasswordHash(password,salt){const key=await crypto.subtle.i
 function requestMotherAccess(callback){const saved=readMotherPassword(),dialog=document.getElementById("motherLockDialog");motherAccessCallback=callback;document.getElementById("motherLockTitle").textContent=saved?"🔒 お母さんの部屋":"🔐 パスワードを設定";document.getElementById("motherLockHelp").textContent=saved?"パスワードを入力してください。":"お母さんの部屋を開くためのパスワードを設定してください（4文字以上）。";document.getElementById("motherPassword").value="";document.getElementById("motherPasswordConfirm").value="";document.getElementById("motherConfirmLabel").hidden=!!saved;document.getElementById("motherPasswordConfirm").required=!saved;document.getElementById("motherLockStatus").textContent="";document.getElementById("motherLockSubmit").textContent=saved?"鍵を開ける":"設定して開く";dialog.showModal();document.getElementById("motherPassword").focus()}
 function initMotherLock(){const dialog=document.getElementById("motherLockDialog"),submit=document.getElementById("motherLockSubmit"),status=document.getElementById("motherLockStatus");document.getElementById("motherLockForm").addEventListener("submit",async event=>{event.preventDefault();const password=document.getElementById("motherPassword").value,saved=readMotherPassword();if(!saved&&(password.length<4||password!==document.getElementById("motherPasswordConfirm").value)){status.textContent=password.length<4?"4文字以上で入力してください。":"確認用のパスワードが一致しません。";return}submit.disabled=true;try{if(saved){if(await motherPasswordHash(password,saved.salt)!==saved.hash){status.textContent="パスワードが違います。";return}}else{const salt=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join("");localStorage.setItem(MOTHER_PASSWORD_KEY,JSON.stringify({salt,hash:await motherPasswordHash(password,salt)}))}const callback=motherAccessCallback;motherAccessCallback=null;dialog.close();document.getElementById("motherPassword").value="";document.getElementById("motherPasswordConfirm").value="";if(callback)callback()}catch(e){status.textContent="鍵を設定できませんでした。もう一度お試しください。"}finally{submit.disabled=false}});document.getElementById("motherLockCancel").addEventListener("click",()=>dialog.close());dialog.addEventListener("close",()=>{motherAccessCallback=null;document.getElementById("motherPassword").value="";document.getElementById("motherPasswordConfirm").value=""})}
 
+async function changeMotherPassword(current,password,confirmation){
+ const saved=readMotherPassword();
+ if(!saved)return "先にお母さんの部屋のパスワードを設定してください。";
+ if(await motherPasswordHash(current,saved.salt)!==saved.hash)return "今のパスワードが違います。";
+ if(!/^[0-9]{4,}$/.test(password))return "新しいパスワードは数字4桁以上で入力してください。";
+ if(password!==confirmation)return "新しいパスワードが一致しません。";
+ const salt=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join("");
+ const hash=await motherPasswordHash(password,salt);
+ localStorage.setItem(MOTHER_PASSWORD_KEY,JSON.stringify({salt,hash}));
+ return "";
+}
+function initMotherPasswordChange(){
+ const form=document.getElementById("motherPasswordChangeForm"),button=document.getElementById("motherPasswordChangeSubmit"),status=document.getElementById("motherPasswordChangeStatus");
+ form.addEventListener("submit",async event=>{
+  event.preventDefault();if(button.disabled)return;button.disabled=true;status.textContent="";
+  try{
+   const error=await changeMotherPassword(document.getElementById("motherCurrentPassword").value,document.getElementById("motherNewPassword").value,document.getElementById("motherNewPasswordConfirm").value);
+   if(error){status.textContent=error;return}
+   form.reset();status.textContent="パスワードを変更しました ✓";
+  }catch(e){status.textContent="変更できませんでした。もう一度お試しください。"}
+  finally{button.disabled=false}
+ });
+}
+
 const MOTHER_MESSAGES_KEY="myAnchorV2.motherMessages";
 function readMotherMessages(){try{const messages=JSON.parse(localStorage.getItem(MOTHER_MESSAGES_KEY)||"{}");return messages&&typeof messages==="object"&&!Array.isArray(messages)?messages:{}}catch(e){return{}}}
 function fillMotherMessages(box,date){box.replaceChildren();const messages=readMotherMessages()[date];if(!Array.isArray(messages))return;messages.forEach(message=>{const item=document.createElement("div");item.className="mother-message";item.textContent=message.text;box.appendChild(item)})}
@@ -937,7 +967,7 @@ function initUserName(){
  [input,document.getElementById("welcomeName")].forEach(field=>field.addEventListener("input",()=>field.setCustomValidity("")));
 }
 
-document.addEventListener("DOMContentLoaded",()=>{initUserName();initDataErase();initMotherLock();initTickets();initMotherMessages();syncStudyRecord();cleanupTodayTasks();initSapix();initStudyItems();initChallengeOverview();initChallengeRanges();initChallengeViewToggle();renderChallengeMain();initStudyRecord()});
+document.addEventListener("DOMContentLoaded",()=>{initUserName();initDataErase();initMotherLock();initMotherPasswordChange();initTickets();initMotherMessages();syncStudyRecord();cleanupTodayTasks();initSapix();initStudyItems();initChallengeOverview();initChallengeRanges();initChallengeViewToggle();renderChallengeMain();initStudyRecord()});
 </script>
 
 
