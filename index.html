@@ -80,7 +80,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 .stamp-btn,.stamp-state{border:1.5px solid #d8e2d3;border-radius:16px;background:#fff;padding:8px 3px;color:#283d30;font-size:13px;line-height:1.25;text-align:center}.stamp-state{background:#f7faf5}.stamp-state.active{outline:5px solid #dce8d8;font-weight:900}
 .stamp-btn .emoji,.stamp-state .emoji{display:block;font-size:22px;margin-bottom:2px}.stamp-btn.active{outline:5px solid #dce8d8;font-weight:900}
 .today-empty{padding:20px 4px;text-align:center;color:#879087}
-.task-delete{float:right;border:0;background:transparent;color:#a48f7a;font-size:14px}
+.registered-task{display:flex;align-items:center;justify-content:space-between;gap:10px}.registered-task .material-chip{overflow-wrap:anywhere}.task-delete{flex-shrink:0;border:1.5px solid #e8d9b8;border-radius:12px;background:#fffdf7;color:#8c6955;font-size:14px;font-weight:700;padding:8px 14px;min-height:40px}
 .no-task-btn{border:1.5px solid #eadfbd;background:#fffdf5;color:#7b745f;border-radius:14px;padding:8px 12px;font-weight:800;margin:2px 0 10px}
 .no-task-state{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 12px;padding:10px 12px;border-radius:14px;background:#fff8df;color:#6d725f;font-weight:800}
 .no-task-undo{border:0;background:#fff;color:#6d725f;border-radius:12px;padding:6px 10px;font-weight:800}
@@ -357,10 +357,14 @@ function renderMaterialChoices(){
 }
 function toggleOtherMaterial(){const m=document.getElementById("taskMaterial"),w=document.getElementById("otherMaterialWrap");if(w&&m)w.hidden=m.value!=="その他"}
 function taskDisplayName(x){let n=x.material;if(x.pageFrom||x.pageTo){if(x.pageFrom&&x.pageTo)n+=` p.${x.pageFrom}〜${x.pageTo}`;else if(x.pageFrom)n+=` p.${x.pageFrom}〜`;else n+=` 〜p.${x.pageTo}`}return n}
+function deleteStudyItem(id){
+ writeStudyItems(readStudyItems().filter(x=>x.id!==id));
+ renderStudyItems();renderTodayStudyTasks();renderChallengeMain();renderSapiHomework();
+}
 function renderStudyItems(){
  const h=document.getElementById("studyItemList");if(!h)return;const date=localDateKey(),items=readStudyItems(),todayStamps=(readTaskStamps()[date]||{}),noTasks=(readNoTaskDays()[date]||{});h.innerHTML="";
  if(!items.length){h.innerHTML='<div class="empty-study-items">まだ登録されていません 🌱</div>';return}
- ["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");const isDailyKanji=x.subject==="国語"&&x.material==="毎日漢字";const completed=isDailyKanji?(todayStamps["default_daily_kanji"]==="できた！"):todayStamps[x.id]==="できた！";c.className="material-chip"+(completed?" completed":"");c.textContent=taskDisplayName(x);b.appendChild(c)});h.appendChild(b)})
+ ["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");const isDailyKanji=x.subject==="国語"&&x.material==="毎日漢字";const completed=isDailyKanji?(todayStamps["default_daily_kanji"]==="できた！"):todayStamps[x.id]==="できた！";c.className="material-chip"+(completed?" completed":"");c.textContent=taskDisplayName(x);const row=document.createElement("div");row.className="registered-task";const del=document.createElement("button");del.type="button";del.className="task-delete";del.textContent="削除";del.setAttribute("aria-label",taskDisplayName(x)+"を削除");del.addEventListener("click",()=>deleteStudyItem(x.id));row.append(c,del);b.appendChild(row)});h.appendChild(b)})
 }
 function setTaskStamp(id,status){
  const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};all[date][id]=status;writeTaskStamps(all);renderTodayStudyTasks();renderStudyItems()
