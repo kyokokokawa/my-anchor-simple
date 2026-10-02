@@ -111,7 +111,7 @@ input[type=date]{width:100%;font:inherit;font-size:16px;padding:12px;border:1px 
 <header>
   <h1 id="roomTitle">勉強手帳 🌱</h1>
   <div id="todayMotherMessages" class="mother-messages" hidden></div>
-  <div class="subtitle">できない日があっても、また始めれば大丈夫</div>
+  <div id="defaultEncouragement" class="subtitle">できない日があっても、また始めれば大丈夫</div>
 </header>
 
 <section id="today" class="page active">
@@ -495,6 +495,8 @@ function initChallengeRanges(){
   const pages = [...document.querySelectorAll(".page")];
 
   function openPage(id, button){
+    if(id==="mother"){requestMotherAccess(()=>openPage("motherUnlocked",button));return}
+    if(id==="motherUnlocked")id="mother";
     if(id==="calendar")renderStudyRecord();
     if(id==="ticket")renderTicketWallet();
     pages.forEach(page => page.classList.toggle("active", page.id === id));
@@ -508,11 +510,11 @@ function initChallengeRanges(){
 
   const openMotherRoom = document.getElementById("openMotherRoom");
   if(openMotherRoom){
-    openMotherRoom.addEventListener("click", () => {
+    openMotherRoom.addEventListener("click", () => requestMotherAccess(() => {
       pages.forEach(page => page.classList.toggle("active", page.id === "mother"));
       buttons.forEach(btn => btn.classList.toggle("active", btn.dataset.page === "tasks"));
       window.scrollTo(0, 0);
-    });
+    }));
   }
 
   function readDates(){
@@ -867,10 +869,17 @@ function initTickets(){
  }));renderTicketWallet();window.addEventListener("storage",event=>{if(event.key===TICKET_WALLET_KEY)renderTicketWallet()});
 }
 
+const MOTHER_PASSWORD_KEY="myAnchorV2.motherPassword";
+let motherAccessCallback=null;
+function readMotherPassword(){try{const value=JSON.parse(localStorage.getItem(MOTHER_PASSWORD_KEY)||"null");return value&&typeof value.salt==="string"&&typeof value.hash==="string"?value:null}catch(e){return null}}
+async function motherPasswordHash(password,salt){const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(password),"PBKDF2",false,["deriveBits"]);const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:new TextEncoder().encode(salt),iterations:100000,hash:"SHA-256"},key,256);return Array.from(new Uint8Array(bits),x=>x.toString(16).padStart(2,"0")).join("")}
+function requestMotherAccess(callback){const saved=readMotherPassword(),dialog=document.getElementById("motherLockDialog");motherAccessCallback=callback;document.getElementById("motherLockTitle").textContent=saved?"🔒 お母さんの部屋":"🔐 パスワードを設定";document.getElementById("motherLockHelp").textContent=saved?"パスワードを入力してください。":"お母さんの部屋を開くためのパスワードを設定してください（4文字以上）。";document.getElementById("motherPassword").value="";document.getElementById("motherPasswordConfirm").value="";document.getElementById("motherConfirmLabel").hidden=!!saved;document.getElementById("motherPasswordConfirm").required=!saved;document.getElementById("motherLockStatus").textContent="";document.getElementById("motherLockSubmit").textContent=saved?"鍵を開ける":"設定して開く";dialog.showModal();document.getElementById("motherPassword").focus()}
+function initMotherLock(){const dialog=document.getElementById("motherLockDialog"),submit=document.getElementById("motherLockSubmit"),status=document.getElementById("motherLockStatus");document.getElementById("motherLockForm").addEventListener("submit",async event=>{event.preventDefault();const password=document.getElementById("motherPassword").value,saved=readMotherPassword();if(!saved&&(password.length<4||password!==document.getElementById("motherPasswordConfirm").value)){status.textContent=password.length<4?"4文字以上で入力してください。":"確認用のパスワードが一致しません。";return}submit.disabled=true;try{if(saved){if(await motherPasswordHash(password,saved.salt)!==saved.hash){status.textContent="パスワードが違います。";return}}else{const salt=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join("");localStorage.setItem(MOTHER_PASSWORD_KEY,JSON.stringify({salt,hash:await motherPasswordHash(password,salt)}))}const callback=motherAccessCallback;motherAccessCallback=null;dialog.close();document.getElementById("motherPassword").value="";document.getElementById("motherPasswordConfirm").value="";if(callback)callback()}catch(e){status.textContent="鍵を設定できませんでした。もう一度お試しください。"}finally{submit.disabled=false}});document.getElementById("motherLockCancel").addEventListener("click",()=>dialog.close());dialog.addEventListener("close",()=>{motherAccessCallback=null;document.getElementById("motherPassword").value="";document.getElementById("motherPasswordConfirm").value=""})}
+
 const MOTHER_MESSAGES_KEY="myAnchorV2.motherMessages";
 function readMotherMessages(){try{const messages=JSON.parse(localStorage.getItem(MOTHER_MESSAGES_KEY)||"{}");return messages&&typeof messages==="object"&&!Array.isArray(messages)?messages:{}}catch(e){return{}}}
 function fillMotherMessages(box,date){box.replaceChildren();const messages=readMotherMessages()[date];if(!Array.isArray(messages))return;messages.forEach(message=>{const item=document.createElement("div");item.className="mother-message";item.textContent=message.text;box.appendChild(item)})}
-function renderMotherMessages(){const box=document.getElementById("todayMotherMessages");fillMotherMessages(box,localDateKey());box.hidden=!box.childElementCount}
+function renderMotherMessages(){const box=document.getElementById("todayMotherMessages");fillMotherMessages(box,localDateKey());box.hidden=!box.childElementCount;document.getElementById("defaultEncouragement").hidden=!!box.childElementCount}
 function openMotherMessages(date){const dialog=document.getElementById("motherMessageDialog");document.getElementById("motherMessageDialogTitle").textContent=date.replaceAll("-","/")+" お母さんから📧";fillMotherMessages(document.getElementById("motherMessageDialogBody"),date);dialog.showModal()}
 function initMotherMessages(){const date=document.getElementById("motherMessageDate"),text=document.getElementById("motherMessageText");date.value=localDateKey();document.getElementById("motherMessageForm").addEventListener("submit",event=>{event.preventDefault();const value=text.value.trim();if(!value){text.setCustomValidity("メッセージを入力してね");text.reportValidity();return}const messages=readMotherMessages();if(!Array.isArray(messages[date.value]))messages[date.value]=[];messages[date.value].push({text:value,sentAt:new Date().toISOString()});localStorage.setItem(MOTHER_MESSAGES_KEY,JSON.stringify(messages));text.value="";renderMotherMessages();renderStudyRecord();document.getElementById("motherMessageStatus").textContent="メッセージを送りました ✓"});text.addEventListener("input",()=>text.setCustomValidity(""));document.getElementById("closeMotherMessage").addEventListener("click",()=>document.getElementById("motherMessageDialog").close());window.addEventListener("storage",event=>{if(event.key===MOTHER_MESSAGES_KEY){renderMotherMessages();renderStudyRecord()}});renderMotherMessages()}
 
@@ -886,8 +895,8 @@ function initUserName(){
  [input,document.getElementById("welcomeName")].forEach(field=>field.addEventListener("input",()=>field.setCustomValidity("")));
 }
 
-document.addEventListener("DOMContentLoaded",()=>{initUserName();initTickets();initMotherMessages();syncStudyRecord();cleanupTodayTasks();initSapix();initStudyItems();initChallengeOverview();initChallengeRanges();initChallengeViewToggle();renderChallengeMain();initStudyRecord()});
+document.addEventListener("DOMContentLoaded",()=>{initUserName();initMotherLock();initTickets();initMotherMessages();syncStudyRecord();cleanupTodayTasks();initSapix();initStudyItems();initChallengeOverview();initChallengeRanges();initChallengeViewToggle();renderChallengeMain();initStudyRecord()});
 </script>
 
 
-<div id="nameWelcome" class="name-welcome" role="dialog" aria-modal="true" aria-labelledby="nameWelcomeTitle" hidden=""><div class="card name-welcome-card"><h2 id="nameWelcomeTitle">📖 勉強手帳をはじめよう</h2><form id="welcomeNameForm"><label class="task-label" for="welcomeName">あなたの名前を教えてね</label><input id="welcomeName" class="task-input" required="" maxlength="30" autocomplete="nickname" placeholder="名前を入力"><button class="task-add-btn" type="submit">勉強手帳をはじめる</button></form></div></div><dialog id="motherMessageDialog" class="message-dialog" aria-labelledby="motherMessageDialogTitle"><h2 id="motherMessageDialogTitle"></h2><div id="motherMessageDialogBody" class="mother-messages"></div><div class="subtitle">できない日があっても、また始めれば大丈夫</div><button id="closeMotherMessage" class="message-close" type="button">閉じる</button></dialog></body></html>
+<div id="nameWelcome" class="name-welcome" role="dialog" aria-modal="true" aria-labelledby="nameWelcomeTitle" hidden=""><div class="card name-welcome-card"><h2 id="nameWelcomeTitle">📖 勉強手帳をはじめよう</h2><form id="welcomeNameForm"><label class="task-label" for="welcomeName">あなたの名前を教えてね</label><input id="welcomeName" class="task-input" required="" maxlength="30" autocomplete="nickname" placeholder="名前を入力"><button class="task-add-btn" type="submit">勉強手帳をはじめる</button></form></div></div><dialog id="motherMessageDialog" class="message-dialog" aria-labelledby="motherMessageDialogTitle"><h2 id="motherMessageDialogTitle"></h2><div id="motherMessageDialogBody" class="mother-messages"></div><button id="closeMotherMessage" class="message-close" type="button">閉じる</button></dialog><dialog id="motherLockDialog" class="message-dialog" aria-labelledby="motherLockTitle"><h2 id="motherLockTitle"></h2><p id="motherLockHelp" class="soft"></p><form id="motherLockForm"><label class="task-label" for="motherPassword">パスワード</label><input id="motherPassword" class="task-input" type="password" required autocomplete="off"><label id="motherConfirmLabel" class="task-label">もう一度入力<input id="motherPasswordConfirm" class="task-input" type="password" autocomplete="off"></label><div id="motherLockStatus" class="saved" role="status" aria-live="polite"></div><button id="motherLockSubmit" class="message-close" type="submit">鍵を開ける</button><button id="motherLockCancel" class="message-close" type="button">戻る</button></form></dialog></body></html>
