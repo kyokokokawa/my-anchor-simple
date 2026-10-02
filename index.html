@@ -518,9 +518,13 @@ function initChallengeRanges(){
   const buttons = [...document.querySelectorAll("#nav button")];
   const pages = [...document.querySelectorAll(".page")];
 
+  const LAST_PAGE_KEY="myAnchorV2.lastPage";
+  function rememberPage(id){try{sessionStorage.setItem(LAST_PAGE_KEY,id)}catch(e){}}
   function openPage(id, button){
     if(id==="mother"){requestMotherAccess(()=>openPage("motherUnlocked",button));return}
     if(id==="motherUnlocked")id="mother";
+    if(!pages.some(page=>page.id===id))return;
+    rememberPage(id);
     if(id==="calendar")renderStudyRecord();
     if(id==="ticket")renderTicketWallet();
     pages.forEach(page => page.classList.toggle("active", page.id === id));
@@ -534,12 +538,16 @@ function initChallengeRanges(){
 
   const openMotherRoom = document.getElementById("openMotherRoom");
   if(openMotherRoom){
-    openMotherRoom.addEventListener("click", () => requestMotherAccess(() => {
-      pages.forEach(page => page.classList.toggle("active", page.id === "mother"));
-      buttons.forEach(btn => btn.classList.toggle("active", btn.dataset.page === "tasks"));
-      window.scrollTo(0, 0);
-    }));
+    openMotherRoom.addEventListener("click", () => openPage("mother",buttons.find(btn=>btn.dataset.page==="tasks")));
   }
+  document.addEventListener("anchorRestorePage",()=>{
+    let id;try{id=sessionStorage.getItem(LAST_PAGE_KEY)}catch(e){return}
+    if(!id||!pages.some(page=>page.id===id))return;
+    if(id==="mother"){
+      const button=buttons.find(btn=>btn.dataset.page==="tasks");
+      openPage("tasks",button);openPage("mother",button);
+    }else openPage(id,buttons.find(btn=>btn.dataset.page===id));
+  });
 
   function readDates(){
     try {
@@ -965,7 +973,7 @@ function initUserName(){
  [input,document.getElementById("welcomeName")].forEach(field=>field.addEventListener("input",()=>field.setCustomValidity("")));
 }
 
-document.addEventListener("DOMContentLoaded",()=>{initUserName();initDataErase();initMotherLock();initMotherPasswordChange();initTickets();initMotherMessages();syncStudyRecord();cleanupTodayTasks();initSapix();initStudyItems();initChallengeOverview();initChallengeRanges();initChallengeViewToggle();renderChallengeMain();initStudyRecord()});
+document.addEventListener("DOMContentLoaded",()=>{initUserName();initDataErase();initMotherLock();initMotherPasswordChange();initTickets();initMotherMessages();syncStudyRecord();cleanupTodayTasks();initSapix();initStudyItems();initChallengeOverview();initChallengeRanges();initChallengeViewToggle();renderChallengeMain();initStudyRecord();document.dispatchEvent(new Event("anchorRestorePage"))});
 </script>
 
 
