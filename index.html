@@ -360,7 +360,7 @@ function taskDisplayName(x){let n=x.material;if(x.pageFrom||x.pageTo){if(x.pageF
 function renderStudyItems(){
  const h=document.getElementById("studyItemList");if(!h)return;const date=localDateKey(),items=readStudyItems(),todayStamps=(readTaskStamps()[date]||{}),noTasks=(readNoTaskDays()[date]||{});h.innerHTML="";
  if(!items.length){h.innerHTML='<div class="empty-study-items">まだ登録されていません 🌱</div>';return}
- ["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");const isDailyKanji=x.subject==="国語"&&x.material==="毎日漢字";const completed=isDailyKanji?(todayStamps["default_daily_kanji"]==="できた！"||!!noTasks["default_daily_kanji"]):todayStamps[x.id]==="できた！";c.className="material-chip"+(completed?" completed":"");c.textContent=taskDisplayName(x);b.appendChild(c)});h.appendChild(b)})
+ ["国語","算数","理科","社会","英語"].forEach(s=>{const a=items.filter(x=>x.subject===s);if(!a.length)return;const b=document.createElement("div");b.className="subject-block";const t=document.createElement("div");t.className="subject-title";t.textContent=s;b.appendChild(t);a.forEach(x=>{const c=document.createElement("span");const isDailyKanji=x.subject==="国語"&&x.material==="毎日漢字";const completed=isDailyKanji?(todayStamps["default_daily_kanji"]==="できた！"):todayStamps[x.id]==="できた！";c.className="material-chip"+(completed?" completed":"");c.textContent=taskDisplayName(x);b.appendChild(c)});h.appendChild(b)})
 }
 function setTaskStamp(id,status){
  const all=readTaskStamps(),date=localDateKey();all[date]=all[date]||{};all[date][id]=status;writeTaskStamps(all);renderTodayStudyTasks();renderStudyItems()
@@ -387,21 +387,14 @@ function renderTodayStudyTasks(){
     }
     const name=document.createElement("div");name.className="today-task-name";name.textContent=taskDisplayName(x);h.appendChild(name);
    }
-   if(isDailyKanji&&noTasks[x.id]){
-    const state=document.createElement("div");state.className="no-task-state";
-    const label=document.createElement("span");label.textContent="今日は課題なし";
-    const undo=document.createElement("button");undo.type="button";undo.className="no-task-undo";undo.textContent="戻す";undo.addEventListener("click",()=>setNoTask(x.id,false));
-    state.append(label,undo);h.appendChild(state);return;
-   }
    const row=document.createElement("div");row.className="stamp-row";
-   const current=stamps[x.id]||"まだ";
+   const current=isDailyKanji?(stamps[x.id]==="できた！"?"できた！":"まだ"):(stamps[x.id]||"まだ");
    const pending=document.createElement("div");pending.className="stamp-state"+(current==="まだ"?" active":"");
    pending.innerHTML='<span class="emoji">🌱</span>まだ';row.appendChild(pending);
-   [["やってる","🌿"],["できた！","🌸"],["もう一度","🍂"]].forEach(([label,emoji])=>{
+   (isDailyKanji?[["できた！","🌸"]]:[["やってる","🌿"],["できた！","🌸"],["もう一度","🍂"]]).forEach(([label,emoji])=>{
     const b=document.createElement("button");b.type="button";b.className="stamp-btn"+(current===label?" active":"");
     b.innerHTML=`<span class="emoji">${emoji}</span>${label}`;b.addEventListener("click",()=>setTaskStamp(x.id,label));row.appendChild(b)
    });h.appendChild(row);
-   if(isDailyKanji){const none=document.createElement("button");none.type="button";none.className="no-task-btn";none.textContent="課題なし";none.addEventListener("click",()=>setNoTask(x.id,true));h.appendChild(none)}
   })
  })
 }
